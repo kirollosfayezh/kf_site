@@ -27,11 +27,26 @@ export function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
 
+  // Lenis drives the scroll frame by frame, so this listener fires at display
+  // rate. Reading `window.scrollY` straight from the handler forced a layout
+  // flush on every one of those frames; coalescing into a single rAF means at
+  // most one read per painted frame, and React bails out of the re-render
+  // whenever the boolean has not actually flipped.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      setScrolled(window.scrollY > 40);
+    };
+    const onScroll = () => {
+      if (frame === 0) frame = requestAnimationFrame(read);
+    };
+    read();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame !== 0) cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => setMenuOpen(false), [location.pathname]);

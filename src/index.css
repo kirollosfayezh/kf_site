@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Fonts are declared in index.html, not imported here — see the comment
+   there: a CSS @import hides them behind two extra round trips. */
 /* Lenis' own stylesheet — required for the wheel-driven scroll to behave. */
 @import 'lenis/dist/lenis.css';
 

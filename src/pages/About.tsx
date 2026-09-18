@@ -3,6 +3,7 @@ import { useI18n } from "../lib/i18n";
 import { pick, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import { WA_LINK } from "../components/Footer";
 import s from "../styles/sections.module.css";
 
@@ -78,7 +79,7 @@ export function About() {
             <div className={s.workspaceGrid}>
               {WORKSPACE.map((w) => (
                 <div key={w.src} className={s.workspaceCell}>
-                  <img src={w.src} alt={w.alt} loading="lazy" decoding="async" />
+                  <Img src={w.src} alt={w.alt} width={320} sizes="(max-width: 700px) 45vw, 320px" />
                 </div>
               ))}
             </div>

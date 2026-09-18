@@ -13,6 +13,22 @@
   background: var(--navbg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  /* The bar is fixed over scrolling content, so the blur is re-sampled on
+     every scrolled frame. Its own layer keeps that off the page's paint. */
+  will-change: backdrop-filter;
+  /* Nothing inside the bar can affect layout or paint outside it. */
+  contain: layout paint;
+}
+/* Phones and tablets pay the most for a full-width backdrop blur and have the
+   least GPU headroom, and `--navbg` is already opaque enough to carry the bar
+   on its own. Below the desktop breakpoint it is a solid translucent fill. */
+@media (max-width: 1010px) {
+  .headerScrolled {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg);
+    will-change: auto;
+  }
 }
 .inner {
   max-width: 1280px;

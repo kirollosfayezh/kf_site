@@ -3,6 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!--
+      The fonts used to be pulled in by an `@import` at the top of index.css.
+      That makes a request chain three deep before a single glyph is fetched:
+      HTML -> our CSS -> Google's CSS -> the font files, with the browser
+      unable to discover the last two until the first has parsed. Declaring
+      them here lets the preload scanner start the handshake immediately.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KF Tech Solutions — Ideas into real, working products</title>
     <meta name="description" content="KF Tech Solutions builds custom software, POS systems, dashboards and AI automation for real businesses." />

@@ -1,8 +1,9 @@
 import { Link, useParams } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, mediaUrl } from "../lib/content-helpers";
+import { pick } from "../lib/content-helpers";
 import { useContentItem } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import s from "../styles/sections.module.css";
 
 export function Article() {
@@ -40,7 +41,14 @@ export function Article() {
 
       {post.media?.[0] && (
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-          <img src={mediaUrl(post.media?.[0], 1600)} alt={pick(post.title, lang)} style={{ width: "100%", borderRadius: 16, border: "1px solid var(--border)" }} />
+          <Img
+            src={post.media?.[0]}
+            alt={pick(post.title, lang)}
+            width={1200}
+            sizes="(max-width: 1280px) 100vw, 1200px"
+            priority
+            style={{ width: "100%", borderRadius: 16, border: "1px solid var(--border)" }}
+          />
         </div>
       )}
 

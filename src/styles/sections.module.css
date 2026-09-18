@@ -1,7 +1,32 @@
-.section { max-width: 1280px; margin: 0 auto; padding: 110px 24px; }
-.sectionTight { max-width: 1280px; margin: 0 auto; padding: 80px 24px; }
+/* These pages are long — Home runs to roughly eight screens of cards, grids
+   and gradients. `content-visibility: auto` lets the browser skip layout,
+   style and paint for the sections that are nowhere near the viewport, which
+   is most of them at any moment, and is the single largest win available on
+   the scroll path. `contain-intrinsic-size: auto` makes the browser remember
+   each section's real height once it has been rendered, so the scrollbar
+   settles after the first pass instead of resizing as you scroll. */
+.section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 110px 24px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+}
+.sectionTight {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
 .sectionAlt { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.sectionNarrow { max-width: 860px; margin: 0 auto; padding: 110px 24px; }
+.sectionNarrow {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 110px 24px;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+}
 
 .head {
   display: flex;

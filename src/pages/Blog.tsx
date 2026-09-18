@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, mediaUrl, metaString } from "../lib/content-helpers";
+import { pick, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import s from "../styles/sections.module.css";
 
 const ALL = "All";
@@ -98,9 +99,9 @@ export function Blog() {
           <Reveal>
             <Link to={`/blog/${featured.id}`} className={s.featured}>
               <div className={s.featuredMedia}>
-                {mediaUrl(featured.media?.[0]) ? (
+                {featured.media?.[0] ? (
                   /* Top of the page once loaded — the LCP candidate, so eager. */
-                  <img src={mediaUrl(featured.media?.[0], 1200)} alt={pick(featured.title, lang)} decoding="async" />
+                  <Img src={featured.media?.[0]} alt={pick(featured.title, lang)} width={1000} sizes="(max-width: 1000px) 100vw, 1000px" priority />
                 ) : (
                   <div className={s.cardMediaFallback}>{pick(featured.title, lang)[0]}</div>
                 )}
@@ -126,8 +127,8 @@ export function Blog() {
               <Link key={post.id} to={`/blog/${post.id}`} className={s.card}>
                 <Reveal>
                   <div className={s.cardMedia}>
-                    {mediaUrl(post.media?.[0]) ? (
-                      <img src={mediaUrl(post.media?.[0])} alt={pick(post.title, lang)} loading="lazy" decoding="async" />
+                    {post.media?.[0] ? (
+                      <Img src={post.media?.[0]} alt={pick(post.title, lang)} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" />
                     ) : (
                       <div className={s.cardMediaFallback}>{pick(post.title, lang)[0]}</div>
                     )}
