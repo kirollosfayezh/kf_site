@@ -1,0 +1,212 @@
+.fab {
+  position: fixed;
+  inset-inline-end: 20px;
+  bottom: 92px;
+  z-index: 70;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 14px 34px -12px rgba(255, 0, 128, .7);
+  transition: transform .25s cubic-bezier(.22, 1, .36, 1);
+  border: none;
+  color: #fff;
+}
+.fab:hover { transform: scale(1.07); }
+.fab svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.dot {
+  position: absolute;
+  top: -2px;
+  inset-inline-end: -2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--brand-pink);
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+}
+
+.panel {
+  position: fixed;
+  inset-inline-end: 20px;
+  bottom: 162px;
+  z-index: 71;
+  width: min(376px, calc(100vw - 32px));
+  max-height: min(620px, calc(100dvh - 120px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, .8);
+  transform-origin: bottom right;
+  transition: opacity .24s, transform .24s cubic-bezier(.22, 1, .36, 1);
+}
+.panelOut { opacity: 0; transform: translateY(12px) scale(.96); pointer-events: none; }
+
+.hd {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 15px 16px;
+  background: linear-gradient(135deg, rgba(255, 106, 0, .16), rgba(255, 0, 128, .1));
+  border-bottom: 1px solid var(--border);
+}
+.av {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.hd h2 { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+.st { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text2); margin-top: 2px; }
+.live { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px rgba(74, 222, 128, .2); }
+.x {
+  margin-inline-start: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--text2);
+  background: none;
+  border: none;
+}
+.x:hover { background: var(--hover); }
+
+.log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 190px; }
+.row { display: flex; gap: 8px; max-width: 88%; flex-direction: column; }
+.rowMe { align-self: flex-end; align-items: flex-end; }
+.rowThem { align-self: flex-start; align-items: flex-start; }
+.bub { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.5; word-break: break-word; unicode-bidi: plaintext; }
+.rowThem .bub { background: var(--panel2); border-bottom-left-radius: 5px; }
+.rowMe .bub { background: var(--brand-gradient); color: #fff; border-bottom-right-radius: 5px; }
+.ts { font-size: 10.5px; color: var(--text3); margin-top: 4px; font-family: var(--font-mono); }
+
+.typing {
+  display: flex;
+  gap: 4px;
+  padding: 12px 15px;
+  border-radius: 15px;
+  border-bottom-left-radius: 5px;
+  background: var(--panel2);
+  width: fit-content;
+}
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); animation: bob 1.2s infinite; font-style: normal; }
+.typing i:nth-child(2) { animation-delay: .15s; }
+.typing i:nth-child(3) { animation-delay: .3s; }
+
+.quick { display: flex; gap: 7px; flex-wrap: wrap; padding: 0 16px 12px; }
+.quick button {
+  unicode-bidi: plaintext;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  border: 1px solid var(--bstrong);
+  color: var(--text2);
+  background: none;
+  transition: border-color .2s, color .2s;
+}
+.quick button:hover { border-color: rgba(255, 106, 0, .5); color: var(--text); }
+
+.form { border-top: 1px solid var(--border); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
+.fld span { display: block; font-size: 11.5px; font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+.fld input {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: 14px;
+  border: 1px solid var(--bstrong);
+  background: var(--field);
+  color: inherit;
+}
+.go {
+  padding: 13px;
+  border-radius: 11px;
+  background: var(--brand-gradient);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 600;
+  border: none;
+  transition: transform .2s;
+}
+.go:hover { transform: translateY(-1px); }
+.note { font-size: 11.5px; color: var(--text3); text-align: center; line-height: 1.5; }
+
+.comp { display: flex; align-items: flex-end; gap: 9px; }
+.comp textarea {
+  flex: 1;
+  padding: 11px 13px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  max-height: 104px;
+  border: 1px solid var(--bstrong);
+  background: var(--field);
+  color: inherit;
+}
+.send {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-gradient);
+  border: none;
+  transition: opacity .2s;
+}
+.send:disabled { opacity: .4; cursor: default; }
+.send svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.errorNote { padding: 10px 16px; font-size: 12px; color: var(--danger); text-align: center; }
+
+/* RTL: the panel grows from the bottom-left corner instead. */
+:global(html[dir="rtl"]) .panel { transform-origin: bottom left; }
+
+@media (max-width: 520px) {
+  /* A tall sheet rather than a full-screen takeover: the page stays visible
+     behind it and the header X (or Escape) always dismisses it. `dvh` keeps it
+     correct while mobile browser chrome collapses. */
+  .panel {
+    inset-inline: 12px;
+    width: auto;
+    bottom: 156px;
+    max-height: calc(100dvh - 176px);
+  }
+  .fab { bottom: 86px; inset-inline-end: 16px; }
+  /* Tightened so the intro form (two fields + button + note) fits above the
+     launcher at 375x667 instead of being cut off at the panel edge. */
+  .log { min-height: 84px; }
+  .form { padding: 10px 12px; gap: 8px; }
+  .fld span { font-size: 11px; margin-bottom: 4px; }
+  .fld input { padding: 10px 12px; }
+  .go { padding: 12px; }
+  .note { font-size: 11px; }
+  .quick { padding: 0 12px 10px; gap: 6px; }
+  .quick button { padding: 7px 11px; font-size: 12px; }
+}
+
+/* Landscape phones: there is no room for a 620px panel above the button. */
+@media (max-height: 600px) {
+  .panel { max-height: calc(100dvh - 190px); }
+  .log { min-height: 90px; }
+}

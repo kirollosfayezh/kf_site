@@ -1,0 +1,54 @@
+.footer { border-top: 1px solid var(--border); background: var(--bg); }
+.inner { max-width: 1280px; margin: 0 auto; padding: 64px 24px 40px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 40px; }
+.brandCol { max-width: 320px; }
+.brand { display: flex; align-items: center; gap: 12px; color: var(--text); }
+.logo { width: 38px; height: 38px; object-fit: contain; display: block; flex-shrink: 0; }
+.brandTitle { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.desc { margin-top: 16px; color: var(--text2); font-size: 14.5px; line-height: 1.55; }
+.social { display: flex; gap: 9px; margin-top: 20px; }
+.socialBtn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text2);
+}
+.socialBtn:hover { border-color: rgba(255, 106, 0, .5); color: var(--text); }
+.colTitle { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); font-family: var(--font-mono); font-weight: 500; }
+.colLinks { display: flex; flex-direction: column; gap: 11px; margin-top: 16px; }
+.colLinks a { color: var(--text2); font-size: 14.5px; }
+.colLinks a:hover { color: var(--text); }
+.bottom {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.bottomText { font-size: 13px; color: var(--text3); }
+.bottomMono { font-size: 13px; color: var(--text3); font-family: var(--font-mono); }
+
+.waFab {
+  position: fixed;
+  inset-inline-end: 92px;
+  bottom: 22px;
+  z-index: 60;
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 640px) {
+  .inner { padding: 48px 16px 32px; }
+  .grid { gap: 30px; }
+  .brandCol { max-width: none; }
+  .bottom { margin-top: 36px; }
+  /* Long email addresses were the one real overflow source in the footer. */
+  .colLinks a { overflow-wrap: anywhere; }
+}

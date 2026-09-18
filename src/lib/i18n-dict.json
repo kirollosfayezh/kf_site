@@ -1,0 +1,1650 @@
+{
+  "Home": {
+    "en": "Home",
+    "ar": "الرئيسية"
+  },
+  "Services": {
+    "en": "Services",
+    "ar": "الخدمات"
+  },
+  "Solutions": {
+    "en": "Solutions",
+    "ar": "الحلول"
+  },
+  "Projects": {
+    "en": "Projects",
+    "ar": "أعمالنا"
+  },
+  "About": {
+    "en": "About",
+    "ar": "من نحن"
+  },
+  "Contact": {
+    "en": "Contact",
+    "ar": "اتصل بنا"
+  },
+  "Insights": {
+    "en": "Insights",
+    "ar": "مقالات"
+  },
+  "Menu": {
+    "en": "Menu",
+    "ar": "القائمة"
+  },
+  "Let's Build": {
+    "en": "Let's Build",
+    "ar": "لنبدأ العمل"
+  },
+  "Ideas into real, working products": {
+    "en": "Ideas into real, working products",
+    "ar": "نحوّل الأفكار إلى منتجات حقيقية تعمل"
+  },
+  "View live site": {
+    "en": "View live site",
+    "ar": "عرض الموقع"
+  },
+  "Full site": {
+    "en": "Full site",
+    "ar": "الموقع الكامل"
+  },
+  "Get a free quote": {
+    "en": "Get a free quote",
+    "ar": "احصل على عرض سعر مجاني"
+  },
+  "Get a quote": {
+    "en": "Get a quote",
+    "ar": "اطلب عرض سعر"
+  },
+  "WhatsApp us": {
+    "en": "WhatsApp us",
+    "ar": "راسلنا على واتساب"
+  },
+  "Open WhatsApp": {
+    "en": "Open WhatsApp",
+    "ar": "افتح واتساب"
+  },
+  "Send my request": {
+    "en": "Send my request",
+    "ar": "أرسل طلبي"
+  },
+  "Start a conversation": {
+    "en": "Start a conversation",
+    "ar": "ابدأ محادثة"
+  },
+  "See what we build": {
+    "en": "See what we build",
+    "ar": "شاهد ما نبنيه"
+  },
+  "Read article": {
+    "en": "Read article",
+    "ar": "اقرأ المقال"
+  },
+  "Keep reading": {
+    "en": "Keep reading",
+    "ar": "اقرأ المزيد"
+  },
+  "View project": {
+    "en": "View project",
+    "ar": "عرض المشروع"
+  },
+  "Send message": {
+    "en": "Send message",
+    "ar": "إرسال الرسالة"
+  },
+  "ACCEPTING NEW PROJECTS": {
+    "en": "ACCEPTING NEW PROJECTS",
+    "ar": "نستقبل مشاريع جديدة"
+  },
+  "Custom software, built to fit how your business actually works.": {
+    "en": "Custom software, built to fit how your business actually works.",
+    "ar": "برمجيات مخصصة مبنية لتناسب طريقة عمل شركتك فعلياً."
+  },
+  "POS systems, dashboards, web platforms and automation. Fixed scope, clear pricing, and a working demo before you commit.": {
+    "en": "POS systems, dashboards, web platforms and automation. Fixed scope, clear pricing, and a working demo before you commit.",
+    "ar": "أنظمة نقاط البيع، لوحات التحكم، المنصات الإلكترونية والأتمتة. نطاق محدد، أسعار واضحة، ونسخة تجريبية تعمل قبل الالتزام."
+  },
+  "Fixed quote before we start": {
+    "en": "Fixed quote before we start",
+    "ar": "عرض سعر ثابت قبل البدء"
+  },
+  "Working demo first": {
+    "en": "Working demo first",
+    "ar": "نسخة تجريبية تعمل أولاً"
+  },
+  "Direct line to the developer": {
+    "en": "Direct line to the developer",
+    "ar": "تواصل مباشر مع المطور"
+  },
+  "Tell us what you need. We reply within one business day — no obligation.": {
+    "en": "Tell us what you need. We reply within one business day — no obligation.",
+    "ar": "أخبرنا بما تحتاجه. نرد خلال يوم عمل واحد — بدون أي التزام."
+  },
+  "Your name": {
+    "en": "Your name",
+    "ar": "الاسم"
+  },
+  "Full name": {
+    "en": "Full name",
+    "ar": "الاسم الكامل"
+  },
+  "Email or WhatsApp": {
+    "en": "Email or WhatsApp",
+    "ar": "البريد الإلكتروني أو واتساب"
+  },
+  "What do you need?": {
+    "en": "What do you need?",
+    "ar": "ما الذي تحتاجه؟"
+  },
+  "Project details": {
+    "en": "Project details",
+    "ar": "تفاصيل المشروع"
+  },
+  "A sentence or two about the problem you want to solve.": {
+    "en": "A sentence or two about the problem you want to solve.",
+    "ar": "جملة أو اثنتان عن المشكلة التي تريد حلها."
+  },
+  "No spam. Your details are only used to reply to this enquiry.": {
+    "en": "No spam. Your details are only used to reply to this enquiry.",
+    "ar": "بدون رسائل مزعجة. تُستخدم بياناتك للرد على هذا الطلب فقط."
+  },
+  "Request received": {
+    "en": "Request received",
+    "ar": "تم استلام طلبك"
+  },
+  "What we build most": {
+    "en": "What we build most",
+    "ar": "ما نبنيه أكثر"
+  },
+  "How it works": {
+    "en": "How it works",
+    "ar": "كيف نعمل"
+  },
+  "Common questions": {
+    "en": "Common questions",
+    "ar": "أسئلة شائعة"
+  },
+  "Tell us what you need built.": {
+    "en": "Tell us what you need built.",
+    "ar": "أخبرنا بما تريد بناءه."
+  },
+  "Free scoping call": {
+    "en": "Free scoping call",
+    "ar": "مكالمة تحديد النطاق مجاناً"
+  },
+  "Fixed quote": {
+    "en": "Fixed quote",
+    "ar": "عرض سعر ثابت"
+  },
+  "Working demo": {
+    "en": "Working demo",
+    "ar": "نسخة تجريبية تعمل"
+  },
+  "Launch & support": {
+    "en": "Launch & support",
+    "ar": "الإطلاق والدعم"
+  },
+  "POS & retail systems": {
+    "en": "POS & retail systems",
+    "ar": "أنظمة نقاط البيع والتجزئة"
+  },
+  "Websites & web apps": {
+    "en": "Websites & web apps",
+    "ar": "المواقع وتطبيقات الويب"
+  },
+  "Business dashboards": {
+    "en": "Business dashboards",
+    "ar": "لوحات تحكم الأعمال"
+  },
+  "Automation & integrations": {
+    "en": "Automation & integrations",
+    "ar": "الأتمتة والتكامل"
+  },
+  "Custom Software": {
+    "en": "Custom Software",
+    "ar": "برمجيات مخصصة"
+  },
+  "Web Development": {
+    "en": "Web Development",
+    "ar": "تطوير المواقع"
+  },
+  "Mobile Applications": {
+    "en": "Mobile Applications",
+    "ar": "تطبيقات الهاتف"
+  },
+  "Business Systems": {
+    "en": "Business Systems",
+    "ar": "أنظمة الأعمال"
+  },
+  "Automation": {
+    "en": "Automation",
+    "ar": "الأتمتة"
+  },
+  "IoT Solutions": {
+    "en": "IoT Solutions",
+    "ar": "حلول إنترنت الأشياء"
+  },
+  "AI Solutions": {
+    "en": "AI Solutions",
+    "ar": "حلول الذكاء الاصطناعي"
+  },
+  "API & Backend": {
+    "en": "API & Backend",
+    "ar": "واجهات البرمجة والخدمات الخلفية"
+  },
+  "Business systems built around your exact requirements.": {
+    "en": "Business systems built around your exact requirements.",
+    "ar": "أنظمة أعمال مبنية حسب متطلباتك بدقة."
+  },
+  "Fast, responsive and conversion-focused websites and web apps.": {
+    "en": "Fast, responsive and conversion-focused websites and web apps.",
+    "ar": "مواقع وتطبيقات ويب سريعة ومتوافقة مع كل الشاشات وموجهة للتحويل."
+  },
+  "POS, inventory, HR, dashboards and internal management tools.": {
+    "en": "POS, inventory, HR, dashboards and internal management tools.",
+    "ar": "نقاط البيع، المخزون، الموارد البشرية، لوحات التحكم وأدوات الإدارة الداخلية."
+  },
+  "Replace repetitive manual workflows with smart automation.": {
+    "en": "Replace repetitive manual workflows with smart automation.",
+    "ar": "استبدل العمل اليدوي المتكرر بأتمتة ذكية."
+  },
+  "Connect physical devices, sensors and software.": {
+    "en": "Connect physical devices, sensors and software.",
+    "ar": "اربط الأجهزة والمستشعرات بالبرمجيات."
+  },
+  "Integrate AI into real business workflows.": {
+    "en": "Integrate AI into real business workflows.",
+    "ar": "دمج الذكاء الاصطناعي في سير عمل حقيقي."
+  },
+  "Secure, scalable APIs and backend infrastructure.": {
+    "en": "Secure, scalable APIs and backend infrastructure.",
+    "ar": "واجهات برمجة آمنة وقابلة للتوسع وبنية خلفية متينة."
+  },
+  "Selected Work": {
+    "en": "Selected Work",
+    "ar": "أعمال مختارة"
+  },
+  "Our Work": {
+    "en": "Our Work",
+    "ar": "أعمالنا"
+  },
+  "What clients say": {
+    "en": "What clients say",
+    "ar": "ماذا يقول عملاؤنا"
+  },
+  "Frequently asked questions": {
+    "en": "Frequently asked questions",
+    "ar": "الأسئلة الشائعة"
+  },
+  "How we work": {
+    "en": "How we work",
+    "ar": "كيف نعمل"
+  },
+  "Why work with us": {
+    "en": "Why work with us",
+    "ar": "لماذا تعمل معنا"
+  },
+  "Have a project in mind?": {
+    "en": "Have a project in mind?",
+    "ar": "لديك مشروع في ذهنك؟"
+  },
+  "Tell us about your project.": {
+    "en": "Tell us about your project.",
+    "ar": "أخبرنا عن مشروعك."
+  },
+  "On this page": {
+    "en": "On this page",
+    "ar": "في هذه الصفحة"
+  },
+  "ON THIS PAGE": {
+    "en": "ON THIS PAGE",
+    "ar": "في هذه الصفحة"
+  },
+  "Need a system like this?": {
+    "en": "Need a system like this?",
+    "ar": "تحتاج نظاماً مثل هذا؟"
+  },
+  "Cairo, Egypt": {
+    "en": "Cairo, Egypt",
+    "ar": "القاهرة، مصر"
+  },
+  "Founder & Lead Developer": {
+    "en": "Founder & Lead Developer",
+    "ar": "المؤسس والمطور الرئيسي"
+  },
+  "Founder, KF Tech Solutions": {
+    "en": "Founder, KF Tech Solutions",
+    "ar": "مؤسس KF Tech Solutions"
+  },
+  "Custom software studio · Cairo, Egypt": {
+    "en": "Custom software studio · Cairo, Egypt",
+    "ar": "استوديو برمجيات مخصصة · القاهرة، مصر"
+  },
+  "Turning ideas into": {
+    "en": "Turning ideas into",
+    "ar": "نحوّل الأفكار إلى"
+  },
+  "real, working products.": {
+    "en": "real, working products.",
+    "ar": "منتجات حقيقية تعمل."
+  },
+  "We design and build custom software, websites, applications and digital systems that help businesses grow — not templates, real products engineered around how you actually work.": {
+    "en": "We design and build custom software, websites, applications and digital systems that help businesses grow — not templates, real products engineered around how you actually work.",
+    "ar": "نصمم ونبني برمجيات ومواقع وتطبيقات وأنظمة رقمية مخصصة تساعد الشركات على النمو — ليست قوالب جاهزة، بل منتجات حقيقية مهندسة حول طريقة عملك الفعلية."
+  },
+  "Start Your Project": {
+    "en": "Start Your Project",
+    "ar": "ابدأ مشروعك"
+  },
+  "Explore Our Work": {
+    "en": "Explore Our Work",
+    "ar": "استعرض أعمالنا"
+  },
+  "Idea": {
+    "en": "Idea",
+    "ar": "فكرة"
+  },
+  "Code": {
+    "en": "Code",
+    "ar": "برمجة"
+  },
+  "Product": {
+    "en": "Product",
+    "ar": "منتج"
+  },
+  "// SERVICES": {
+    "en": "// SERVICES",
+    "ar": "// الخدمات"
+  },
+  "// SOLUTIONS": {
+    "en": "// SOLUTIONS",
+    "ar": "// الحلول"
+  },
+  "// PROJECTS": {
+    "en": "// PROJECTS",
+    "ar": "// أعمالنا"
+  },
+  "// PROCESS": {
+    "en": "// PROCESS",
+    "ar": "// طريقة العمل"
+  },
+  "// ABOUT": {
+    "en": "// ABOUT",
+    "ar": "// من نحن"
+  },
+  "// FAQ": {
+    "en": "// FAQ",
+    "ar": "// الأسئلة الشائعة"
+  },
+  "Everything you need to build digital.": {
+    "en": "Everything you need to build digital.",
+    "ar": "كل ما تحتاجه لبناء حضورك الرقمي."
+  },
+  "Technology built around your business.": {
+    "en": "Technology built around your business.",
+    "ar": "تقنية مبنية حول أعمالك."
+  },
+  "From ideas to real products.": {
+    "en": "From ideas to real products.",
+    "ar": "من الأفكار إلى منتجات حقيقية."
+  },
+  "From idea to launch.": {
+    "en": "From idea to launch.",
+    "ar": "من الفكرة إلى الإطلاق."
+  },
+  "A partner, not just a developer.": {
+    "en": "A partner, not just a developer.",
+    "ar": "شريك، وليس مجرد مطوّر."
+  },
+  "We don't just write code. We build products.": {
+    "en": "We don't just write code. We build products.",
+    "ar": "نحن لا نكتب الأكواد فقط. نحن نبني منتجات."
+  },
+  "KF Tech Solutions is a software studio that partners with businesses to turn ideas into working products — from understanding the problem to engineering the system and supporting it after launch.": {
+    "en": "KF Tech Solutions is a software studio that partners with businesses to turn ideas into working products — from understanding the problem to engineering the system and supporting it after launch.",
+    "ar": "KF Tech Solutions استوديو برمجيات يعمل مع الشركات لتحويل الأفكار إلى منتجات تعمل — من فهم المشكلة إلى هندسة النظام ودعمه بعد الإطلاق."
+  },
+  "Questions, answered.": {
+    "en": "Questions, answered.",
+    "ar": "أسئلة وأجوبة."
+  },
+  "Have an idea?": {
+    "en": "Have an idea?",
+    "ar": "لديك فكرة؟"
+  },
+  "Let's build it.": {
+    "en": "Let's build it.",
+    "ar": "لنبنِها معاً."
+  },
+  "Tell us what you're trying to build and we'll help turn the idea into a real, working product.": {
+    "en": "Tell us what you're trying to build and we'll help turn the idea into a real, working product.",
+    "ar": "أخبرنا بما تريد بناءه وسنساعدك في تحويل الفكرة إلى منتج حقيقي يعمل."
+  },
+  "View all services": {
+    "en": "View all services",
+    "ar": "كل الخدمات"
+  },
+  "View all solutions": {
+    "en": "View all solutions",
+    "ar": "كل الحلول"
+  },
+  "View all projects": {
+    "en": "View all projects",
+    "ar": "كل الأعمال"
+  },
+  "More about us": {
+    "en": "More about us",
+    "ar": "المزيد عنا"
+  },
+  "Chat on WhatsApp": {
+    "en": "Chat on WhatsApp",
+    "ar": "تحدث على واتساب"
+  },
+  "WhatsApp Us": {
+    "en": "WhatsApp Us",
+    "ar": "راسلنا على واتساب"
+  },
+  "Custom Built": {
+    "en": "Custom Built",
+    "ar": "مخصص بالكامل"
+  },
+  "No unnecessary templates — every system fits your business.": {
+    "en": "No unnecessary templates — every system fits your business.",
+    "ar": "لا قوالب جاهزة — كل نظام مصمم ليناسب عملك."
+  },
+  "Business Focused": {
+    "en": "Business Focused",
+    "ar": "موجّه للأعمال"
+  },
+  "Technology designed around your actual workflow.": {
+    "en": "Technology designed around your actual workflow.",
+    "ar": "تقنية مصممة حول سير عملك الفعلي."
+  },
+  "Scalable": {
+    "en": "Scalable",
+    "ar": "قابل للتوسع"
+  },
+  "Built to grow with your business, not against it.": {
+    "en": "Built to grow with your business, not against it.",
+    "ar": "مبني لينمو مع عملك، لا ضده."
+  },
+  "Modern Technology": {
+    "en": "Modern Technology",
+    "ar": "تقنيات حديثة"
+  },
+  "Reliable and maintainable architecture.": {
+    "en": "Reliable and maintainable architecture.",
+    "ar": "بنية موثوقة وقابلة للصيانة."
+  },
+  "Restaurants": {
+    "en": "Restaurants",
+    "ar": "المطاعم"
+  },
+  "POS, ordering systems, inventory and live dashboards.": {
+    "en": "POS, ordering systems, inventory and live dashboards.",
+    "ar": "نقاط البيع، أنظمة الطلبات، المخزون ولوحات المتابعة الحية."
+  },
+  "Real Estate": {
+    "en": "Real Estate",
+    "ar": "العقارات"
+  },
+  "Property websites, listings, lead management and dashboards.": {
+    "en": "Property websites, listings, lead management and dashboards.",
+    "ar": "مواقع العقارات، القوائم، إدارة العملاء المحتملين ولوحات التحكم."
+  },
+  "Retail": {
+    "en": "Retail",
+    "ar": "التجزئة"
+  },
+  "Inventory, sales, customer management and reporting.": {
+    "en": "Inventory, sales, customer management and reporting.",
+    "ar": "المخزون، المبيعات، إدارة العملاء والتقارير."
+  },
+  "Startups": {
+    "en": "Startups",
+    "ar": "الشركات الناشئة"
+  },
+  "MVP development and scalable product architecture.": {
+    "en": "MVP development and scalable product architecture.",
+    "ar": "تطوير النسخة الأولى وبنية منتج قابلة للتوسع."
+  },
+  "Enterprises": {
+    "en": "Enterprises",
+    "ar": "المؤسسات"
+  },
+  "Custom internal systems and workflow automation.": {
+    "en": "Custom internal systems and workflow automation.",
+    "ar": "أنظمة داخلية مخصصة وأتمتة سير العمل."
+  },
+  "Restaurant POS Platform": {
+    "en": "Restaurant POS Platform",
+    "ar": "منصة نقاط بيع للمطاعم"
+  },
+  "Orders, kitchen, inventory and reporting in one connected system.": {
+    "en": "Orders, kitchen, inventory and reporting in one connected system.",
+    "ar": "الطلبات والمطبخ والمخزون والتقارير في نظام واحد متصل."
+  },
+  "Real Estate Portal": {
+    "en": "Real Estate Portal",
+    "ar": "بوابة عقارية"
+  },
+  "Listings, lead capture and an admin dashboard for agents.": {
+    "en": "Listings, lead capture and an admin dashboard for agents.",
+    "ar": "القوائم، جمع العملاء المحتملين، ولوحة تحكم للوسطاء."
+  },
+  "Retail Analytics Dashboard": {
+    "en": "Retail Analytics Dashboard",
+    "ar": "لوحة تحليلات التجزئة"
+  },
+  "Real-time sales, stock and customer insight for retail teams.": {
+    "en": "Real-time sales, stock and customer insight for retail teams.",
+    "ar": "مبيعات ومخزون ورؤى عن العملاء في الوقت الفعلي."
+  },
+  "AI Assistant App": {
+    "en": "AI Assistant App",
+    "ar": "تطبيق مساعد بالذكاء الاصطناعي"
+  },
+  "Cross-platform mobile app with an AI-powered workflow.": {
+    "en": "Cross-platform mobile app with an AI-powered workflow.",
+    "ar": "تطبيق موبايل متعدد المنصات بسير عمل مدعوم بالذكاء الاصطناعي."
+  },
+  "Workflow Automation Suite": {
+    "en": "Workflow Automation Suite",
+    "ar": "حزمة أتمتة سير العمل"
+  },
+  "Replaced repetitive manual steps with scheduled, reliable automation.": {
+    "en": "Replaced repetitive manual steps with scheduled, reliable automation.",
+    "ar": "استبدلنا الخطوات اليدوية المتكررة بأتمتة مجدولة وموثوقة."
+  },
+  "Connected Devices Dashboard": {
+    "en": "Connected Devices Dashboard",
+    "ar": "لوحة الأجهزة المتصلة"
+  },
+  "Live telemetry and control for sensors and physical devices.": {
+    "en": "Live telemetry and control for sensors and physical devices.",
+    "ar": "قياس وتحكم مباشر للمستشعرات والأجهزة."
+  },
+  "Discover": {
+    "en": "Discover",
+    "ar": "الاستكشاف"
+  },
+  "Understand the business, users and requirements.": {
+    "en": "Understand the business, users and requirements.",
+    "ar": "فهم العمل والمستخدمين والمتطلبات."
+  },
+  "Plan": {
+    "en": "Plan",
+    "ar": "التخطيط"
+  },
+  "Define architecture, features and user experience.": {
+    "en": "Define architecture, features and user experience.",
+    "ar": "تحديد البنية والميزات وتجربة المستخدم."
+  },
+  "Design": {
+    "en": "Design",
+    "ar": "التصميم"
+  },
+  "Create the interface and the product experience.": {
+    "en": "Create the interface and the product experience.",
+    "ar": "تصميم الواجهة وتجربة المنتج."
+  },
+  "Build": {
+    "en": "Build",
+    "ar": "التنفيذ"
+  },
+  "Develop, integrate and thoroughly test the product.": {
+    "en": "Develop, integrate and thoroughly test the product.",
+    "ar": "التطوير والتكامل والاختبار الشامل للمنتج."
+  },
+  "Launch": {
+    "en": "Launch",
+    "ar": "الإطلاق"
+  },
+  "Deploy, monitor and continuously improve.": {
+    "en": "Deploy, monitor and continuously improve.",
+    "ar": "النشر والمراقبة والتحسين المستمر."
+  },
+  "Built For Your Business": {
+    "en": "Built For Your Business",
+    "ar": "مبني لأعمالك"
+  },
+  "Every solution is customized around your workflow.": {
+    "en": "Every solution is customized around your workflow.",
+    "ar": "كل حل مخصص حول سير عملك."
+  },
+  "Clean & Maintainable": {
+    "en": "Clean & Maintainable",
+    "ar": "كود نظيف وقابل للصيانة"
+  },
+  "Code structured for long-term development.": {
+    "en": "Code structured for long-term development.",
+    "ar": "كود منظم للتطوير على المدى الطويل."
+  },
+  "Performance First": {
+    "en": "Performance First",
+    "ar": "الأداء أولاً"
+  },
+  "Fast websites and efficient applications.": {
+    "en": "Fast websites and efficient applications.",
+    "ar": "مواقع سريعة وتطبيقات فعالة."
+  },
+  "Scalable Architecture": {
+    "en": "Scalable Architecture",
+    "ar": "بنية قابلة للتوسع"
+  },
+  "Systems designed to grow with you.": {
+    "en": "Systems designed to grow with you.",
+    "ar": "أنظمة مصممة لتنمو معك."
+  },
+  "Clear Communication": {
+    "en": "Clear Communication",
+    "ar": "تواصل واضح"
+  },
+  "You always know what is being built and why.": {
+    "en": "You always know what is being built and why.",
+    "ar": "تعرف دائماً ما يتم بناؤه ولماذا."
+  },
+  "Long-Term Partnership": {
+    "en": "Long-Term Partnership",
+    "ar": "شراكة طويلة الأمد"
+  },
+  "Support does not stop when the project launches.": {
+    "en": "Support does not stop when the project launches.",
+    "ar": "الدعم لا يتوقف عند إطلاق المشروع."
+  },
+  "How much does custom software development cost?": {
+    "en": "How much does custom software development cost?",
+    "ar": "كم تكلفة تطوير برمجيات مخصصة؟"
+  },
+  "It depends on scope and complexity. After a short discovery call we give you a clear, itemized estimate — no vague packages.": {
+    "en": "It depends on scope and complexity. After a short discovery call we give you a clear, itemized estimate — no vague packages.",
+    "ar": "يعتمد على النطاق والتعقيد. بعد مكالمة استكشافية قصيرة نقدم تقديراً واضحاً ومفصلاً — بدون باقات غامضة."
+  },
+  "How long does it take to build a website?": {
+    "en": "How long does it take to build a website?",
+    "ar": "كم يستغرق بناء موقع إلكتروني؟"
+  },
+  "A focused marketing website typically takes 2–4 weeks. Web applications and custom systems run longer depending on features.": {
+    "en": "A focused marketing website typically takes 2–4 weeks. Web applications and custom systems run longer depending on features.",
+    "ar": "الموقع التعريفي المركّز يستغرق عادة 2–4 أسابيع. تطبيقات الويب والأنظمة المخصصة تستغرق وقتاً أطول حسب الميزات."
+  },
+  "Do you build software for businesses in Egypt?": {
+    "en": "Do you build software for businesses in Egypt?",
+    "ar": "هل تبنون برمجيات لشركات في مصر؟"
+  },
+  "Yes. We are based in Cairo and work with businesses across Egypt and internationally.": {
+    "en": "Yes. We are based in Cairo and work with businesses across Egypt and internationally.",
+    "ar": "نعم. مقرنا القاهرة ونعمل مع شركات في مصر وخارجها."
+  },
+  "Can you build a custom POS system?": {
+    "en": "Can you build a custom POS system?",
+    "ar": "هل يمكنكم بناء نظام نقاط بيع مخصص؟"
+  },
+  "Absolutely. POS, inventory, kitchen displays and management dashboards are a core specialty.": {
+    "en": "Absolutely. POS, inventory, kitchen displays and management dashboards are a core specialty.",
+    "ar": "بالتأكيد. نقاط البيع والمخزون وشاشات المطبخ ولوحات الإدارة من تخصصاتنا الأساسية."
+  },
+  "Can you maintain an existing website or software?": {
+    "en": "Can you maintain an existing website or software?",
+    "ar": "هل يمكنكم صيانة موقع أو برنامج قائم؟"
+  },
+  "Yes. We can audit, fix, extend and maintain existing projects, or take over a codebase from a previous team.": {
+    "en": "Yes. We can audit, fix, extend and maintain existing projects, or take over a codebase from a previous team.",
+    "ar": "نعم. يمكننا تقييم وإصلاح وتوسيع وصيانة المشاريع القائمة، أو تسلّم الكود من فريق سابق."
+  },
+  "Can you integrate APIs and payment gateways?": {
+    "en": "Can you integrate APIs and payment gateways?",
+    "ar": "هل تدمجون واجهات البرمجة وبوابات الدفع؟"
+  },
+  "Yes. We integrate payment gateways, third-party APIs, messaging, maps and analytics as part of most projects.": {
+    "en": "Yes. We integrate payment gateways, third-party APIs, messaging, maps and analytics as part of most projects.",
+    "ar": "نعم. ندمج بوابات الدفع وواجهات الطرف الثالث والمراسلة والخرائط والتحليلات في معظم المشاريع."
+  },
+  "Software development services that ship real products.": {
+    "en": "Software development services that ship real products.",
+    "ar": "خدمات تطوير برمجيات تُنتج منتجات حقيقية."
+  },
+  "From a single web app to a full business platform, we cover the whole stack — so you get one accountable partner from idea to launch and beyond.": {
+    "en": "From a single web app to a full business platform, we cover the whole stack — so you get one accountable partner from idea to launch and beyond.",
+    "ar": "من تطبيق ويب واحد إلى منصة أعمال كاملة، نغطي كل الطبقات — لتحصل على شريك واحد مسؤول من الفكرة إلى الإطلاق وما بعده."
+  },
+  "Not sure which service you need?": {
+    "en": "Not sure which service you need?",
+    "ar": "غير متأكد من الخدمة التي تحتاجها؟"
+  },
+  "Tell us the problem you're trying to solve and we'll recommend the right approach.": {
+    "en": "Tell us the problem you're trying to solve and we'll recommend the right approach.",
+    "ar": "أخبرنا بالمشكلة التي تريد حلها وسنقترح الطريقة المناسبة."
+  },
+  "See solutions by industry": {
+    "en": "See solutions by industry",
+    "ar": "الحلول حسب القطاع"
+  },
+  "Business systems built around your exact requirements, not a template stretched to fit.": {
+    "en": "Business systems built around your exact requirements, not a template stretched to fit.",
+    "ar": "أنظمة أعمال مبنية حسب متطلباتك بدقة، لا قالب جاهز يُمدّ ليناسبك."
+  },
+  "Fast, responsive, conversion-focused websites and web applications.": {
+    "en": "Fast, responsive, conversion-focused websites and web applications.",
+    "ar": "مواقع وتطبيقات ويب سريعة ومتوافقة مع كل الشاشات وموجهة للتحويل."
+  },
+  "Modern cross-platform apps for iOS and Android connected to real backends.": {
+    "en": "Modern cross-platform apps for iOS and Android connected to real backends.",
+    "ar": "تطبيقات حديثة متعددة المنصات لـ iOS و Android متصلة بخدمات خلفية حقيقية."
+  },
+  "POS, inventory, HR, dashboards and internal management systems.": {
+    "en": "POS, inventory, HR, dashboards and internal management systems.",
+    "ar": "نقاط البيع، المخزون، الموارد البشرية، لوحات التحكم وأنظمة الإدارة الداخلية."
+  },
+  "Replace repetitive manual workflows with smart, reliable automation.": {
+    "en": "Replace repetitive manual workflows with smart, reliable automation.",
+    "ar": "استبدل العمل اليدوي المتكرر بأتمتة ذكية وموثوقة."
+  },
+  "Connect physical devices, sensors and software into one system.": {
+    "en": "Connect physical devices, sensors and software into one system.",
+    "ar": "اربط الأجهزة والمستشعرات والبرمجيات في نظام واحد."
+  },
+  "Integrate AI into real business workflows where it adds genuine value.": {
+    "en": "Integrate AI into real business workflows where it adds genuine value.",
+    "ar": "دمج الذكاء الاصطناعي في سير عمل حقيقي حيث يضيف قيمة فعلية."
+  },
+  "Secure, scalable APIs and backend infrastructure your product runs on.": {
+    "en": "Secure, scalable APIs and backend infrastructure your product runs on.",
+    "ar": "واجهات برمجة آمنة وقابلة للتوسع وبنية خلفية يعمل عليها منتجك."
+  },
+  "We start with your workflow and the outcome you need, then build software to match. Here's how that looks across the industries we work with.": {
+    "en": "We start with your workflow and the outcome you need, then build software to match. Here's how that looks across the industries we work with.",
+    "ar": "نبدأ من سير عملك والنتيجة التي تحتاجها، ثم نبني البرمجيات المناسبة. هكذا يبدو ذلك في القطاعات التي نعمل بها."
+  },
+  "WHAT WE BUILD": {
+    "en": "WHAT WE BUILD",
+    "ar": "ما نبنيه"
+  },
+  "Don't see your industry?": {
+    "en": "Don't see your industry?",
+    "ar": "لا ترى قطاعك؟"
+  },
+  "The approach is the same for any business: understand the workflow, build the right system. Let's talk about yours.": {
+    "en": "The approach is the same for any business: understand the workflow, build the right system. Let's talk about yours.",
+    "ar": "الطريقة نفسها مع أي نشاط: نفهم سير العمل، ونبني النظام المناسب. لنتحدث عن نشاطك."
+  },
+  "See our work": {
+    "en": "See our work",
+    "ar": "شاهد أعمالنا"
+  },
+  "Run every branch from one connected system — take orders faster, keep stock accurate, and see performance in real time.": {
+    "en": "Run every branch from one connected system — take orders faster, keep stock accurate, and see performance in real time.",
+    "ar": "أدر كل فروعك من نظام واحد متصل — استلم الطلبات أسرع، وحافظ على دقة المخزون، وتابع الأداء لحظياً."
+  },
+  "Turn listings into leads with fast property sites and a back office that keeps every enquiry organised.": {
+    "en": "Turn listings into leads with fast property sites and a back office that keeps every enquiry organised.",
+    "ar": "حوّل القوائم إلى عملاء محتملين بمواقع عقارية سريعة ونظام إداري ينظم كل استفسار."
+  },
+  "Know exactly what is selling, what is in stock and who your best customers are — across every location.": {
+    "en": "Know exactly what is selling, what is in stock and who your best customers are — across every location.",
+    "ar": "اعرف بدقة ما يُباع وما هو متوفر ومن هم أفضل عملائك — في كل الفروع."
+  },
+  "Get to market fast with an MVP built on architecture that can scale when the traction arrives.": {
+    "en": "Get to market fast with an MVP built on architecture that can scale when the traction arrives.",
+    "ar": "انطلق للسوق سريعاً بنسخة أولى مبنية على بنية تتوسع عند وصول النمو."
+  },
+  "Replace spreadsheets and disconnected tools with custom internal systems and automation that fit your processes.": {
+    "en": "Replace spreadsheets and disconnected tools with custom internal systems and automation that fit your processes.",
+    "ar": "استبدل جداول البيانات والأدوات المتفرقة بأنظمة داخلية مخصصة وأتمتة تناسب عملياتك."
+  },
+  "Sample layouts · real screenshots drop in later": {
+    "en": "Sample layouts · real screenshots drop in later",
+    "ar": "تصاميم توضيحية · الصور الحقيقية تُضاف لاحقاً"
+  },
+  "The layouts below show how we present delivered work. Each slot is ready for a real project's screenshots, results and technologies.": {
+    "en": "The layouts below show how we present delivered work. Each slot is ready for a real project's screenshots, results and technologies.",
+    "ar": "التصاميم أدناه توضح كيف نعرض الأعمال المنجزة. كل مساحة جاهزة لصور ونتائج وتقنيات مشروع حقيقي."
+  },
+  "A restaurant chain, from paper tickets to one connected system.": {
+    "en": "A restaurant chain, from paper tickets to one connected system.",
+    "ar": "سلسلة مطاعم، من التذاكر الورقية إلى نظام واحد متصل."
+  },
+  "Illustrative example. We publish metrics only from real, delivered projects.": {
+    "en": "Illustrative example. We publish metrics only from real, delivered projects.",
+    "ar": "مثال توضيحي. ننشر الأرقام من مشاريع حقيقية منجزة فقط."
+  },
+  "Your project could be next.": {
+    "en": "Your project could be next.",
+    "ar": "قد يكون مشروعك التالي."
+  },
+  "Tell us what you're building and we'll turn it into a real, working product.": {
+    "en": "Tell us what you're building and we'll turn it into a real, working product.",
+    "ar": "أخبرنا بما تبنيه وسنحوله إلى منتج حقيقي يعمل."
+  },
+  "Sample layout": {
+    "en": "Sample layout",
+    "ar": "تصميم توضيحي"
+  },
+  "The Challenge": {
+    "en": "The Challenge",
+    "ar": "التحدي"
+  },
+  "The Solution": {
+    "en": "The Solution",
+    "ar": "الحل"
+  },
+  "The Technology": {
+    "en": "The Technology",
+    "ar": "التقنيات"
+  },
+  "The Result": {
+    "en": "The Result",
+    "ar": "النتيجة"
+  },
+  "View": {
+    "en": "View",
+    "ar": "عرض"
+  },
+  "KF Tech Solutions is a software studio founded on a simple idea: businesses don't need more tools, they need the right system built around how they actually work.": {
+    "en": "KF Tech Solutions is a software studio founded on a simple idea: businesses don't need more tools, they need the right system built around how they actually work.",
+    "ar": "KF Tech Solutions استوديو برمجيات قام على فكرة بسيطة: الشركات لا تحتاج أدوات أكثر، بل النظام الصحيح المبني حول طريقة عملها الفعلية."
+  },
+  "We partner with clients through the whole journey — understanding the problem, designing the experience, engineering the system, and supporting it long after launch. Based in Cairo, we work with businesses across Egypt and internationally.": {
+    "en": "We partner with clients through the whole journey — understanding the problem, designing the experience, engineering the system, and supporting it long after launch. Based in Cairo, we work with businesses across Egypt and internationally.",
+    "ar": "نرافق عملاءنا في الرحلة كاملة — فهم المشكلة، تصميم التجربة، هندسة النظام، ودعمه بعد الإطلاق بوقت طويل. مقرنا القاهرة ونعمل مع شركات في مصر وخارجها."
+  },
+  "Kirollos Fayez · Founder": {
+    "en": "Kirollos Fayez · Founder",
+    "ar": "كيرلس فايز · المؤسس"
+  },
+  "// HOW WE WORK": {
+    "en": "// HOW WE WORK",
+    "ar": "// كيف نعمل"
+  },
+  "Let's build something real.": {
+    "en": "Let's build something real.",
+    "ar": "لنبنِ شيئاً حقيقياً."
+  },
+  "Have an idea or a problem to solve? We'd love to hear about it.": {
+    "en": "Have an idea or a problem to solve? We'd love to hear about it.",
+    "ar": "لديك فكرة أو مشكلة تريد حلها؟ يسعدنا أن نسمعها."
+  },
+  "Share a few details and we'll get back to you with next steps — usually within one business day. Prefer to talk now? Reach us directly.": {
+    "en": "Share a few details and we'll get back to you with next steps — usually within one business day. Prefer to talk now? Reach us directly.",
+    "ar": "شاركنا بعض التفاصيل وسنعود إليك بالخطوات التالية — عادة خلال يوم عمل واحد. تفضل التحدث الآن؟ تواصل معنا مباشرة."
+  },
+  "WhatsApp": {
+    "en": "WhatsApp",
+    "ar": "واتساب"
+  },
+  "Email": {
+    "en": "Email",
+    "ar": "البريد الإلكتروني"
+  },
+  "Based in": {
+    "en": "Based in",
+    "ar": "المقر"
+  },
+  "Cairo, Egypt · working worldwide": {
+    "en": "Cairo, Egypt · working worldwide",
+    "ar": "القاهرة، مصر · نعمل حول العالم"
+  },
+  "Request sent": {
+    "en": "Request sent",
+    "ar": "تم إرسال الطلب"
+  },
+  "Thanks for reaching out. We'll review your project and get back to you shortly.": {
+    "en": "Thanks for reaching out. We'll review your project and get back to you shortly.",
+    "ar": "شكراً لتواصلك. سنراجع مشروعك ونعود إليك قريباً."
+  },
+  "Name *": {
+    "en": "Name *",
+    "ar": "الاسم *"
+  },
+  "Please enter your name.": {
+    "en": "Please enter your name.",
+    "ar": "يرجى إدخال اسمك."
+  },
+  "Company": {
+    "en": "Company",
+    "ar": "الشركة"
+  },
+  "Email *": {
+    "en": "Email *",
+    "ar": "البريد الإلكتروني *"
+  },
+  "Enter a valid email.": {
+    "en": "Enter a valid email.",
+    "ar": "أدخل بريداً إلكترونياً صحيحاً."
+  },
+  "Phone / WhatsApp": {
+    "en": "Phone / WhatsApp",
+    "ar": "الهاتف / واتساب"
+  },
+  "Project type": {
+    "en": "Project type",
+    "ar": "نوع المشروع"
+  },
+  "Select...": {
+    "en": "Select...",
+    "ar": "اختر..."
+  },
+  "Custom software": {
+    "en": "Custom software",
+    "ar": "برمجيات مخصصة"
+  },
+  "Website / web app": {
+    "en": "Website / web app",
+    "ar": "موقع / تطبيق ويب"
+  },
+  "Mobile application": {
+    "en": "Mobile application",
+    "ar": "تطبيق موبايل"
+  },
+  "Business system / POS": {
+    "en": "Business system / POS",
+    "ar": "نظام أعمال / نقاط بيع"
+  },
+  "Automation / AI": {
+    "en": "Automation / AI",
+    "ar": "أتمتة / ذكاء اصطناعي"
+  },
+  "Other": {
+    "en": "Other",
+    "ar": "أخرى"
+  },
+  "Budget range": {
+    "en": "Budget range",
+    "ar": "الميزانية التقديرية"
+  },
+  "Not sure yet": {
+    "en": "Not sure yet",
+    "ar": "لم أحدد بعد"
+  },
+  "Project description *": {
+    "en": "Project description *",
+    "ar": "وصف المشروع *"
+  },
+  "Tell us a little about your project.": {
+    "en": "Tell us a little about your project.",
+    "ar": "أخبرنا قليلاً عن مشروعك."
+  },
+  "Send Project Request": {
+    "en": "Send Project Request",
+    "ar": "إرسال طلب المشروع"
+  },
+  "We'll never share your details. Typical reply within one business day.": {
+    "en": "We'll never share your details. Typical reply within one business day.",
+    "ar": "لن نشارك بياناتك أبداً. الرد عادة خلال يوم عمل واحد."
+  },
+  "Common questions.": {
+    "en": "Common questions.",
+    "ar": "أسئلة شائعة."
+  },
+  "Do you develop mobile applications?": {
+    "en": "Do you develop mobile applications?",
+    "ar": "هل تطورون تطبيقات موبايل؟"
+  },
+  "Yes — modern cross-platform apps for iOS and Android, connected to secure backends and real-time data.": {
+    "en": "Yes — modern cross-platform apps for iOS and Android, connected to secure backends and real-time data.",
+    "ar": "نعم — تطبيقات حديثة متعددة المنصات لـ iOS و Android متصلة بخدمات خلفية آمنة وبيانات لحظية."
+  },
+  "Do you provide hosting and deployment?": {
+    "en": "Do you provide hosting and deployment?",
+    "ar": "هل توفرون الاستضافة والنشر؟"
+  },
+  "Yes. We handle deployment, hosting setup and monitoring, and can manage everything for you after launch.": {
+    "en": "Yes. We handle deployment, hosting setup and monitoring, and can manage everything for you after launch.",
+    "ar": "نعم. نتولى النشر وإعداد الاستضافة والمراقبة، ويمكننا إدارة كل شيء بعد الإطلاق."
+  },
+  "Practical notes on software, automation and running a better business.": {
+    "en": "Practical notes on software, automation and running a better business.",
+    "ar": "ملاحظات عملية عن البرمجيات والأتمتة وإدارة أعمال أفضل."
+  },
+  "What we learn building systems for restaurants, retailers, clinics and agencies — written for owners, not engineers.": {
+    "en": "What we learn building systems for restaurants, retailers, clinics and agencies — written for owners, not engineers.",
+    "ar": "ما نتعلمه من بناء أنظمة للمطاعم والمتاجر والعيادات والوكالات — مكتوب لأصحاب الأعمال، لا للمهندسين."
+  },
+  "FEATURED": {
+    "en": "FEATURED",
+    "ar": "مميز"
+  },
+  "BUSINESS SYSTEMS · 8 MIN READ": {
+    "en": "BUSINESS SYSTEMS · 8 MIN READ",
+    "ar": "أنظمة الأعمال · قراءة 8 دقائق"
+  },
+  "How a POS system pays for itself in six months": {
+    "en": "How a POS system pays for itself in six months",
+    "ar": "كيف يعيد نظام نقاط البيع تكلفته في ستة أشهر"
+  },
+  "Most owners think of a POS as a till with a screen. The real return comes from what it removes: stock guesswork, end-of-day reconciliation, and orders lost between the floor and the kitchen.": {
+    "en": "Most owners think of a POS as a till with a screen. The real return comes from what it removes: stock guesswork, end-of-day reconciliation, and orders lost between the floor and the kitchen.",
+    "ar": "يعتقد معظم أصحاب الأعمال أن نقاط البيع مجرد صندوق نقد بشاشة. العائد الحقيقي يأتي من الأشياء التي يلغيها: تخمين المخزون، تسوية نهاية اليوم، والطلبات التي تضيع بين الصالة والمطبخ."
+  },
+  "Tell us what you are trying to fix. We will tell you honestly whether software is the right answer.": {
+    "en": "Tell us what you are trying to fix. We will tell you honestly whether software is the right answer.",
+    "ar": "أخبرنا بما تريد إصلاحه. سنخبرك بصراحة إن كانت البرمجيات هي الحل الصحيح."
+  },
+  "Custom software vs off-the-shelf: how to choose": {
+    "en": "Custom software vs off-the-shelf: how to choose",
+    "ar": "برمجيات مخصصة أم جاهزة: كيف تختار"
+  },
+  "A simple test for whether to buy a ready-made tool or build something that fits your process exactly.": {
+    "en": "A simple test for whether to buy a ready-made tool or build something that fits your process exactly.",
+    "ar": "اختبار بسيط لتحديد ما إذا كنت تشتري أداة جاهزة أم تبني شيئاً يناسب عملياتك بدقة."
+  },
+  "Seven workflows every retail business should automate": {
+    "en": "Seven workflows every retail business should automate",
+    "ar": "سبع عمليات يجب على كل متجر أتمتتها"
+  },
+  "Stock counts, reorder alerts, end-of-day reports. The unglamorous tasks that quietly eat a week each month.": {
+    "en": "Stock counts, reorder alerts, end-of-day reports. The unglamorous tasks that quietly eat a week each month.",
+    "ar": "جرد المخزون، تنبيهات إعادة الطلب، تقارير نهاية اليوم. مهام غير براقة تستهلك أسبوعاً كل شهر."
+  },
+  "What does a web app actually cost to build?": {
+    "en": "What does a web app actually cost to build?",
+    "ar": "ما تكلفة بناء تطبيق ويب فعلياً؟"
+  },
+  "Where the money goes on a real project, and which decisions move the number most.": {
+    "en": "Where the money goes on a real project, and which decisions move the number most.",
+    "ar": "إلى أين تذهب الأموال في مشروع حقيقي، وأي القرارات تحرك الرقم أكثر."
+  },
+  "A practical guide to adding AI to your business": {
+    "en": "A practical guide to adding AI to your business",
+    "ar": "دليل عملي لإضافة الذكاء الاصطناعي إلى عملك"
+  },
+  "Skip the hype. Three places AI reliably earns its keep, and three where it does not.": {
+    "en": "Skip the hype. Three places AI reliably earns its keep, and three where it does not.",
+    "ar": "تجاوز الضجيج. ثلاثة مواضع يثبت فيها الذكاء الاصطناعي جدواه، وثلاثة لا."
+  },
+  "Cutting a restaurant’s stock waste by a third": {
+    "en": "Cutting a restaurant’s stock waste by a third",
+    "ar": "تقليل هدر مخزون مطعم بمقدار الثلث"
+  },
+  "How connecting the till to the kitchen changed what one café ordered every week.": {
+    "en": "How connecting the till to the kitchen changed what one café ordered every week.",
+    "ar": "كيف غيّر ربط الكاشير بالمطبخ ما يطلبه أحد المقاهي كل أسبوع."
+  },
+  "Your dashboard is lying to you": {
+    "en": "Your dashboard is lying to you",
+    "ar": "لوحة التحكم الخاصة بك تكذب عليك"
+  },
+  "Most business dashboards report activity, not outcomes. Here is how to tell the difference.": {
+    "en": "Most business dashboards report activity, not outcomes. Here is how to tell the difference.",
+    "ar": "معظم لوحات التحكم تقيس النشاط لا النتائج. هكذا تعرف الفرق."
+  },
+  "Case Study": {
+    "en": "Case Study",
+    "ar": "دراسة حالة"
+  },
+  "POS ROI": {
+    "en": "POS ROI",
+    "ar": "عائد نقاط البيع"
+  },
+  "BUSINESS SYSTEMS": {
+    "en": "BUSINESS SYSTEMS",
+    "ar": "أنظمة الأعمال"
+  },
+  "8 MIN READ": {
+    "en": "8 MIN READ",
+    "ar": "قراءة 8 دقائق"
+  },
+  "Kirollos Fayez": {
+    "en": "Kirollos Fayez",
+    "ar": "كيرلس فايز"
+  },
+  "A modern point-of-sale terminal is the data entry point for the whole business.": {
+    "en": "A modern point-of-sale terminal is the data entry point for the whole business.",
+    "ar": "جهاز نقاط البيع الحديث هو نقطة إدخال البيانات للعمل بأكمله."
+  },
+  "When a café owner asks us what a point-of-sale system costs, the honest answer is that the licence fee is the least interesting number in the conversation. What matters is the gap between what the business thinks it sells and what it actually sells.": {
+    "en": "When a café owner asks us what a point-of-sale system costs, the honest answer is that the licence fee is the least interesting number in the conversation. What matters is the gap between what the business thinks it sells and what it actually sells.",
+    "ar": "عندما يسألنا صاحب مقهى عن تكلفة نظام نقاط البيع، الإجابة الصادقة أن رسوم الترخيص هي أقل رقم مهم في الحديث. المهم هو الفارق بين ما يعتقد العمل أنه يبيعه وما يبيعه فعلاً."
+  },
+  "That gap has a price. In the kitchens we have worked with, it usually shows up in three places: over-ordering on stock that spoils, staff hours spent reconciling paper tickets at midnight, and orders that reach the kitchen wrong or not at all.": {
+    "en": "That gap has a price. In the kitchens we have worked with, it usually shows up in three places: over-ordering on stock that spoils, staff hours spent reconciling paper tickets at midnight, and orders that reach the kitchen wrong or not at all.",
+    "ar": "لهذا الفارق ثمن. في المطابخ التي عملنا بها، يظهر عادة في ثلاثة مواضع: الإفراط في طلب مخزون يفسد، ساعات عمل تُهدر في تسوية التذاكر الورقية منتصف الليل، وطلبات تصل للمطبخ خطأ أو لا تصل."
+  },
+  "1. Stock stops being a guess": {
+    "en": "1. Stock stops being a guess",
+    "ar": "١. المخزون يتوقف عن كونه تخميناً"
+  },
+  "A till that records every sale against a recipe knows how much chicken left the building today. Connect that to your supplier order sheet and the weekly guess becomes arithmetic. One client cut waste by roughly a third in the first quarter simply by ordering to actual consumption instead of to habit.": {
+    "en": "A till that records every sale against a recipe knows how much chicken left the building today. Connect that to your supplier order sheet and the weekly guess becomes arithmetic. One client cut waste by roughly a third in the first quarter simply by ordering to actual consumption instead of to habit.",
+    "ar": "الكاشير الذي يسجل كل بيعة مقابل وصفة يعرف كم دجاجاً خرج اليوم. اربط ذلك بورقة طلبات الموردين ويتحول التخمين الأسبوعي إلى حساب. أحد العملاء قلّص الهدر بنحو الثلث في الربع الأول بمجرد الطلب حسب الاستهلاك الفعلي بدلاً من العادة."
+  },
+  "We were ordering the same amount every week regardless of what we sold. The system just showed us the difference.": {
+    "en": "We were ordering the same amount every week regardless of what we sold. The system just showed us the difference.",
+    "ar": "كنا نطلب الكمية نفسها كل أسبوع بغض النظر عن مبيعاتنا. النظام أظهر لنا الفارق فقط."
+  },
+  "— Mina Adel, Owner, Café Delight": {
+    "en": "— Mina Adel, Owner, Café Delight",
+    "ar": "— مينا عادل، صاحب Café Delight"
+  },
+  "2. The midnight reconciliation disappears": {
+    "en": "2. The midnight reconciliation disappears",
+    "ar": "٢. تسوية منتصف الليل تختفي"
+  },
+  "Closing a till by hand takes a manager between twenty and forty minutes a night. Over a month that is a full working shift spent producing a number the system could have produced instantly, and more accurately. This is the easiest saving to calculate and the one owners underestimate most.": {
+    "en": "Closing a till by hand takes a manager between twenty and forty minutes a night. Over a month that is a full working shift spent producing a number the system could have produced instantly, and more accurately. This is the easiest saving to calculate and the one owners underestimate most.",
+    "ar": "إغلاق الكاشير يدوياً يستغرق من المدير بين عشرين وأربعين دقيقة كل ليلة. على مدى شهر، هذا وردية عمل كاملة لإنتاج رقم كان النظام سيخرجه فوراً وبدقة أكبر. هذا أسهل وفر يمكن حسابه وأكثر ما يستهين به أصحاب الأعمال."
+  },
+  "3. Orders stop getting lost": {
+    "en": "3. Orders stop getting lost",
+    "ar": "٣. الطلبات تتوقف عن الضياع"
+  },
+  "A kitchen display screen removes the handwriting problem, the lost-ticket problem and the who-ordered-what problem in one move. Fewer remade dishes means lower food cost and shorter waits, which shows up in reviews long before it shows up in the accounts.": {
+    "en": "A kitchen display screen removes the handwriting problem, the lost-ticket problem and the who-ordered-what problem in one move. Fewer remade dishes means lower food cost and shorter waits, which shows up in reviews long before it shows up in the accounts.",
+    "ar": "شاشة المطبخ تلغي مشكلة الكتابة اليدوية ومشكلة التذاكر المفقودة ومشكلة من طلب ماذا في خطوة واحدة. أطباق أقل يُعاد تحضيرها يعني تكلفة طعام أقل وانتظاراً أقصر، وهذا يظهر في التقييمات قبل أن يظهر في الحسابات."
+  },
+  "THE ROUGH MATH": {
+    "en": "THE ROUGH MATH",
+    "ar": "الحساب التقريبي"
+  },
+  "Where it goes wrong": {
+    "en": "Where it goes wrong",
+    "ar": "أين يخطئ الأمر"
+  },
+  "less stock waste in the first quarter": {
+    "en": "less stock waste in the first quarter",
+    "ar": "هدر مخزون أقل في الربع الأول"
+  },
+  "of manager time saved per month": {
+    "en": "of manager time saved per month",
+    "ar": "من وقت المدير موفَّر شهرياً"
+  },
+  "typical payback on a mid-size setup": {
+    "en": "typical payback on a mid-size setup",
+    "ar": "فترة استرداد نموذجية لنظام متوسط"
+  },
+  "Turning ideas into real, working products. Custom software, web, mobile and business systems — built in Cairo, delivered worldwide.": {
+    "en": "Turning ideas into real, working products. Custom software, web, mobile and business systems — built in Cairo, delivered worldwide.",
+    "ar": "نحوّل الأفكار إلى منتجات حقيقية تعمل. برمجيات مخصصة وويب وموبايل وأنظمة أعمال — تُبنى في القاهرة وتُسلّم حول العالم."
+  },
+  "Turning ideas into real, working products.": {
+    "en": "Turning ideas into real, working products.",
+    "ar": "نحوّل الأفكار إلى منتجات حقيقية تعمل."
+  },
+  "Legal": {
+    "en": "Legal",
+    "ar": "الشؤون القانونية"
+  },
+  "Privacy Policy": {
+    "en": "Privacy Policy",
+    "ar": "سياسة الخصوصية"
+  },
+  "Terms of Service": {
+    "en": "Terms of Service",
+    "ar": "شروط الخدمة"
+  },
+  "Get in touch": {
+    "en": "Get in touch",
+    "ar": "تواصل معنا"
+  },
+  "© 2026 KF Tech Solutions. All rights reserved.": {
+    "en": "© 2026 KF Tech Solutions. All rights reserved.",
+    "ar": "© 2026 KF Tech Solutions. جميع الحقوق محفوظة."
+  },
+  "// FEATURED CASE STUDY": {
+    "en": "// FEATURED CASE STUDY",
+    "ar": "// دراسة حالة مميزة"
+  },
+  "Under $2k": {
+    "en": "Under $2k",
+    "ar": "أقل من 2000 دولار"
+  },
+  "It depends on scope and complexity. After a short discovery call we give you a clear, itemized estimate — no vague packages. Small projects start low; larger systems are quoted per feature set.": {
+    "en": "It depends on scope and complexity. After a short discovery call we give you a clear, itemized estimate — no vague packages. Small projects start low; larger systems are quoted per feature set.",
+    "ar": "يعتمد على النطاق والتعقيد. بعد مكالمة استكشافية قصيرة نقدم تقديراً واضحاً ومفصلاً — بدون باقات غامضة. المشاريع الصغيرة تبدأ بأسعار منخفضة، والأنظمة الأكبر تُقدَّر حسب مجموعة الميزات."
+  },
+  "A focused marketing website typically takes 2–4 weeks. Web applications and custom systems run longer depending on features. We share a realistic timeline before we start.": {
+    "en": "A focused marketing website typically takes 2–4 weeks. Web applications and custom systems run longer depending on features. We share a realistic timeline before we start.",
+    "ar": "الموقع التعريفي المركّز يستغرق عادة 2–4 أسابيع. تطبيقات الويب والأنظمة المخصصة تستغرق وقتاً أطول حسب الميزات. نشارك جدولاً زمنياً واقعياً قبل البدء."
+  },
+  "Yes. We are based in Cairo and work with businesses across Egypt and internationally, both remotely and on-site where needed.": {
+    "en": "Yes. We are based in Cairo and work with businesses across Egypt and internationally, both remotely and on-site where needed.",
+    "ar": "نعم. مقرنا القاهرة ونعمل مع شركات في مصر وخارجها، عن بُعد وفي الموقع عند الحاجة."
+  },
+  "Absolutely. POS, inventory, kitchen displays and management dashboards are a core specialty — built around how your business actually operates.": {
+    "en": "Absolutely. POS, inventory, kitchen displays and management dashboards are a core specialty — built around how your business actually operates.",
+    "ar": "بالتأكيد. نقاط البيع والمخزون وشاشات المطبخ ولوحات الإدارة من تخصصاتنا الأساسية — مبنية حول طريقة عمل نشاطك الفعلية."
+  },
+  "A POS only earns this back if the staff actually use it the way it was designed. The projects that stall are the ones where the software was chosen before anyone watched a busy Friday service. Map the real process first, then pick or build the system around it.": {
+    "en": "A POS only earns this back if the staff actually use it the way it was designed. The projects that stall are the ones where the software was chosen before anyone watched a busy Friday service. Map the real process first, then pick or build the system around it.",
+    "ar": "لا يعيد نظام نقاط البيع تكلفته إلا إذا استخدمه الفريق بالطريقة التي صُمم لها. المشاريع التي تتعطل هي تلك التي اختيرت فيها البرمجيات قبل أن يشاهد أحد وردية جمعة مزدحمة. ارسم العملية الحقيقية أولاً، ثم اختر أو ابنِ النظام حولها."
+  },
+  "If you are weighing this up for your own business, the useful first step is not a demo. It is one week of writing down where time and stock actually go.": {
+    "en": "If you are weighing this up for your own business, the useful first step is not a demo. It is one week of writing down where time and stock actually go.",
+    "ar": "إذا كنت تدرس هذا لنشاطك، فالخطوة الأولى المفيدة ليست عرضاً تجريبياً، بل أسبوع واحد تسجل فيه إلى أين يذهب الوقت والمخزون فعلاً."
+  },
+  "We build POS and business systems around how you actually work.": {
+    "en": "We build POS and business systems around how you actually work.",
+    "ar": "نبني أنظمة نقاط البيع وأنظمة الأعمال حول طريقة عملك الفعلية."
+  },
+  "Share on LinkedIn": {
+    "en": "Share on LinkedIn",
+    "ar": "شارك على لينكدإن"
+  },
+  "Share on Facebook": {
+    "en": "Share on Facebook",
+    "ar": "شارك على فيسبوك"
+  },
+  "Copy link": {
+    "en": "Copy link",
+    "ar": "انسخ الرابط"
+  },
+  "Open menu": {
+    "en": "Open menu",
+    "ar": "افتح القائمة"
+  },
+  "Close menu": {
+    "en": "Close menu",
+    "ar": "أغلق القائمة"
+  },
+  "Change language": {
+    "en": "Change language",
+    "ar": "تغيير اللغة"
+  },
+  "Toggle light and dark theme": {
+    "en": "Toggle light and dark theme",
+    "ar": "تبديل الوضع الليلي والنهاري"
+  },
+  "View all services →": {
+    "en": "View all services →",
+    "ar": "كل الخدمات ←"
+  },
+  "View all solutions →": {
+    "en": "View all solutions →",
+    "ar": "كل الحلول ←"
+  },
+  "View all projects →": {
+    "en": "View all projects →",
+    "ar": "كل الأعمال ←"
+  },
+  "PROPERTY": {
+    "en": "PROPERTY",
+    "ar": "العقارات"
+  },
+  "COMMERCE": {
+    "en": "COMMERCE",
+    "ar": "التجارة"
+  },
+  "GROWTH": {
+    "en": "GROWTH",
+    "ar": "النمو"
+  },
+  "SCALE": {
+    "en": "SCALE",
+    "ar": "التوسع"
+  },
+  "HOSPITALITY": {
+    "en": "HOSPITALITY",
+    "ar": "الضيافة"
+  },
+  "POS System": {
+    "en": "POS System",
+    "ar": "نظام نقاط بيع"
+  },
+  "Web Platform": {
+    "en": "Web Platform",
+    "ar": "منصة ويب"
+  },
+  "Dashboard": {
+    "en": "Dashboard",
+    "ar": "لوحة تحكم"
+  },
+  "Mobile App": {
+    "en": "Mobile App",
+    "ar": "تطبيق موبايل"
+  },
+  "IoT System": {
+    "en": "IoT System",
+    "ar": "نظام إنترنت الأشياء"
+  },
+  "Modern mobile experiences for iOS and Android.": {
+    "en": "Modern mobile experiences for iOS and Android.",
+    "ar": "تجارب موبايل حديثة على iOS و Android."
+  },
+  "// WHY KF TECH": {
+    "en": "// WHY KF TECH",
+    "ar": "// لماذا نحن"
+  },
+  "Requirements & workflow mapping": {
+    "en": "Requirements & workflow mapping",
+    "ar": "تحليل المتطلبات ورسم سير العمل"
+  },
+  "Bespoke architecture": {
+    "en": "Bespoke architecture",
+    "ar": "بنية مخصصة"
+  },
+  "Built to scale with you": {
+    "en": "Built to scale with you",
+    "ar": "مبني لينمو معك"
+  },
+  "SEO & performance built in": {
+    "en": "SEO & performance built in",
+    "ar": "تحسين محركات البحث والأداء مدمجان"
+  },
+  "Responsive on every device": {
+    "en": "Responsive on every device",
+    "ar": "متوافق مع كل الأجهزة"
+  },
+  "CMS & content control": {
+    "en": "CMS & content control",
+    "ar": "نظام إدارة محتوى وتحكم كامل"
+  },
+  "Offline & push support": {
+    "en": "Offline & push support",
+    "ar": "دعم العمل بدون اتصال والإشعارات"
+  },
+  "App store deployment": {
+    "en": "App store deployment",
+    "ar": "النشر على متاجر التطبيقات"
+  },
+  "POS & inventory": {
+    "en": "POS & inventory",
+    "ar": "نقاط البيع والمخزون"
+  },
+  "Role-based dashboards": {
+    "en": "Role-based dashboards",
+    "ar": "لوحات تحكم حسب الصلاحيات"
+  },
+  "Reporting & exports": {
+    "en": "Reporting & exports",
+    "ar": "التقارير والتصدير"
+  },
+  "Workflow automation": {
+    "en": "Workflow automation",
+    "ar": "أتمتة سير العمل"
+  },
+  "Scheduled jobs & alerts": {
+    "en": "Scheduled jobs & alerts",
+    "ar": "مهام مجدولة وتنبيهات"
+  },
+  "Integrations between tools": {
+    "en": "Integrations between tools",
+    "ar": "تكامل بين الأدوات"
+  },
+  "Device & sensor integration": {
+    "en": "Device & sensor integration",
+    "ar": "تكامل الأجهزة والمستشعرات"
+  },
+  "Real-time telemetry": {
+    "en": "Real-time telemetry",
+    "ar": "قياس لحظي"
+  },
+  "Control dashboards": {
+    "en": "Control dashboards",
+    "ar": "لوحات تحكم"
+  },
+  "Chat & assistant features": {
+    "en": "Chat & assistant features",
+    "ar": "ميزات المحادثة والمساعد الذكي"
+  },
+  "Document & data processing": {
+    "en": "Document & data processing",
+    "ar": "معالجة المستندات والبيانات"
+  },
+  "Model integration": {
+    "en": "Model integration",
+    "ar": "دمج النماذج"
+  },
+  "REST APIs & integrations": {
+    "en": "REST APIs & integrations",
+    "ar": "واجهات REST والتكاملات"
+  },
+  "Auth & security": {
+    "en": "Auth & security",
+    "ar": "المصادقة والأمان"
+  },
+  "Databases & hosting": {
+    "en": "Databases & hosting",
+    "ar": "قواعد البيانات والاستضافة"
+  },
+  "View →": {
+    "en": "View →",
+    "ar": "عرض ←"
+  },
+  "A growing restaurant chain juggled paper tickets, spreadsheets and disconnected tools across branches.": {
+    "en": "A growing restaurant chain juggled paper tickets, spreadsheets and disconnected tools across branches.",
+    "ar": "سلسلة مطاعم متنامية كانت تتعامل مع تذاكر ورقية وجداول بيانات وأدوات غير مترابطة بين الفروع."
+  },
+  "One connected platform: POS, kitchen display, live inventory and a central dashboard for owners.": {
+    "en": "One connected platform: POS, kitchen display, live inventory and a central dashboard for owners.",
+    "ar": "منصة واحدة متصلة: نقاط بيع، شاشة مطبخ، مخزون لحظي، ولوحة تحكم مركزية للمالكين."
+  },
+  "React and Node.js with a PostgreSQL core, built for real-time sync across every branch.": {
+    "en": "React and Node.js with a PostgreSQL core, built for real-time sync across every branch.",
+    "ar": "React و Node.js مع قاعدة PostgreSQL، مبنية للمزامنة اللحظية بين كل الفروع."
+  },
+  "A single source of truth — faster service, fewer errors and clear visibility for management.": {
+    "en": "A single source of truth — faster service, fewer errors and clear visibility for management.",
+    "ar": "مصدر واحد للحقيقة — خدمة أسرع، أخطاء أقل، ورؤية واضحة للإدارة."
+  },
+  "Kirollos Fayez · 12 Aug 2026": {
+    "en": "Kirollos Fayez · 12 Aug 2026",
+    "ar": "كيرلس فايز · 12 أغسطس 2026"
+  },
+  "12 AUG 2026 · 8 MIN": {
+    "en": "12 AUG 2026 · 8 MIN",
+    "ar": "12 أغسطس 2026 · 8 دقائق"
+  },
+  "28 JUL 2026 · 6 MIN": {
+    "en": "28 JUL 2026 · 6 MIN",
+    "ar": "28 يوليو 2026 · 6 دقائق"
+  },
+  "19 JUL 2026 · 7 MIN": {
+    "en": "19 JUL 2026 · 7 MIN",
+    "ar": "19 يوليو 2026 · 7 دقائق"
+  },
+  "08 JUL 2026 · 9 MIN": {
+    "en": "08 JUL 2026 · 9 MIN",
+    "ar": "8 يوليو 2026 · 9 دقائق"
+  },
+  "26 JUN 2026 · 5 MIN": {
+    "en": "26 JUN 2026 · 5 MIN",
+    "ar": "26 يونيو 2026 · 5 دقائق"
+  },
+  "14 JUN 2026 · 6 MIN": {
+    "en": "14 JUN 2026 · 6 MIN",
+    "ar": "14 يونيو 2026 · 6 دقائق"
+  },
+  "12 AUG 2026": {
+    "en": "12 AUG 2026",
+    "ar": "12 أغسطس 2026"
+  },
+  "RESTAURANTS & F&B": {
+    "en": "RESTAURANTS & F&B",
+    "ar": "المطاعم والأغذية"
+  },
+  "POS & order management": {
+    "en": "POS & order management",
+    "ar": "نقاط البيع وإدارة الطلبات"
+  },
+  "Kitchen display systems": {
+    "en": "Kitchen display systems",
+    "ar": "أنظمة شاشات المطبخ"
+  },
+  "Live inventory & stock": {
+    "en": "Live inventory & stock",
+    "ar": "مخزون ومتابعة لحظية"
+  },
+  "Owner dashboards": {
+    "en": "Owner dashboards",
+    "ar": "لوحات تحكم للمالكين"
+  },
+  "REAL ESTATE": {
+    "en": "REAL ESTATE",
+    "ar": "العقارات"
+  },
+  "Property websites & listings": {
+    "en": "Property websites & listings",
+    "ar": "مواقع العقارات والقوائم"
+  },
+  "Lead capture & CRM": {
+    "en": "Lead capture & CRM",
+    "ar": "جمع العملاء المحتملين وإدارة العلاقات"
+  },
+  "Agent dashboards": {
+    "en": "Agent dashboards",
+    "ar": "لوحات تحكم الوسطاء"
+  },
+  "Map & search integration": {
+    "en": "Map & search integration",
+    "ar": "تكامل الخرائط والبحث"
+  },
+  "RETAIL": {
+    "en": "RETAIL",
+    "ar": "التجزئة"
+  },
+  "Inventory & sales tracking": {
+    "en": "Inventory & sales tracking",
+    "ar": "متابعة المخزون والمبيعات"
+  },
+  "Customer management": {
+    "en": "Customer management",
+    "ar": "إدارة العملاء"
+  },
+  "Reporting & analytics": {
+    "en": "Reporting & analytics",
+    "ar": "التقارير والتحليلات"
+  },
+  "Multi-branch sync": {
+    "en": "Multi-branch sync",
+    "ar": "مزامنة الفروع المتعددة"
+  },
+  "STARTUPS": {
+    "en": "STARTUPS",
+    "ar": "الشركات الناشئة"
+  },
+  "MVP development": {
+    "en": "MVP development",
+    "ar": "تطوير النسخة الأولى"
+  },
+  "Scalable architecture": {
+    "en": "Scalable architecture",
+    "ar": "بنية قابلة للتوسع"
+  },
+  "Rapid iteration": {
+    "en": "Rapid iteration",
+    "ar": "تطوير سريع ومتكرر"
+  },
+  "Investor-ready product": {
+    "en": "Investor-ready product",
+    "ar": "منتج جاهز للمستثمرين"
+  },
+  "ENTERPRISES": {
+    "en": "ENTERPRISES",
+    "ar": "المؤسسات"
+  },
+  "Custom internal systems": {
+    "en": "Custom internal systems",
+    "ar": "أنظمة داخلية مخصصة"
+  },
+  "System integrations": {
+    "en": "System integrations",
+    "ar": "تكامل الأنظمة"
+  },
+  "Role-based access": {
+    "en": "Role-based access",
+    "ar": "صلاحيات حسب الدور"
+  },
+  "// AI AUTOMATION": {
+    "en": "// AI AUTOMATION",
+    "ar": "// الأتمتة بالذكاء الاصطناعي"
+  },
+  "Put the repetitive work on autopilot.": {
+    "en": "Put the repetitive work on autopilot.",
+    "ar": "ضع العمل المتكرر على الوضع التلقائي."
+  },
+  "We build AI agents that sit inside your real operations — reading messages, updating records, answering customers and flagging what needs a human. Pick a workflow to see how it runs.": {
+    "en": "We build AI agents that sit inside your real operations — reading messages, updating records, answering customers and flagging what needs a human. Pick a workflow to see how it runs.",
+    "ar": "نبني وكلاء ذكاء اصطناعي يعملون داخل عملياتك الحقيقية — يقرأون الرسائل، يحدّثون السجلات، يجيبون العملاء، ويشيرون إلى ما يحتاج تدخلاً بشرياً. اختر سير عمل لترى كيف يعمل."
+  },
+  "AUTOMATION FLOW": {
+    "en": "AUTOMATION FLOW",
+    "ar": "مسار الأتمتة"
+  },
+  "Most of these connect to tools you already use — WhatsApp, email, Sheets, your POS or CRM.": {
+    "en": "Most of these connect to tools you already use — WhatsApp, email, Sheets, your POS or CRM.",
+    "ar": "معظمها يتصل بأدوات تستخدمها بالفعل — واتساب، البريد، جوجل شيتس، نقاط البيع أو نظام إدارة العملاء."
+  },
+  "Automate my workflow": {
+    "en": "Automate my workflow",
+    "ar": "أتمِت سير عملي"
+  },
+  "Customer enquiry triage": {
+    "en": "Customer enquiry triage",
+    "ar": "تصنيف استفسارات العملاء"
+  },
+  "WhatsApp, email and forms in one queue": {
+    "en": "WhatsApp, email and forms in one queue",
+    "ar": "واتساب والبريد والنماذج في قائمة واحدة"
+  },
+  "Stock & reorder agent": {
+    "en": "Stock & reorder agent",
+    "ar": "وكيل المخزون وإعادة الطلب"
+  },
+  "Watches consumption, drafts the order": {
+    "en": "Watches consumption, drafts the order",
+    "ar": "يراقب الاستهلاك ويجهّز الطلب"
+  },
+  "Quote & proposal drafting": {
+    "en": "Quote & proposal drafting",
+    "ar": "إعداد عروض الأسعار والمقترحات"
+  },
+  "Brief in, priced proposal out": {
+    "en": "Brief in, priced proposal out",
+    "ar": "الملخص يدخل، والعرض المُسعّر يخرج"
+  },
+  "Owner briefing bot": {
+    "en": "Owner briefing bot",
+    "ar": "بوت تقرير المالك"
+  },
+  "One clear summary every morning": {
+    "en": "One clear summary every morning",
+    "ar": "ملخص واحد واضح كل صباح"
+  },
+  "Website chat agent": {
+    "en": "Website chat agent",
+    "ar": "وكيل محادثة الموقع"
+  },
+  "Answers instantly, hands over cleanly": {
+    "en": "Answers instantly, hands over cleanly",
+    "ar": "يجيب فوراً ويحوّل بسلاسة"
+  },
+  "Chat with KF Tech": {
+    "en": "Chat with KF Tech",
+    "ar": "تحدث مع KF Tech"
+  },
+  "Typically replies in a few minutes": {
+    "en": "Typically replies in a few minutes",
+    "ar": "يرد عادة في دقائق"
+  },
+  "Chat with us": {
+    "en": "Chat with us",
+    "ar": "تحدث معنا"
+  },
+  "Start chatting": {
+    "en": "Start chatting",
+    "ar": "ابدأ المحادثة"
+  },
+  "We only use this to reply to you. No marketing.": {
+    "en": "We only use this to reply to you. No marketing.",
+    "ar": "نستخدم هذا للرد عليك فقط. بدون رسائل تسويقية."
+  },
+  "I need a POS system": {
+    "en": "I need a POS system",
+    "ar": "أحتاج نظام نقاط بيع"
+  },
+  "Website or web app": {
+    "en": "Website or web app",
+    "ar": "موقع أو تطبيق ويب"
+  },
+  "AI automation": {
+    "en": "AI automation",
+    "ar": "أتمتة بالذكاء الاصطناعي"
+  },
+  "How much does it cost?": {
+    "en": "How much does it cost?",
+    "ar": "كم التكلفة؟"
+  },
+  "Language": {
+    "en": "Language",
+    "ar": "اللغة"
+  }
+}
