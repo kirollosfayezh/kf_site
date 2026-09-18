@@ -10,4 +10,13 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  build: {
+    // Every browser this site supports has had these for years; targeting them
+    // directly means no async/await or spread down-levelling, which is both
+    // less code to ship and less work to run.
+    target: 'es2022',
+    // The default 500 kB warning existed to flag the three.js chunk, which is
+    // gone; nothing here should approach it now, so keep the alarm tight.
+    chunkSizeWarningLimit: 400,
+  },
 })

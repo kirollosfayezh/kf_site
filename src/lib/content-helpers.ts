@@ -7,22 +7,6 @@ export function pick(text: LocalizedText | undefined, lang: Lang): string {
 }
 
 /**
- * Normalises a media URL for display.
- *
- * Unsplash serves the original file when no transform is given — the seeded
- * blog images are ~4 MB each that way, which stalls the card grid. The static
- * export always requested a sized, auto-formatted variant; this applies the
- * same transform to any bare Unsplash URL the CMS hands us. Every other URL is
- * returned untouched, so uploads and third-party media are unaffected.
- */
-export function mediaUrl(src: string | undefined, width = 1200): string | undefined {
-  if (!src) return src;
-  if (!/^https?:\/\/images\.unsplash\.com\//.test(src)) return src;
-  if (src.includes("?")) return src;
-  return `${src}?w=${width}&q=80&auto=format&fit=crop`;
-}
-
-/**
  * `meta` is an untyped bag on the API contract, so these narrow the two fields
  * the card layouts depend on rather than casting at every call site. Anything
  * of the wrong shape reads as absent, which is what the fallbacks expect.

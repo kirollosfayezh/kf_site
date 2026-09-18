@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, mediaUrl, metaString, metaPoints } from "../lib/content-helpers";
+import { pick, metaString, metaPoints } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_PROJECTS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import { WA_LINK } from "../components/Footer";
 import s from "../styles/sections.module.css";
 
@@ -25,7 +26,7 @@ export function Projects() {
           key: item.id,
           title: pick(item.title, lang),
           desc: pick(item.summary ?? item.body, lang),
-          media: mediaUrl(item.media?.[0]),
+          media: item.media?.[0],
           tag: metaString(item.meta, "tag"),
           tech: metaPoints(item.meta),
           result: metaString(item.meta, "result"),
@@ -65,7 +66,7 @@ export function Projects() {
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
                 {item.media ? (
-                  <img src={item.media} alt={item.title} loading={i < 3 ? "eager" : "lazy"} decoding="async" />
+                  <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" priority={i < 3} />
                 ) : (
                   <div className={s.cardMediaFallback}>{item.title[0]}</div>
                 )}

@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useI18n } from "../lib/i18n";
-import { pick, mediaUrl } from "../lib/content-helpers";
+import { pick } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import { WA_LINK } from "../components/Footer";
 import { submitLead } from "../services/leads";
 import { ApiError } from "../services/http";
@@ -171,7 +172,7 @@ export function Campaign() {
                 key: o.id,
                 title: pick(o.title, lang),
                 desc: pick(o.summary, lang),
-                img: mediaUrl(o.media?.[0]) ?? OFFERS[i % OFFERS.length].img,
+                img: o.media?.[0] ?? OFFERS[i % OFFERS.length].img,
                 alt: pick(o.title, lang),
                 from: OFFERS[i % OFFERS.length].from,
               }))
@@ -179,7 +180,7 @@ export function Campaign() {
           ).map((o) => (
             <Reveal key={o.key} className={s.card}>
               <div className={s.cardMedia}>
-                <img src={o.img} alt={o.alt} loading="lazy" decoding="async" />
+                <Img src={o.img} alt={o.alt} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" />
                 <div className={s.cardMediaScrim} aria-hidden="true" />
               </div>
               <div className={s.cardBody}>

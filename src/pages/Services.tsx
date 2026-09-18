@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, mediaUrl, metaPoints } from "../lib/content-helpers";
+import { pick, metaPoints } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SERVICES } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import { CheckIcon } from "../components/CheckIcon";
 import { ServiceIcon } from "../components/ServiceIcon";
 import s from "../styles/sections.module.css";
@@ -21,7 +22,7 @@ export function Services() {
           slug: item.slug,
           title: pick(item.title, lang),
           desc: pick(item.summary ?? item.body, lang),
-          media: mediaUrl(item.media?.[0]),
+          media: item.media?.[0],
           points: metaPoints(item.meta),
         }))
       : FALLBACK_SERVICES.map((f) => ({
@@ -59,12 +60,13 @@ export function Services() {
             <Reveal key={item.key} as="article" className={s.svcCard}>
               <div className={s.svcMedia}>
                 {item.media ? (
-                  <img
+                  <Img
                     src={item.media}
                     alt={item.title}
+                    width={420}
+                    sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px"
                     /* The first row is above the fold on a desktop viewport. */
-                    loading={i < 3 ? "eager" : "lazy"}
-                    decoding="async"
+                    priority={i < 3}
                   />
                 ) : (
                   <div className={s.cardMediaFallback}>{item.title[0]}</div>

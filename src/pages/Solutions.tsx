@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, mediaUrl, metaString, metaPoints } from "../lib/content-helpers";
+import { pick, metaString, metaPoints } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import { CheckIcon } from "../components/CheckIcon";
 import s from "../styles/sections.module.css";
 
@@ -29,7 +30,7 @@ export function Solutions() {
           tag: metaString(item.meta, "tag"),
           title: pick(item.title, lang),
           desc: pick(item.summary ?? item.body, lang),
-          img: mediaUrl(item.media?.[0], 1400),
+          img: item.media?.[0],
           alt: metaString(item.meta, "alt") ?? pick(item.title, lang),
           points: metaPoints(item.meta),
         }))
@@ -69,12 +70,13 @@ export function Solutions() {
             <Reveal key={item.key} as="article" className={s.solutionRow}>
               {item.img && (
                 <div className={s.solutionBanner}>
-                  <img
+                  <Img
                     src={item.img}
                     alt={item.alt}
+                    width={1200}
+                    sizes="(max-width: 1280px) 100vw, 1200px"
                     /* The first banner is the page's LCP candidate, as in the original. */
-                    loading={i === 0 ? "eager" : "lazy"}
-                    decoding="async"
+                    priority={i === 0}
                   />
                   <div className={s.solutionScrim} aria-hidden="true" />
                 </div>

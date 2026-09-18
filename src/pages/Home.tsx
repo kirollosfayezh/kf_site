@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, mediaUrl } from "../lib/content-helpers";
+import { pick } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_FAQS, FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
+import { Img } from "../components/Img";
 import { HeroStage } from "../components/HeroStage";
 import { WA_LINK } from "../components/Footer";
 import s from "../styles/sections.module.css";
@@ -231,7 +232,7 @@ export function Home() {
                 key: item.id,
                 title: pick(item.title, lang),
                 desc: pick(item.summary, lang),
-                media: mediaUrl(item.media?.[0]),
+                media: item.media?.[0],
                 href: "/services",
               }))
             : FALLBACK_SERVICES.map((f) => ({ key: f.key, title: t(f.title), desc: t(f.desc), media: f.img, href: "/services" }))
@@ -239,7 +240,7 @@ export function Home() {
             <Link key={item.key} to={item.href} className={s.card}>
               <Reveal>
                 <div className={s.cardMedia}>
-                  {item.media ? <img src={item.media} alt={item.title} loading="lazy" decoding="async" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
+                  {item.media ? <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
                 </div>
                 <div className={s.cardBody}>
                   <h3 className={s.cardTitle}>{item.title}</h3>
@@ -337,14 +338,14 @@ export function Home() {
                   tag: (item.meta?.tag as string) || "",
                   title: pick(item.title, lang),
                   desc: pick(item.summary, lang),
-                  media: mediaUrl(item.media?.[0]),
+                  media: item.media?.[0],
                 }))
               : FALLBACK_SOLUTIONS.map((f) => ({ key: f.key, tag: f.tag ?? "", title: t(f.title), desc: t(f.desc), media: f.img }))
             ).map((item) => (
               <Link key={item.key} to="/solutions" className={s.card}>
                 <Reveal>
                   <div className={s.cardMedia}>
-                    {item.media ? <img src={item.media} alt={item.title} loading="lazy" decoding="async" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
+                    {item.media ? <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
                     {item.tag && <div className={s.cardTag} style={{ position: "absolute", insetInlineStart: 16, bottom: 12, top: "auto", background: "none", border: "none", padding: 0 }}>{item.tag}</div>}
                   </div>
                   <div className={s.cardBody}>
@@ -376,13 +377,13 @@ export function Home() {
                 category: (item.meta?.category as string) || "",
                 title: pick(item.title, lang),
                 desc: pick(item.summary, lang),
-                media: mediaUrl(item.media?.[0]),
+                media: item.media?.[0],
               }))
             : FALLBACK_PROJECTS.map((f) => ({ key: f.key, category: f.tag ?? "", title: t(f.title), desc: t(f.desc), media: f.img }))
           ).map((item) => (
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
-                {item.media ? <img src={item.media} alt={item.title} loading="lazy" decoding="async" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
+                {item.media ? <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
                 {item.category && <span className={s.cardTag}>{item.category}</span>}
               </div>
               <div className={s.cardBody} style={{ padding: 24 }}>

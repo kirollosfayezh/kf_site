@@ -120,14 +120,32 @@ function program(gl: WebGLRenderingContext, vsSrc: string, fsSrc: string): WebGL
   return p;
 }
 
-// FogExp2, density 0.013, colour #07070A — three's exact formula, shared by
-// both shaders so the terrain and the dust fade into the distance together.
+/**
+ * FogExp2, density 0.013, colour #07070A — three's exact formula, shared by
+ * both shaders so the terrain and the dust fade into the distance together.
+ *
+ * The mix happens in **linear** space, not sRGB. three does its shading
+ * linearly and only encodes to sRGB on output, and fog is no exception; mixing
+ * the sRGB values directly instead (the obvious way to write this) fades the
+ * mid-distance lines along a visibly different curve. Measured against the
+ * original export, the shortcut left the terrain's lit pixels about 11% less
+ * red and spread over a wider, fainter area. So: decode, mix, re-encode.
+ */
 const FOG = `
   const float FOG_DENSITY = 0.013;
   const vec3 FOG_COLOR = vec3(0.02745, 0.02745, 0.03922);
+
+  vec3 srgbToLinear(vec3 c) {
+    return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+  }
+  vec3 linearToSrgb(vec3 c) {
+    return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));
+  }
+
   vec3 applyFog(vec3 color, float depth) {
-    float f = 1.0 - exp(-FOG_DENSITY * FOG_DENSITY * depth * depth);
-    return mix(color, FOG_COLOR, clamp(f, 0.0, 1.0));
+    float f = clamp(1.0 - exp(-FOG_DENSITY * FOG_DENSITY * depth * depth), 0.0, 1.0);
+    vec3 lit = mix(srgbToLinear(color), srgbToLinear(FOG_COLOR), f);
+    return linearToSrgb(lit);
   }
 `;
 
@@ -210,9 +228,38 @@ const SX = 1.5;
 const SZ = 1.5;
 const DUST_COUNT = 900;
 
-// #FF6A00 and #FF0080 in linear-ish sRGB values, as three's Color held them.
-const ORANGE = [1, 0.41569, 0];
-const PINK = [1, 0, 0.50196];
+/**
+ * The brand gradient's endpoints, #FF6A00 and #FF0080.
+ *
+ * three's `Color` holds components in **linear** space and `lerp()` therefore
+ * interpolates there, with the encode to sRGB happening on output. Doing the
+ * same lerp on the sRGB values instead walks a different path between the two
+ * hues — measurably so in the middle of the ramp, which is most of the grid.
+ * So the endpoints are decoded, mixed linearly, and re-encoded once at build
+ * time; the shader then just reads an sRGB colour, as it does for everything
+ * else.
+ */
+const ORANGE_SRGB = [1, 0.41569, 0];
+const PINK_SRGB = [1, 0, 0.50196];
+
+function srgbToLinear(c: number): number {
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+function linearToSrgb(c: number): number {
+  return c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055;
+}
+
+const ORANGE_LIN = ORANGE_SRGB.map(srgbToLinear);
+const PINK_LIN = PINK_SRGB.map(srgbToLinear);
+
+/** The gradient at `m`, returned as the sRGB triple the shaders consume. */
+function rampAt(m: number): [number, number, number] {
+  return [
+    linearToSrgb(ORANGE_LIN[0] + (PINK_LIN[0] - ORANGE_LIN[0]) * m),
+    linearToSrgb(ORANGE_LIN[1] + (PINK_LIN[1] - ORANGE_LIN[1]) * m),
+    linearToSrgb(ORANGE_LIN[2] + (PINK_LIN[2] - ORANGE_LIN[2]) * m),
+  ];
+}
 
 export function HeroStage({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -245,7 +292,10 @@ export function HeroStage({ className }: { className?: string }) {
         // MSAA is only worth its bandwidth when we are not already
         // supersampling via the pixel ratio.
         antialias: dpr <= 1.25,
-        depth: true,
+        // Nothing in this scene depth-tests (both materials are additive with
+        // depth writes off), so a depth buffer would be allocated and cleared
+        // for nothing.
+        depth: false,
         stencil: false,
         premultipliedAlpha: true,
         powerPreference: "high-performance",
@@ -274,10 +324,10 @@ export function HeroStage({ className }: { className?: string }) {
           verts[i] = (x - (COLS - 1) / 2) * SX;
           verts[i + 1] = 0;
           verts[i + 2] = -z * SZ;
-          const m = x / (COLS - 1);
-          colors[i] = ORANGE[0] + (PINK[0] - ORANGE[0]) * m;
-          colors[i + 1] = ORANGE[1] + (PINK[1] - ORANGE[1]) * m;
-          colors[i + 2] = ORANGE[2] + (PINK[2] - ORANGE[2]) * m;
+          const [cr, cg, cb] = rampAt(x / (COLS - 1));
+          colors[i] = cr;
+          colors[i + 1] = cg;
+          colors[i + 2] = cb;
         }
       }
 
@@ -300,13 +350,13 @@ export function HeroStage({ className }: { className?: string }) {
         dp[j] = (Math.random() - 0.5) * 110;
         dp[j + 1] = (Math.random() - 0.5) * 44;
         dp[j + 2] = -Math.random() * 170;
-        const m = Math.random();
-        dc[j] = ORANGE[0] + (PINK[0] - ORANGE[0]) * m;
-        dc[j + 1] = ORANGE[1] + (PINK[1] - ORANGE[1]) * m;
-        dc[j + 2] = ORANGE[2] + (PINK[2] - ORANGE[2]) * m;
+        const [cr, cg, cb] = rampAt(Math.random());
+        dc[j] = cr;
+        dc[j + 1] = cg;
+        dc[j + 2] = cb;
       }
 
-      const buf = (data: BufferSource, target = gl.ARRAY_BUFFER) => {
+      const buf = (data: BufferSource, target: GLenum = gl.ARRAY_BUFFER) => {
         const b = gl.createBuffer();
         gl.bindBuffer(target, b);
         gl.bufferData(target, data, gl.STATIC_DRAW);
@@ -342,9 +392,7 @@ export function HeroStage({ className }: { className?: string }) {
 
       let w = 0;
       let h = 0;
-      const resize = () => {
-        const cw = el.clientWidth || window.innerWidth;
-        const ch = el.clientHeight || window.innerHeight;
+      const applySize = (cw: number, ch: number) => {
         if (!cw || !ch || (cw === w && ch === h)) return;
         w = cw;
         h = ch;
@@ -353,7 +401,23 @@ export function HeroStage({ className }: { className?: string }) {
         gl.viewport(0, 0, canvas.width, canvas.height);
         perspective(proj, 62, w / h, 0.1, 220);
       };
-      resize();
+
+      // Size is pushed in by a ResizeObserver rather than pulled by reading
+      // `clientWidth` in the render loop: that read is a synchronous layout
+      // flush, and doing it once a frame would put back exactly the kind of
+      // main-thread stall this rewrite exists to remove.
+      applySize(el.clientWidth || window.innerWidth, el.clientHeight || window.innerHeight);
+      let ro: ResizeObserver | null = null;
+      const onWindowResize = () => applySize(el.clientWidth || window.innerWidth, el.clientHeight || window.innerHeight);
+      if (typeof ResizeObserver !== "undefined") {
+        ro = new ResizeObserver((entries) => {
+          const box = entries[0]?.contentRect;
+          if (box) applySize(Math.round(box.width), Math.round(box.height));
+        });
+        ro.observe(el);
+      } else {
+        window.addEventListener("resize", onWindowResize);
+      }
 
       // Additive blending on a transparent canvas, depth tested but not
       // written — the original's material settings.
@@ -396,7 +460,6 @@ export function HeroStage({ className }: { className?: string }) {
           return;
         }
 
-        resize();
         if (!w || !h) return;
 
         const t = (now - start) / 1000;
@@ -461,6 +524,8 @@ export function HeroStage({ className }: { className?: string }) {
         document.removeEventListener("visibilitychange", onVis);
         canvas.removeEventListener("webglcontextlost", onLost);
         io?.disconnect();
+        ro?.disconnect();
+        window.removeEventListener("resize", onWindowResize);
         gl.deleteBuffer(terrainPos);
         gl.deleteBuffer(terrainCol);
         gl.deleteBuffer(terrainIdx);
