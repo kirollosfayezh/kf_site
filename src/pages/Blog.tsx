@@ -86,10 +86,9 @@ export function Blog() {
       )}
 
       <section className={s.section} style={{ paddingTop: 0 }}>
-        {posts.loading && <p className={s.state}>Loading articles…</p>}
         {/* There is no static stand-in for articles, so a failed fetch shows the
             same neutral note as an empty collection rather than a red error. */}
-        {!posts.loading && filtered.length === 0 && (
+        {filtered.length === 0 && (
           <p className={s.state}>
             {t("No articles yet — new posts will appear here as soon as they're published.")}
           </p>

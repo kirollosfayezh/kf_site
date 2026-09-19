@@ -54,8 +54,7 @@ export function Services() {
       </section>
 
       <section className={s.section} style={{ paddingTop: 70, paddingBottom: 40 }}>
-        {services.loading && <p className={s.state}>Loading services…</p>}
-        <div className={s.svcGrid} style={{ display: services.loading ? "none" : undefined }}>
+        <div className={s.svcGrid}>
           {items.map((item, i) => (
             <Reveal key={item.key} as="article" className={s.svcCard}>
               <div className={s.svcMedia}>

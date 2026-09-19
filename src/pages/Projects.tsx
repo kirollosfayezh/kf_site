@@ -60,8 +60,7 @@ export function Projects() {
       </section>
 
       <section className={s.section} style={{ paddingTop: 70, paddingBottom: 40 }}>
-        {projects.loading && <p className={s.state}>Loading projects…</p>}
-        <div className={s.grid3} style={{ marginTop: 0, display: projects.loading ? "none" : undefined }}>
+        <div className={s.grid3} style={{ marginTop: 0 }}>
           {items.map((item, i) => (
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>

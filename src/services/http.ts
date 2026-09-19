@@ -27,21 +27,47 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * A request that never answers is worse than one that fails: the page sits on a
+ * loading state indefinitely. Render's free tier sleeps and can take the better
+ * part of a minute to wake, so reads give up well before that and let the
+ * caller fall back to static copy. Writes get longer, because re-sending a form
+ * is worse for the visitor than waiting.
+ */
+const READ_TIMEOUT_MS = 8000;
+const WRITE_TIMEOUT_MS = 25000;
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
   if (!headers.has("Content-Type") && options.body) {
     headers.set("Content-Type", "application/json");
   }
 
+  const isWrite = Boolean(options.method && options.method.toUpperCase() !== "GET");
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(),
+    isWrite ? WRITE_TIMEOUT_MS : READ_TIMEOUT_MS,
+  );
+
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-  } catch {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+      signal: options.signal ?? controller.signal,
+    });
+  } catch (err) {
+    const timedOut = err instanceof DOMException && err.name === "AbortError";
     throw new ApiError(
-      "We couldn't reach the server. Check your connection and try again.",
+      timedOut
+        ? "The server took too long to respond."
+        : "We couldn't reach the server. Check your connection and try again.",
       0,
-      "NETWORK_ERROR",
+      timedOut ? "TIMEOUT" : "NETWORK_ERROR",
     );
+  } finally {
+    clearTimeout(timer);
   }
 
   const text = await res.text();

@@ -64,8 +64,7 @@ export function Solutions() {
       {/* One full-width panel per industry: banner photo, copy, and the
           "WHAT WE BUILD" checklist — the layout from Solutions.dc.html. */}
       <section className={s.solutionList}>
-        {solutions.loading && <p className={s.state}>Loading solutions…</p>}
-        {!solutions.loading &&
+        {
           items.map((item, i) => (
             <Reveal key={item.key} as="article" className={s.solutionRow}>
               {item.img && (
