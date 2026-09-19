@@ -178,10 +178,10 @@ export function Home() {
               )}
             </p>
             <div className={`up ${h.heroActions}`}>
-              <Link to="/contact" className="btn btn-primary">
+              <Link to="/contact" data-track="hero.start-project" className="btn btn-primary">
                 {t("Start a project")} <span aria-hidden="true">&rarr;</span>
               </Link>
-              <Link to="/projects" className={h.heroOutline}>
+              <Link to="/projects" data-track="hero.see-the-work" className={h.heroOutline}>
                 {t("See the work")}
               </Link>
             </div>

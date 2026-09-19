@@ -129,7 +129,7 @@ export function Nav() {
               )}
             </button>
 
-            <Link to="/contact" className={`${styles.cta} kf-desktop-nav`}>
+            <Link to="/contact" data-track="nav.lets-build" className={`${styles.cta} kf-desktop-nav`}>
               {t("Let's Build")} <span aria-hidden="true">&rarr;</span>
             </Link>
 
@@ -163,7 +163,7 @@ export function Nav() {
               {t(item.label)}
             </Link>
           ))}
-          <Link to="/contact" className={styles.mobileCta} onClick={() => setMenuOpen(false)}>
+          <Link to="/contact" data-track="nav.lets-build-mobile" className={styles.mobileCta} onClick={() => setMenuOpen(false)}>
             {t("Let's Build")} <span aria-hidden="true">&rarr;</span>
           </Link>
         </nav>

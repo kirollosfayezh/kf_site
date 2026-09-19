@@ -235,7 +235,7 @@ export function Contact() {
                   {errors.message && <span className={c.errorText}>Tell us a little about your project.</span>}
                 </label>
 
-                <button type="submit" disabled={submitting} className={`btn btn-primary ${c.submitBtn}`}>
+                <button type="submit" disabled={submitting} data-track="contact.submit" className={`btn btn-primary ${c.submitBtn}`}>
                   {submitting ? "Sending…" : t("Send Project Request")} <span>&rarr;</span>
                 </button>
                 {submitError && <p className={c.formError}>{submitError}</p>}

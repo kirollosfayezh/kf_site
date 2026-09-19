@@ -152,7 +152,7 @@ export function Campaign() {
                   </label>
                 </div>
                 {err && <div className={c.formError}>{err}</div>}
-                <button type="submit" disabled={sending} className={`btn btn-primary ${c.submitBtn}`}>
+                <button type="submit" disabled={sending} data-track="campaign.submit" className={`btn btn-primary ${c.submitBtn}`}>
                   {sending ? "Sending…" : t("Send my request")}
                 </button>
                 <div className={c.formNote}>{t("No spam. Your details are only used to reply to this enquiry.")}</div>
