@@ -4,6 +4,8 @@ import { I18nProvider, type Lang } from "./lib/i18n";
 import { ThemeProvider } from "./lib/theme";
 import { Layout } from "./components/Layout";
 import { getSettings } from "./services/content";
+import { AnalyticsProvider } from "./lib/analytics-provider";
+import type { SiteSettings } from "./services/api-types";
 
 /**
  * Route-level code splitting. Every page is its own chunk, so a first visit to
@@ -34,32 +36,36 @@ function PageFallback() {
   );
 }
 
-function useDefaultLanguage(): Lang {
+function useSiteSettings(): { lang: Lang; settings: SiteSettings | null } {
   const [lang, setLang] = useState<Lang>("en");
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
   useEffect(() => {
     let cancelled = false;
     getSettings()
-      .then((settings) => {
-        if (!cancelled && (settings.defaultLanguage === "en" || settings.defaultLanguage === "ar")) {
-          setLang(settings.defaultLanguage);
+      .then((value) => {
+        if (cancelled) return;
+        setSettings(value);
+        if (value.defaultLanguage === "en" || value.defaultLanguage === "ar") {
+          setLang(value.defaultLanguage);
         }
       })
       .catch(() => {
-        /* keep English default if settings can't be fetched */
+        /* keep English default, and load no pixels, if settings can't be fetched */
       });
     return () => {
       cancelled = true;
     };
   }, []);
-  return lang;
+  return { lang, settings };
 }
 
 export default function App() {
-  const defaultLang = useDefaultLanguage();
+  const { lang: defaultLang, settings } = useSiteSettings();
 
   return (
     <ThemeProvider>
       <I18nProvider defaultLang={defaultLang}>
+        <AnalyticsProvider settings={settings} />
         <Routes>
           <Route element={<Layout />}>
             <Route

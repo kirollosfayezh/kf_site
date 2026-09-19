@@ -79,7 +79,7 @@ export function Footer() {
         href={WA_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp"
+        aria-label="Chat on WhatsApp" data-track="footer.whatsapp"
         style={{
           position: "fixed",
           insetInlineEnd: 22,
