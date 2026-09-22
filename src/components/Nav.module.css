@@ -16,8 +16,13 @@
   /* The bar is fixed over scrolling content, so the blur is re-sampled on
      every scrolled frame. Its own layer keeps that off the page's paint. */
   will-change: backdrop-filter;
-  /* Nothing inside the bar can affect layout or paint outside it. */
-  contain: layout paint;
+  /* `layout` only — NOT `paint`.
+     `contain: paint` clips every descendant to the bar's 72px box, so the
+     language dropdown was cut off and unclickable the moment the page was
+     scrolled (at the top of the page, where the class is absent, it worked —
+     which is what made it look intermittent). `layout` still isolates the bar's
+     layout work from the page without clipping anything. */
+  contain: layout;
 }
 /* Phones and tablets pay the most for a full-width backdrop blur and have the
    least GPU headroom, and `--navbg` is already opaque enough to carry the bar
@@ -66,40 +71,87 @@
 }
 
 .langWrap { position: relative; }
-.langBtn { display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 11px; background: var(--hover); border: 1px solid var(--border); border-radius: 10px; color: var(--text); }
-.langCode { font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; }
+.langBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 10px;
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  transition: background .2s, border-color .2s;
+}
+.langBtn:hover { background: var(--bstrong); border-color: var(--bstrong); }
+.langBtn[aria-expanded="true"] { background: var(--bstrong); border-color: var(--bstrong); }
+.langCode { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.langChevron { color: var(--text3); transition: transform .2s; }
+.langChevronOpen { transform: rotate(180deg); }
 .langMenu {
   position: absolute;
-  top: 50px;
+  top: calc(100% + 10px);
   inset-inline-end: 0;
-  min-width: 172px;
-  padding: 6px;
+  /* Wide enough for the longest native name, but never wider than the screen
+     with a gutter either side — on a 390px phone the panel used to be able to
+     push past the edge. */
+  min-width: 208px;
+  max-width: calc(100vw - 32px);
+  padding: 7px;
   z-index: 60;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 1px solid var(--bstrong);
+  border-radius: 14px;
   background: var(--panel);
-  box-shadow: 0 20px 44px -22px rgba(0, 0, 0, .6);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    0 24px 56px -20px rgba(0, 0, 0, .75),
+    0 2px 8px -2px rgba(0, 0, 0, .4);
   display: flex;
   flex-direction: column;
   gap: 2px;
+  transform-origin: top var(--kf-menu-origin, right);
+  animation: kfMenuIn .16s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes kfMenuIn {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .langMenu { animation: none; }
+  .langChevron { transition: none; }
 }
 .langItem {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   width: 100%;
-  padding: 9px 12px;
+  /* 44px tall: the minimum comfortable touch target, and what made the old
+     36px rows so easy to miss on a phone. */
+  min-height: 44px;
+  padding: 0 11px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: var(--text2);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   text-align: start;
+  transition: background .15s, color .15s;
 }
-.langItemActive { background: var(--hover); color: var(--text); font-weight: 600; }
-.langShort { font-family: var(--font-mono); font-size: 10.5px; color: #FF9A4D; width: 20px; }
-.langLabel { flex: 1; }
+.langItem:hover { background: var(--hover); color: var(--text); }
+.langItem:focus-visible { outline: 2px solid var(--brand-orange); outline-offset: -2px; }
+.langItemActive { background: rgba(255, 106, 0, .12); color: var(--text); font-weight: 600; }
+.langItemActive:hover { background: rgba(255, 106, 0, .16); }
+.langShort {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: .04em;
+}
+.langLabel { flex: 1; min-width: 0; white-space: nowrap; }
+.langCheck { color: var(--brand-orange); margin-inline-start: 2px; }
 
 .cta {
   display: inline-flex;
@@ -157,15 +209,19 @@
   .logo { width: 36px; height: 36px; }
   .actions { gap: 7px; }
   .iconBtn { width: 38px; height: 38px; }
-  .langBtn { height: 38px; padding: 0 9px; gap: 5px; }
+  .langBtn { height: 38px; padding: 0 9px; gap: 6px; }
   .mobileTop { padding: 16px; }
   .mobileNav { padding: 4px 16px 28px; }
   .mobileLink { font-size: 22px; padding: 13px 0; }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 400px) {
   .brandTitle { font-size: 14px; }
-  .langLabel, .langCode { font-size: 10.5px; }
+  /* Below 400px the row is tight, so the trigger drops to the flag alone — it
+     is still a language control, just without the redundant code beside it.
+     The button keeps its full accessible name either way. */
+  .langCode, .langChevron { display: none; }
+  .langBtn { padding: 0 9px; }
 }
 
 /* The mobile sheet scrolls rather than pushing links off-screen on short phones. */

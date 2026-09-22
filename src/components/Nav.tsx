@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LANG_META, useI18n } from "../lib/i18n";
+import { FlagIcon } from "./FlagIcon";
 import { useTheme } from "../lib/theme";
 import styles from "./Nav.module.css";
 
@@ -22,6 +23,7 @@ export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
 
   /**
    * Watches a sentinel at the top of the document instead of listening for
@@ -49,6 +51,32 @@ export function Nav() {
   }, []);
 
   useEffect(() => setMenuOpen(false), [location.pathname]);
+  useEffect(() => setLangOpen(false), [location.pathname]);
+
+  /**
+   * A dropdown that only closes by clicking its own trigger again is the main
+   * reason this one felt unfinished — every stray click left it hanging over
+   * the page. Pointerdown rather than click so it closes on press, and capture
+   * so a click on a link underneath still dismisses it.
+   */
+  useEffect(() => {
+    if (!langOpen) return;
+    const onPointer = (e: PointerEvent) => {
+      if (!langRef.current?.contains(e.target as Node)) setLangOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setLangOpen(false);
+        langRef.current?.querySelector("button")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", onPointer, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [langOpen]);
 
   const current = LANG_META[lang];
 
@@ -87,20 +115,31 @@ export function Nav() {
           </nav>
 
           <div className={styles.actions}>
-            <div className={styles.langWrap}>
+            <div className={styles.langWrap} ref={langRef}>
               <button
                 type="button"
                 className={styles.langBtn}
-                aria-label={t("Change language")}
+                aria-label={`${t("Change language")} — ${current.label}`}
+                aria-haspopup="menu"
                 aria-expanded={langOpen}
                 onClick={() => setLangOpen((o) => !o)}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M2 12h20" />
-                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-                </svg>
+                <FlagIcon lang={lang} size={20} />
                 <span className={styles.langCode}>{current.short}</span>
+                <svg
+                  className={`${styles.langChevron} ${langOpen ? styles.langChevronOpen : ""}`}
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
               {langOpen && (
                 <div role="menu" aria-label={t("Language")} className={styles.langMenu}>
@@ -108,7 +147,8 @@ export function Nav() {
                     <button
                       key={code}
                       type="button"
-                      role="menuitem"
+                      role="menuitemradio"
+                      aria-checked={code === lang}
                       lang={code}
                       className={`${styles.langItem} ${code === lang ? styles.langItemActive : ""}`}
                       onClick={() => {
@@ -116,8 +156,25 @@ export function Nav() {
                         setLangOpen(false);
                       }}
                     >
-                      <span className={styles.langShort}>{LANG_META[code].short}</span>
+                      <FlagIcon lang={code} size={22} />
                       <span className={styles.langLabel}>{LANG_META[code].label}</span>
+                      <span className={styles.langShort}>{LANG_META[code].short}</span>
+                      {code === lang ? (
+                        <svg
+                          className={styles.langCheck}
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      ) : null}
                     </button>
                   ))}
                 </div>

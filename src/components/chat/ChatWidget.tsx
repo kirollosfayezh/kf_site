@@ -10,11 +10,33 @@ import {
   type ChatMessage,
 } from "../../services/chat";
 import { useI18n } from "../../lib/i18n";
+import { ChatAvatar } from "./ChatAvatar";
 import styles from "./ChatWidget.module.css";
 
 const QUICK = ["I need a POS system", "Website or web app", "AI automation", "How much does it cost?"];
 
 const GREETING = "Hi! You're through to KF Tech Solutions. What are you trying to build?";
+
+/** Auto-open once per visitor, after the page has settled. */
+const GREETED_KEY = "kf-chat-greeted";
+/** How many agent messages this visitor has already read. */
+const SEEN_KEY = "kf-chat-seen";
+const AUTO_OPEN_DELAY = 4200;
+
+function readNum(key: string): number {
+  try {
+    return Number(localStorage.getItem(key)) || 0;
+  } catch {
+    return 0;
+  }
+}
+function writeNum(key: string, value: number) {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    /* private mode — the widget still works, it just forgets */
+  }
+}
 
 /** Server timestamps are epoch milliseconds (see kf_backend chat.repo.ts). */
 function clock(ts: number | undefined) {
@@ -44,6 +66,14 @@ export function ChatWidget() {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+
+  /**
+   * Which face the widget wears. It starts as the bot — nobody is at a desk at
+   * 2am — and switches to the agent avatar for good once a real reply lands,
+   * because pretending a human is present before one has spoken is the kind of
+   * thing visitors remember badly.
+   */
+  const [agentJoined, setAgentJoined] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   const openRef = useRef(open);
   const socketRef = useRef<Socket | null>(null);
@@ -67,6 +97,12 @@ export function ChatWidget() {
         if (history.length > 0) {
           setMessages(history);
           setStarted(true);
+          const agentCount = history.filter((m) => m.from === "agent").length;
+          if (agentCount > 0) setAgentJoined(true);
+          // Unread survives the visit: an answer that arrived while the visitor
+          // was away is exactly the thing they came back for.
+          const unseen = agentCount - readNum(SEEN_KEY);
+          if (unseen > 0) setUnread(unseen);
         }
       })
       .catch(() => {
@@ -86,6 +122,7 @@ export function ChatWidget() {
         if (message.from === "agent") {
           setAgentTyping(false);
           setStarted(true);
+          setAgentJoined(true);
           if (!openRef.current) setUnread((u) => u + 1);
         }
       },
@@ -106,6 +143,39 @@ export function ChatWidget() {
   useEffect(() => {
     return () => window.clearTimeout(typingTimeout.current);
   }, []);
+
+  /**
+   * Greets a first-time visitor on its own, once, a few seconds in.
+   *
+   * Once only, and remembered across visits: a panel that reopens on every page
+   * view is the single most disliked thing a chat widget does, and someone who
+   * has already been greeted has made their choice. It also waits for the page
+   * to settle rather than fighting the hero for the first paint, and never
+   * interrupts a visitor who has already opened it or is being typed to.
+   */
+  useEffect(() => {
+    if (readNum(GREETED_KEY)) return;
+    const id = window.setTimeout(() => {
+      writeNum(GREETED_KEY, 1);
+      setOpen((already) => {
+        if (already) return already;
+        setUnread(0);
+        return true;
+      });
+    }, AUTO_OPEN_DELAY);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  /**
+   * Reading the panel clears the badge *and* records it, so the count is right
+   * the next time the visitor lands rather than re-announcing old replies.
+   */
+  useEffect(() => {
+    if (!open) return;
+    const agentCount = messages.filter((m) => m.from === "agent").length;
+    writeNum(SEEN_KEY, agentCount);
+    setUnread(0);
+  }, [open, messages]);
 
   // Escape closes the panel — the widget must always be dismissible.
   useEffect(() => {
@@ -197,25 +267,26 @@ export function ChatWidget() {
         aria-label={open ? t("Close chat") : t("Chat with us")}
         onClick={toggle}
       >
-        <svg viewBox="0 0 24 24">
-          <path d="M21 11.5a8.4 8.4 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.4 8.4 0 01-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.4 8.4 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-        </svg>
+        <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={38} className={styles.fabAvatar} />
         {unread > 0 && !open && <span className={styles.dot}>{unread}</span>}
       </button>
 
       {open && (
         <section className={styles.panel} role="dialog" aria-label="Chat with KF Tech Solutions">
           <header className={styles.hd}>
-            <span className={styles.av}>KF</span>
+            <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={40} className={styles.hdAvatar} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h2>KF Tech Solutions</h2>
+              <h2>{agentJoined ? "KF Tech Solutions" : t("KF Assistant")}</h2>
               <div className={styles.st}>
-                <span className={styles.live} /> Usually replies within minutes
+                <span className={styles.live} />{" "}
+                {agentJoined ? t("A person is with you now") : t("Usually replies within minutes")}
               </div>
             </div>
-            <button className={styles.x} aria-label="Close chat" onClick={() => setOpen(false)}>
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round">
-                <path d="M18 6L6 18M6 6l12 12" />
+            {/* Minimise, not close: the conversation stays exactly where it was
+                and the launcher keeps the unread badge. */}
+            <button className={styles.x} aria-label={t("Minimise chat")} onClick={() => setOpen(false)}>
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M6 14l6 6 6-6" />
               </svg>
             </button>
           </header>
@@ -224,6 +295,7 @@ export function ChatWidget() {
             <>
               <div className={styles.log} ref={logRef}>
                 <div className={`${styles.row} ${styles.rowThem}`}>
+                  <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
                   <div className={styles.bub}>{GREETING}</div>
                 </div>
               </div>
@@ -261,10 +333,14 @@ export function ChatWidget() {
               <div className={styles.log} ref={logRef}>
                 {/* The greeting is presentational only — it is never written to the thread. */}
                 <div className={`${styles.row} ${styles.rowThem}`}>
+                  <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
                   <div className={styles.bub}>{GREETING}</div>
                 </div>
                 {messages.map((m) => (
                   <div key={m.id} className={`${styles.row} ${m.from === "visitor" ? styles.rowMe : styles.rowThem}`}>
+                    {m.from !== "visitor" && (
+                      <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={26} className={styles.rowAvatar} />
+                    )}
                     <div className={styles.bub}>{m.text}</div>
                     <span className={styles.ts}>{clock(m.ts)}</span>
                   </div>
