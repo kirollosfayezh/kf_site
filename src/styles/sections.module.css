@@ -497,3 +497,46 @@
   .finalCtaLede { font-size: 16.5px; }
   .head { align-items: flex-start; }
 }
+
+/* ------------------------------------------------- project case study page */
+
+/* Client / year / duration, shown as a definition row under the title. Grid
+   rather than flex so the labels and values stay aligned when one wraps. */
+.caseFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 34px;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+.caseFact { display: flex; flex-direction: column; gap: 3px; }
+.caseFactLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.caseFactValue { font-size: 15px; font-weight: 600; color: var(--text); }
+
+.caseActions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+
+/* The outcome, given the weight of a pull quote rather than the 13px footnote
+   it gets on a card — on the case study itself it is the headline claim. */
+.caseResult {
+  margin-top: 30px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--brand-orange);
+  background: var(--panel-2, rgba(255, 255, 255, 0.02));
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+@media (max-width: 700px) {
+  .caseFacts { gap: 14px 24px; }
+  .caseActions > * { flex: 1 1 100%; text-align: center; }
+}

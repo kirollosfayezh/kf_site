@@ -54,7 +54,7 @@ export function Blog() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={s.pageHeroInner}>
           <Reveal>
-            <span className={s.eyebrow}>// INSIGHTS</span>
+            <span className={s.eyebrow}>{t("// INSIGHTS")}</span>
             <h1 className={s.pageTitle} style={{ maxWidth: 800 }}>
               {t("Practical notes on software, automation and running a better business.")}
             </h1>

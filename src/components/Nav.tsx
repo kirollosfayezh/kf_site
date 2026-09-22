@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LANG_META, useI18n } from "../lib/i18n";
+import { localePath } from "../lib/seo";
 import { FlagIcon } from "./FlagIcon";
 import { useTheme } from "../lib/theme";
 import styles from "./Nav.module.css";
@@ -154,6 +155,12 @@ export function Nav() {
                       onClick={() => {
                         setLang(code);
                         setLangOpen(false);
+                        /* A full navigation, not a client-side route change: the
+                           language prefix is the router's `basename`, which is
+                           read once at startup. Reloading at the new URL keeps
+                           the address bar, the served HTML and the rendered
+                           language in agreement. */
+                        window.location.assign(localePath(code, location.pathname));
                       }}
                     >
                       <FlagIcon lang={code} size={22} />

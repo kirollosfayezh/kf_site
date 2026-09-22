@@ -12,15 +12,19 @@ import {
   PAGES,
   absolute,
   articlePageSeo,
+  projectPageSeo,
+  localePath,
   languageAlternates,
   seoTags,
   tagsToHtml,
   SERVICE_SUMMARY,
   SITE,
   type ArticleLike,
+  type Lang,
   type PageSeo,
   type SeoOverride,
 } from "../src/lib/seo.ts";
+import { LANGS, dirOf } from "../src/lib/langs.ts";
 
 /** Strip the placeholder title/description shipped in index.html so a
  *  generated page doesn't end up declaring each of them twice. */
@@ -60,10 +64,22 @@ async function fetchJson<T>(apiBase: string | undefined, path: string): Promise<
   }
 }
 
-async function fetchArticles(apiBase: string | undefined): Promise<ArticleLike[]> {
-  const items = await fetchJson<ArticleLike[]>(apiBase, "/api/content/blogPosts");
+async function fetchCollection(
+  apiBase: string | undefined,
+  collection: string,
+): Promise<ArticleLike[]> {
+  const items = await fetchJson<ArticleLike[]>(apiBase, `/api/content/${collection}`);
   if (!Array.isArray(items)) return [];
   return items.filter((p) => p.published !== false && (p.slug || p.id));
+}
+
+async function fetchArticles(apiBase: string | undefined): Promise<ArticleLike[]> {
+  return fetchCollection(apiBase, "blogPosts");
+}
+
+/** Projects, for the `/projects/:slug` case-study pages. */
+async function fetchProjects(apiBase: string | undefined): Promise<ArticleLike[]> {
+  return fetchCollection(apiBase, "projects");
 }
 
 /**
@@ -78,16 +94,33 @@ export async function fetchSeoOverrides(apiBase: string | undefined): Promise<Se
   return Array.isArray(rows) ? rows : [];
 }
 
-async function writePage(distDir: string, shell: string, page: PageSeo, origin: string, file: string) {
-  const html = injectHead(shell, tagsToHtml(seoTags(page, "en", origin)));
+async function writePage(
+  distDir: string,
+  shell: string,
+  page: PageSeo,
+  origin: string,
+  file: string,
+  lang: Lang = "en",
+) {
+  const html = injectHead(shell, tagsToHtml(seoTags(page, lang, origin)))
+    // The shell is built with lang="en"; each localised file has to declare its
+    // own language and direction, or a crawler reads Arabic markup as English
+    // and a reader gets LTR text before hydration corrects it.
+    .replace(/<html lang="[^"]*"( dir="[^"]*")?/i, `<html lang="${lang}" dir="${dirOf(lang)}"`);
   const target = join(distDir, file);
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, html, "utf8");
 }
 
+/** `/services` → `services/index.html`; `/` → `index.html`. */
+function fileFor(path: string): string {
+  return path === "/" ? "index.html" : join(path.replace(/^\//, ""), "index.html");
+}
+
 export interface PrerenderResult {
   routes: number;
   articles: number;
+  projects: number;
 }
 
 export async function prerenderPages(
@@ -95,25 +128,52 @@ export async function prerenderPages(
   origin: string,
   articles: ArticleLike[],
   pages: Record<string, PageSeo> = PAGES,
+  projects: ArticleLike[] = [],
 ): Promise<PrerenderResult> {
   const shell = stripStaticHead(await readFile(join(distDir, "index.html"), "utf8"));
   const prerenderable = Object.values(pages).filter((p) => p.path !== "/404");
 
+  // Every route, in every language, as its own file: `/services` and
+  // `/de/services` are separate documents with their own canonical, hreflang set
+  // and `<html lang>`. Previously only the English file existed and `?lang=de`
+  // served it unchanged, so there was nothing for a crawler to index in Arabic,
+  // German or French.
+  let pageCount = 0;
   for (const page of prerenderable) {
-    await writePage(
-      distDir,
-      shell,
-      page,
-      origin,
-      page.path === "/" ? "index.html" : join(page.path.replace(/^\//, ""), "index.html"),
-    );
+    for (const lang of LANGS) {
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang);
+      pageCount++;
+    }
   }
 
   // Real per-article HTML, so a shared link or a crawler gets the post's own
   // title, description, share image and BlogPosting schema without JavaScript.
+  // English only, unlike the routes above: an article's body is whatever the
+  // CMS holds, and nothing translates it. `/ar/blog/x` still resolves for a
+  // reader (vercel.json rewrites it to the shell), but it is not a separate
+  // document to index — `articlePageSeo` marks articles `translated: false`, so
+  // every language canonicalises to the one English URL.
+  let articleCount = 0;
   for (const post of articles) {
     const page = articlePageSeo(post, "en");
-    await writePage(distDir, shell, page, origin, join(page.path.replace(/^\//, ""), "index.html"));
+    await writePage(distDir, shell, page, origin, fileFor(page.path), "en");
+    articleCount++;
+  }
+
+  // Case-study pages, on the same terms as articles: the write-up is CMS text,
+  // so only a project translated into all four languages gets language variants.
+  let projectCount = 0;
+  for (const item of projects) {
+    const page = projectPageSeo(item, "en");
+    await writePage(distDir, shell, page, origin, fileFor(page.path), "en");
+    projectCount++;
+    if (page.translated) {
+      for (const lang of LANGS.filter((l) => l !== "en")) {
+        const localised = projectPageSeo(item, lang);
+        await writePage(distDir, shell, localised, origin, fileFor(localePath(lang, page.path)), lang);
+        projectCount++;
+      }
+    }
   }
 
   /**
@@ -140,7 +200,7 @@ export async function prerenderPages(
     "utf8",
   );
 
-  return { routes: prerenderable.length + 1, articles: articles.length };
+  return { routes: pageCount + 1, articles: articleCount, projects: projectCount };
 }
 
 export async function writeSitemap(
@@ -148,6 +208,7 @@ export async function writeSitemap(
   origin: string,
   articles: ArticleLike[],
   pages: Record<string, PageSeo> = PAGES,
+  projects: ArticleLike[] = [],
 ): Promise<number> {
   const today = new Date().toISOString().slice(0, 10);
 
@@ -155,13 +216,33 @@ export async function writeSitemap(
   // dashboard leaves the sitemap in the same build.
   const indexable = Object.values(pages).filter((p) => !p.noindex && p.path !== "/404");
 
+  // One <url> per language variant, each carrying the full alternate set — a
+  // sitemap that lists only the English URLs leaves the translations
+  // undiscoverable except by crawling.
   const entries = [
-    ...indexable.map((p) => ({
-      loc: absolute(origin, p.path),
-      lastmod: today,
-      priority: p.path === "/" ? "1.0" : "0.8",
-      path: p.path,
-    })),
+    ...indexable.flatMap((p) =>
+      LANGS.map((lang) => ({
+        loc: absolute(origin, localePath(lang, p.path)),
+        lastmod: today,
+        priority: p.path === "/" ? "1.0" : "0.8",
+        path: p.path,
+        alternates: true,
+      })),
+    ),
+    // One entry per article, not one per language: the translations do not
+    // exist as distinct content, so listing them would submit four URLs that
+    // all resolve to the same English post.
+    ...projects.flatMap((item) => {
+      const page = projectPageSeo(item, "en");
+      const langs = page.translated ? LANGS : (["en"] as const);
+      return langs.map((lang) => ({
+        loc: absolute(origin, localePath(lang, page.path)),
+        lastmod: (item.updatedAt || today).slice(0, 10),
+        priority: "0.7",
+        path: page.path,
+        alternates: !!page.translated,
+      }));
+    }),
     ...articles.map((post) => {
       const page = articlePageSeo(post, "en");
       return {
@@ -169,6 +250,7 @@ export async function writeSitemap(
         lastmod: (post.updatedAt || today).slice(0, 10),
         priority: "0.6",
         path: page.path,
+        alternates: false,
       };
     }),
   ];
@@ -181,10 +263,13 @@ ${entries
     (e) => `  <url>
     <loc>${e.loc}</loc>
     <lastmod>${e.lastmod}</lastmod>
-    <priority>${e.priority}</priority>
-${languageAlternates(origin, e.path)
-  .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}" />`)
-  .join("\n")}
+    <priority>${e.priority}</priority>${
+      e.alternates
+        ? `\n${languageAlternates(origin, e.path)
+            .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}" />`)
+            .join("\n")}`
+        : ""
+    }
   </url>`,
   )
   .join("\n")}
@@ -196,10 +281,17 @@ ${languageAlternates(origin, e.path)
 }
 
 /**
- * Assistant crawlers that read pages to answer questions, as distinct from the
- * search crawlers above. Naming them explicitly is what makes the site eligible
- * to be cited in AI answers — several default to "no" when a site is silent,
- * and a blanket `User-agent: *` does not always reach them.
+ * Assistant crawlers, as distinct from the search crawlers above.
+ *
+ * What this list actually does is narrow: it removes any ambiguity for a
+ * crawler that reads its own token before falling back to `User-agent: *`. It
+ * does not make the site "eligible to be cited" — citation follows from the
+ * content, and the two agents that fetch pages for ChatGPT answers are
+ * `OAI-SearchBot` and `ChatGPT-User`; `GPTBot` is training-only.
+ *
+ * `Google-Extended` is listed for completeness but controls Gemini training
+ * and grounding only — AI Overviews follow ordinary Googlebot rules and cannot
+ * be opted out of separately.
  *
  * Remove a line here to opt that assistant out; the file is generated, so edit
  * this list rather than the built artifact.
@@ -212,7 +304,9 @@ const AI_CRAWLERS = [
   "Claude-User",
   "PerplexityBot",
   "Perplexity-User",
-  "Google-Extended", // Gemini / AI Overviews grounding
+  // Gemini and grounding in other Google products. It does NOT control AI
+  // Overviews — those follow ordinary Googlebot rules and nosnippet.
+  "Google-Extended",
   "Applebot-Extended",
   "CCBot", // Common Crawl, which many models train from
   "cohere-ai",
@@ -291,4 +385,4 @@ ${
   await writeFile(join(distDir, "llms.txt"), body, "utf8");
 }
 
-export { fetchArticles };
+export { fetchArticles, fetchProjects };

@@ -8,23 +8,19 @@ const DICT = dict as Record<string, Record<Lang, string>>;
  * Reads the requested language out of a CMS field, falling back to the UI
  * dictionary before falling back to English.
  *
- * `LocalizedText` only has `en` and `ar` fields — those are the two languages
- * the CMS stores. German and French therefore always resolve through the
- * dictionary, which is correct: the copy was lifted from the design export and
- * that export ships a German and French translation for each of those strings.
- *
- * Arabic additionally needs this because the seeder writes `ar: ""` "until
- * translations are supplied through the dashboard"; without the lookup the
- * whole catalogue renders in English on a non-English page.
+ * The CMS now stores all four languages, so a stored value always wins. The
+ * dictionary still backs it up for two reasons: the seeder writes `ar: ""`
+ * "until translations are supplied through the dashboard", and every document
+ * written before `de`/`fr` existed has neither. Without the lookup the whole
+ * catalogue would render in English on a non-English page.
  *
  * Doing it here rather than in the seed data also fixes already-seeded
- * databases, and anything an admin types in the dashboard still wins — a real
- * stored value is always preferred over the dictionary.
+ * databases, and anything an admin types in the dashboard still wins.
  */
 export function pick(text: LocalizedText | undefined, lang: Lang): string {
   if (!text) return "";
 
-  const stored = lang === "ar" ? text.ar : lang === "en" ? text.en : undefined;
+  const stored = text[lang];
   if (stored?.trim()) return stored;
 
   const english = (text.en || text.ar || "").trim();

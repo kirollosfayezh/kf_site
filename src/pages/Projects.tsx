@@ -24,6 +24,9 @@ export function Projects() {
     projects.data && projects.data.length > 0
       ? projects.data.map((item) => ({
           key: item.id,
+          // The CMS slug is what /projects/:slug resolves by; the fallback
+          // items are static copy with no page of their own.
+          slug: item.slug || item.id,
           title: pick(item.title, lang),
           desc: pick(item.summary ?? item.body, lang),
           media: item.media?.[0],
@@ -33,6 +36,7 @@ export function Projects() {
         }))
       : FALLBACK_PROJECTS.map((f) => ({
           key: f.key,
+          slug: undefined as string | undefined,
           title: t(f.title),
           desc: t(f.desc),
           media: f.img,
@@ -83,9 +87,14 @@ export function Projects() {
                 )}
                 <div className={s.projFooter}>
                   <span className={s.projResult}>{pickPlain(item.result ?? "", lang)}</span>
-                  <span className={s.projView}>
-                    {t("View")} <span aria-hidden="true">&rarr;</span>
-                  </span>
+                  {/* Only a link when a case study actually exists. The static
+                      fallback projects are illustrative layouts with nothing
+                      behind them, and a "View" that 404s is worse than none. */}
+                  {item.slug ? (
+                    <Link to={`/projects/${item.slug}`} className={s.projView}>
+                      {t("View")} <span aria-hidden="true">&rarr;</span>
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             </Reveal>

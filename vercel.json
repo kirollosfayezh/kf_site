@@ -5,7 +5,19 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/(ar|de|fr)/blog/(.*)",
+      "destination": "/article-shell.html"
+    },
+    {
       "source": "/blog/(.*)",
+      "destination": "/article-shell.html"
+    },
+    {
+      "source": "/(ar|de|fr)/projects/(.*)",
+      "destination": "/article-shell.html"
+    },
+    {
+      "source": "/projects/(.*)",
       "destination": "/article-shell.html"
     }
   ],
@@ -20,7 +32,7 @@
       ]
     },
     {
-      "source": "/(favicon.svg|icons.svg|logo-icon.png|founder.jpg)",
+      "source": "/(favicon.svg|favicon.ico|apple-touch-icon.png|icon-192.png|icon-512.png|site.webmanifest|icons.svg|logo-icon.png|founder.jpg)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -47,5 +59,19 @@
       ]
     }
   ],
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "query",
+          "key": "lang",
+          "value": "(?<lng>ar|de|fr)"
+        }
+      ],
+      "destination": "/:lng/:path*",
+      "permanent": true
+    }
+  ]
 }

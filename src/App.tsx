@@ -18,6 +18,9 @@ const About = lazy(() => import("./pages/About").then((m) => ({ default: m.About
 const Services = lazy(() => import("./pages/Services").then((m) => ({ default: m.Services })));
 const Solutions = lazy(() => import("./pages/Solutions").then((m) => ({ default: m.Solutions })));
 const Projects = lazy(() => import("./pages/Projects").then((m) => ({ default: m.Projects })));
+const ProjectCaseStudy = lazy(() =>
+  import("./pages/ProjectCaseStudy").then((m) => ({ default: m.ProjectCaseStudy })),
+);
 const Blog = lazy(() => import("./pages/Blog").then((m) => ({ default: m.Blog })));
 const Article = lazy(() => import("./pages/Article").then((m) => ({ default: m.Article })));
 const Contact = lazy(() => import("./pages/Contact").then((m) => ({ default: m.Contact })));
@@ -114,6 +117,16 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <Projects />
+                </Suspense>
+              }
+            />
+            {/* Before /projects/:slug existed, every project card's "View" was
+                a dead span. */}
+            <Route
+              path="/projects/:slug"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <ProjectCaseStudy />
                 </Suspense>
               }
             />

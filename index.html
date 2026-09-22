@@ -2,7 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      Icon set, in the order browsers and crawlers look for them.
+
+      The SVG is what modern browsers show in the tab. `/favicon.ico` exists
+      because Google Search fetches that path by convention and does not take
+      SVG for the search-results favicon — without it the result had no icon at
+      all. Both are square: Google rejects a non-square favicon, and the file
+      that used to be here was 48x46 (and the wrong logo entirely).
+    -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/icon-192.png" />
+    <link rel="shortcut icon" href="/favicon.ico" sizes="48x48 32x32 16x16" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0A0A0D" />
 
     <!--
       The fonts used to be pulled in by an `@import` at the top of index.css.

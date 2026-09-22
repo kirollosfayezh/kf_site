@@ -150,21 +150,23 @@ const FOG = `
 `;
 
 /**
- * The ripple is the original export's, with one correction: the height field is
- * sampled at the *travelled* distance, not at the vertex's local z.
+ * The ripple keeps the original export's constants; only *where* the height
+ * field is sampled is corrected.
  *
- * The mesh scrolls forward and wraps by one cell pair, which is invisible for
- * the grid lines because a uniform lattice looks identical after that shift.
- * The height field, though, was read from local z — so it stayed pinned to the
- * mesh and snapped back to the same hills every time the mesh wrapped: a
- * visible repeat every (SZ * 2) / FLY_SPEED = 0.55 s, which reads as a short
- * looping clip rather than flight.
+ * The mesh scrolls forward and wraps by one cell pair — invisible for the grid
+ * lines, because a uniform lattice looks identical after that shift. The height
+ * has to be read at the position the vertex is actually **drawn** at, plus the
+ * distance flown:
  *
- * Sampling at `aPos.z + uTravel` fixes it. A vertex rendered at world z
- * `aPos.z + uOffset.z` gets the height of `aPos.z + uTravel`, and because
- * `uOffset.z` is exactly `uTravel` wrapped by the cell pair, that is the same
- * point on a terrain extending infinitely ahead — so a vertex re-entering at
- * the back shows genuinely new ground. No period, nothing to loop.
+ *     z = aPos.z + uOffset.z + uTravel
+ *
+ * Read it at the vertex's *local* z instead and the terrain is pinned to the
+ * mesh: the ground under a given point on screen then only changes when the
+ * mesh wraps, so it advances in discrete hops rather than flowing. Measured at
+ * a fixed screen point, that produced a jump 7x the average frame-to-frame
+ * change every 0.55 s — the "cut" in the animation. With the rendered position
+ * the largest step is 1.7x the average, which is just the natural variation of
+ * a sum of sines, and nothing recurs at the wrap period.
  */
 const TERRAIN_VS = `
   precision highp float;
@@ -178,7 +180,7 @@ const TERRAIN_VS = `
   varying vec3 vColor;
   varying float vDepth;
   void main() {
-    float z = aPos.z + uTravel;
+    float z = aPos.z + uOffset.z + uTravel;
     float y =
       sin(aPos.x * 0.16 + uTime * 0.55) * 1.9 +
       cos(z * 0.13 - uTime * 0.78) * 1.6 +

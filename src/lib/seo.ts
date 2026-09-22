@@ -17,6 +17,7 @@
  */
 
 import { LANGS, type Lang } from "./langs.ts";
+import dict from "./i18n-dict.json" with { type: "json" };
 
 export type { Lang };
 
@@ -35,7 +36,9 @@ export const SITE_ORIGIN: string = (
 
 export const SITE = {
   name: "KF Tech Solutions",
-  logo: "/logo-icon.png",
+  // The square 512 icon, not logo-icon.png (160x144). Google wants a square
+  // logo for the Organization rich result and crops or drops anything else.
+  logo: "/icon-512.png",
   phone: "+20-150-009-9671",
   email: "kirollos.fayez.h@gmail.com",
   city: "Cairo",
@@ -63,6 +66,17 @@ export interface PageSeo {
   published?: string;
   modified?: string;
   section?: string;
+  /**
+   * `false` when this content exists in one language only — currently every
+   * article, whose body comes from the CMS untranslated.
+   *
+   * Such a page canonicalises to its unprefixed path in every language and
+   * advertises no alternates. Claiming `/ar/blog/x` as the Arabic version while
+   * serving the English body is the misconfiguration hreflang is meant to
+   * prevent: Google checks that the target is actually in the language claimed
+   * and drops the cluster when it is not.
+   */
+  translated?: boolean;
 }
 
 export const PAGES: Record<string, PageSeo> = {
@@ -158,25 +172,104 @@ export const LOCALES: Record<Lang, { hreflang: string; og: string }> = {
   fr: { hreflang: "fr", og: "fr_FR" },
 };
 
+/**
+ * The path a page lives at in a given language. English is the root; every other
+ * language gets a prefix — `/ar/services`, `/de/services`.
+ *
+ * This replaces `?lang=de`. Google's multi-regional guidance rates URL
+ * parameters "Not recommended", and the previous setup failed in a specific,
+ * silent way: the canonical always pointed at the unsuffixed path, so each
+ * translated variant canonicalised away to English. A self-contradictory cluster
+ * like that is discarded wholesale, which meant the hreflang did nothing at all.
+ *
+ * Worse, a query string does not change which static file is served, so
+ * `/?lang=de` returned the *English* prerendered HTML. There was no German page
+ * for a crawler to index — the translation only appeared after hydration.
+ */
+/**
+ * Translates a title, description or keyword list through the same dictionary
+ * the UI uses, keyed by the exact English string.
+ *
+ * Per-language URLs on their own are not enough: a German page serving the
+ * English `<title>` and description still reads to Google as a near-duplicate
+ * of the English one, which is the outcome the hreflang cluster exists to
+ * prevent. Falls back to the English text so a missing entry degrades to
+ * "untranslated" rather than "empty".
+ */
+function tr(text: string, lang: Lang): string;
+function tr(text: string | undefined, lang: Lang): string | undefined;
+function tr(text: string | undefined, lang: Lang): string | undefined {
+  if (!text || lang === "en") return text;
+  const entry = (dict as Record<string, Partial<Record<Lang, string>>>)[text];
+  return entry?.[lang]?.trim() || text;
+}
+
+export function localePath(lang: Lang, path: string): string {
+  if (lang === "en") return path;
+  const clean = path === "/" ? "" : path;
+  return `/${lang}${clean}`;
+}
+
 /** Every language variant of a page, as real URLs a crawler can fetch. */
 export function languageAlternates(origin: string, path: string) {
-  const base = absolute(origin, path);
-  const sep = base.includes("?") ? "&" : "?";
   return [
     ...LANGS.map((l) => ({
       hreflang: LOCALES[l].hreflang,
-      href: l === "en" ? base : `${base}${sep}lang=${l}`,
+      href: absolute(origin, localePath(l, path)),
     })),
-    { hreflang: "x-default", href: base },
+    // x-default points at the language-neutral entry point, which for this site
+    // is the English root.
+    { hreflang: "x-default", href: absolute(origin, path) },
   ];
 }
 
 /* ---------------------------------------------------------------- JSON-LD */
 
+/**
+ * Based in Egypt, delivering worldwide. Schema.org has no "worldwide" enum, so
+ * the markets actually served are named as `Country` entities with a catch-all
+ * `Place`. Shared by the organisation and every service so the two can never
+ * claim different coverage.
+ */
+const AREA_SERVED = [
+  { "@type": "Country", name: "Egypt" },
+  { "@type": "Country", name: "Saudi Arabia" },
+  { "@type": "Country", name: "United Arab Emirates" },
+  { "@type": "Country", name: "Germany" },
+  { "@type": "Country", name: "France" },
+  { "@type": "Country", name: "United Kingdom" },
+  { "@type": "Country", name: "United States" },
+  { "@type": "Place", name: "Worldwide" },
+];
+
+/**
+ * One organisation node, anchored by `@id`, that every other node references.
+ *
+ * It used to declare `["Organization", "LocalBusiness", "ProfessionalService"]`.
+ * Three problems with that:
+ *
+ * - **`ProfessionalService` is deprecated by schema.org itself**, for being
+ *   confused with `Service`.
+ * - `LocalBusiness` is a *subtype* of `Organization`, so listing both as
+ *   siblings said nothing extra — and `LocalBusiness` **requires** a real
+ *   `PostalAddress`. The studio has no public premises, so claiming it was
+ *   simply untrue.
+ * - A storefront type invites a local-pack reading of a business that works
+ *   remotely for clients worldwide.
+ *
+ * Plain `Organization` is the honest, valid type. `areaServed` carries the
+ * geography instead — note it is *not* in Google's supported-properties list, so
+ * it is an entity/AI-retrieval signal rather than anything that shows in search.
+ *
+ * `aggregateRating` is deliberately absent and must stay absent: review markup
+ * about yourself, on your own site, is ineligible for star treatment and risks a
+ * manual action. Ratings belong on Clutch and G2, whose pages carry them
+ * legitimately.
+ */
 export function organisationSchema(origin: string) {
   return {
     "@context": "https://schema.org",
-    "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
+    "@type": "Organization",
     "@id": `${origin}/#organization`,
     name: SITE.name,
     url: `${origin}/`,
@@ -186,10 +279,16 @@ export function organisationSchema(origin: string) {
     email: SITE.email,
     telephone: SITE.phone,
     founder: { "@type": "Person", name: SITE.founder, jobTitle: "Founder & Lead Developer" },
-    address: { "@type": "PostalAddress", addressLocality: SITE.city, addressCountry: SITE.country },
-    areaServed: ["EG", "DE", "FR", "AE", "SA", "GB", "US"],
+    // Locality only — no street address is claimed, because none is public.
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE.city,
+      addressCountry: SITE.country,
+    },
+    // Based in Egypt, delivering worldwide. Schema.org has no "worldwide" enum,
+    // so the markets actually served are named, with a catch-all Place.
+    areaServed: AREA_SERVED,
     availableLanguage: ["English", "Arabic", "German", "French"],
-    priceRange: "$$",
     sameAs: SITE.sameAs,
     knowsAbout: [
       "Custom software development",
@@ -226,21 +325,57 @@ export const SERVICE_SUMMARY: [string, string][] = [
   ["API & Backend Engineering", "Secure, scalable APIs and backend infrastructure."],
 ];
 
+/**
+ * A slug per service, so each one is an `@id`-anchored entity rather than an
+ * anonymous blob nested inside an Offer. Stable ids are what let the catalogue,
+ * a future `/services/:slug` page and an assistant's knowledge graph all point
+ * at the same thing.
+ */
+const serviceId = (origin: string, name: string) =>
+  `${origin}/services#${name
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")}`;
+
+/**
+ * One `Service` node per offering.
+ *
+ * There is no rich result for `Service` — this is an entity signal, read by
+ * Google's knowledge layer and by the assistants that answer "who builds POS
+ * systems in Egypt". `areaServed` carries real `Country` entities plus a
+ * `Place` for the rest of the world, matching the organisation node, because a
+ * bare `"Worldwide"` string resolves to nothing.
+ */
+export function serviceSchemas(origin: string, lang: Lang) {
+  return SERVICE_SUMMARY.map(([name, description]) => ({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": serviceId(origin, name),
+    name: tr(name, lang),
+    description: tr(description, lang),
+    serviceType: name,
+    provider: { "@id": `${origin}/#organization` },
+    areaServed: AREA_SERVED,
+    availableChannel: {
+      "@type": "ServiceChannel",
+      serviceUrl: absolute(origin, localePath(lang, PAGES.contact.path)),
+    },
+  }));
+}
+
+/** The catalogue references the nodes above by `@id` rather than restating
+ *  them, so one service is one entity however many pages mention it. */
 export function serviceCatalogSchema(origin: string) {
   return {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
+    "@id": `${origin}/services#catalog`,
     name: "Software & automation services",
-    itemListElement: SERVICE_SUMMARY.map(([name, description], i) => ({
+    itemListElement: SERVICE_SUMMARY.map(([name], i) => ({
       "@type": "Offer",
       position: i + 1,
-      itemOffered: {
-        "@type": "Service",
-        name,
-        description,
-        provider: { "@id": `${origin}/#organization` },
-        areaServed: "Worldwide",
-      },
+      itemOffered: { "@id": serviceId(origin, name) },
     })),
   };
 }
@@ -282,8 +417,8 @@ export function articleSchema(
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    headline: page.title.split(" | ")[0],
-    description: page.desc,
+    headline: tr(page.title, lang).split(" | ")[0],
+    description: tr(page.desc, lang),
     image: page.image || OG_IMAGE,
     datePublished: page.published,
     dateModified: page.modified || page.published,
@@ -291,7 +426,10 @@ export function articleSchema(
     inLanguage: lang,
     author: { "@type": "Person", name: SITE.founder, url: `${origin}/about` },
     publisher: { "@id": `${origin}/#organization` },
-    mainEntityOfPage: { "@type": "WebPage", "@id": absolute(origin, page.path) },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absolute(origin, page.translated === false ? page.path : localePath(lang, page.path)),
+    },
   };
 }
 
@@ -344,16 +482,20 @@ export type SeoTag =
  * client re-applies the full set using the origin actually serving the page.
  */
 export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
-  const url = absolute(origin, page.path);
+  // The canonical is the URL *for this language*. Pointing every translation at
+  // the English path is what invalidated the hreflang cluster before.
+  const url = absolute(origin, page.translated === false ? page.path : localePath(lang, page.path));
   const image = page.image || OG_IMAGE;
-  const tags: SeoTag[] = [{ kind: "title", text: page.title }];
+  const title = tr(page.title, lang);
+  const desc = tr(page.desc, lang);
+  const tags: SeoTag[] = [{ kind: "title", text: title }];
 
   const m = (attr: "name" | "property", key: string, content?: string) => {
     if (content) tags.push({ kind: "meta", attr, key, content });
   };
 
-  m("name", "description", page.desc);
-  m("name", "keywords", page.keywords);
+  m("name", "description", desc);
+  m("name", "keywords", tr(page.keywords, lang));
   m("name", "author", SITE.founder);
   m(
     "name",
@@ -365,7 +507,7 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
   m("name", "geo.placename", SITE.city);
 
   if (origin) tags.push({ kind: "link", rel: "canonical", href: url });
-  if (origin && !page.noindex) {
+  if (origin && !page.noindex && page.translated !== false) {
     languageAlternates(origin, page.path).forEach((a) =>
       tags.push({ kind: "link", rel: "alternate", href: a.href, hreflang: a.hreflang }),
     );
@@ -373,8 +515,8 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
 
   m("property", "og:type", page.type || "website");
   m("property", "og:site_name", SITE.name);
-  m("property", "og:title", page.title);
-  m("property", "og:description", page.desc);
+  m("property", "og:title", title);
+  m("property", "og:description", desc);
   if (origin) m("property", "og:url", url);
   m("property", "og:image", absolute(origin, image));
   m("property", "og:image:width", "1200");
@@ -385,8 +527,8 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
   );
 
   m("name", "twitter:card", "summary_large_image");
-  m("name", "twitter:title", page.title);
-  m("name", "twitter:description", page.desc);
+  m("name", "twitter:title", title);
+  m("name", "twitter:description", desc);
   m("name", "twitter:image", absolute(origin, image));
 
   if (!origin) return tags;
@@ -398,11 +540,16 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
     data: breadcrumbSchema(
       origin,
       page.path,
-      page.type === "article" ? page.title.split(" | ")[0] : undefined,
+      page.type === "article" ? title.split(" | ")[0] : undefined,
     ),
   });
   if (page.path === PAGES.home.path || page.path === PAGES.services.path) {
     tags.push({ kind: "jsonld", data: serviceCatalogSchema(origin) });
+  }
+  // The `Service` entities themselves live on /services only. Repeating them on
+  // the homepage would define the same `@id` twice with nothing gained.
+  if (page.path === PAGES.services.path) {
+    serviceSchemas(origin, lang).forEach((data) => tags.push({ kind: "jsonld", data }));
   }
   if (page.type === "article") {
     tags.push({ kind: "jsonld", data: articleSchema(origin, page, lang) });
@@ -454,9 +601,9 @@ export function tagsToHtml(tags: SeoTag[]): string {
 export interface ArticleLike {
   id?: string;
   slug?: string;
-  title?: { en?: string; ar?: string };
-  summary?: { en?: string; ar?: string };
-  body?: { en?: string; ar?: string };
+  title?: Partial<Record<Lang, string>>;
+  summary?: Partial<Record<Lang, string>>;
+  body?: Partial<Record<Lang, string>>;
   media?: string[];
   meta?: Record<string, unknown>;
   createdAt?: string;
@@ -466,7 +613,19 @@ export interface ArticleLike {
 
 function localized(text: ArticleLike["title"], lang: Lang): string {
   if (!text) return "";
-  return (lang === "ar" ? text.ar : text.en) || text.en || text.ar || "";
+  return text[lang] || text.en || text.ar || "";
+}
+
+/**
+ * Whether an item carries a real title in every language.
+ *
+ * Decides per item whether its page joins the hreflang cluster. Blanket-marking
+ * all CMS content single-language was right while the schema only stored `en`
+ * and `ar`; now that it stores four, an item someone has actually translated
+ * should say so, and one they have not must still not claim to.
+ */
+export function isFullyTranslated(post: ArticleLike): boolean {
+  return LANGS.every((l) => (post.title?.[l] ?? "").trim().length > 0);
 }
 
 /**
@@ -478,7 +637,15 @@ export function articlePageSeo(post: ArticleLike, lang: Lang): PageSeo {
   const title = localized(post.title, lang);
   const summary = localized(post.summary, lang);
   const brand = PAGES.home.title.split(" — ")[0];
-  const category = typeof post.meta?.category === "string" ? post.meta.category : undefined;
+  // `tag`, not `category`. The seeder writes `meta.tag`; `meta.category` was a
+  // leftover from the design export's field name and always read `undefined`,
+  // so every article shipped without an `articleSection`.
+  const category =
+    typeof post.meta?.tag === "string"
+      ? post.meta.tag
+      : typeof post.meta?.category === "string"
+        ? post.meta.category
+        : undefined;
 
   return {
     path: `/blog/${post.slug || post.id}`,
@@ -489,6 +656,63 @@ export function articlePageSeo(post: ArticleLike, lang: Lang): PageSeo {
     published: post.createdAt,
     modified: post.updatedAt,
     section: category,
+    translated: isFullyTranslated(post),
+  };
+}
+
+/**
+ * The SEO entry for one project's case-study page.
+ *
+ * Typed `website` rather than `article`: a case study is a portfolio entry, not
+ * a dated post, so it carries no `BlogPosting` and no publish date it would
+ * have to keep honest.
+ */
+export function projectPageSeo(item: ArticleLike, lang: Lang): PageSeo {
+  const title = localized(item.title, lang);
+  const summary = localized(item.summary, lang);
+  const brand = PAGES.home.title.split(" — ")[0];
+  const tag = typeof item.meta?.tag === "string" ? item.meta.tag : undefined;
+
+  return {
+    path: `/projects/${item.slug || item.id}`,
+    title: `${title}${tag ? ` — ${tag}` : ""} | ${brand}`,
+    desc:
+      summary ||
+      localized(item.body, lang).replace(/\s+/g, " ").slice(0, 155) ||
+      PAGES.projects.desc,
+    type: "website",
+    image: item.media?.[0],
+    modified: item.updatedAt,
+    section: tag,
+    translated: isFullyTranslated(item),
+  };
+}
+
+/**
+ * `CreativeWork` for a delivered project, referencing the organisation that
+ * built it. Not `Product` (nothing is for sale on the page) and not
+ * `SoftwareApplication` (that expects an install or an offer).
+ */
+export function projectSchema(origin: string, item: ArticleLike, lang: Lang, url: string) {
+  const tech = Array.isArray(item.meta?.points)
+    ? (item.meta.points as unknown[]).filter((x): x is string => typeof x === "string")
+    : [];
+  const client = typeof item.meta?.client === "string" ? item.meta.client : undefined;
+  const year = typeof item.meta?.year === "string" ? item.meta.year : undefined;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "@id": `${url}#project`,
+    name: localized(item.title, lang),
+    description: localized(item.summary, lang) || localized(item.body, lang).slice(0, 300),
+    url,
+    image: item.media?.[0] || OG_IMAGE,
+    inLanguage: lang,
+    creator: { "@id": `${origin}/#organization` },
+    ...(client ? { sourceOrganization: { "@type": "Organization", name: client } } : {}),
+    ...(year ? { dateCreated: year } : {}),
+    ...(tech.length ? { keywords: tech.join(", ") } : {}),
   };
 }
 

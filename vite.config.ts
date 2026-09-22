@@ -5,6 +5,7 @@ import {
   fetchArticles,
   fetchSeoOverrides,
   prerenderPages,
+  fetchProjects,
   writeLlmsTxt,
   writeRobots,
   writeSitemap,
@@ -41,8 +42,9 @@ function seoPrerender(origin: string, apiBase: string | undefined): Plugin {
 
       // Fetched once and shared, so the sitemap and the prerendered article
       // pages can never list a different set of posts.
-      const [articles, overrides] = await Promise.all([
+      const [articles, projects, overrides] = await Promise.all([
         fetchArticles(apiBase),
+        fetchProjects(apiBase),
         fetchSeoOverrides(apiBase),
       ])
       // Dashboard edits win over the compiled-in PAGES table, so the static
@@ -59,19 +61,28 @@ function seoPrerender(origin: string, apiBase: string | undefined): Plugin {
       // Always prerender: the per-route HTML files are what let vercel.json
       // narrow its rewrite to /blog/*, so that unknown paths reach 404.html
       // instead of the homepage. Skipping this would 404 every real route.
-      const { routes, articles: count } = await prerenderPages(dist, origin, articles, pages)
+      const { routes, articles: count, projects: projectCount } = await prerenderPages(
+        dist,
+        origin,
+        articles,
+        pages,
+        projects,
+      )
 
       if (!origin) {
-        this.info(`SEO: prerendered ${routes} routes + ${count} articles (no origin set)`)
+        this.info(
+          `SEO: prerendered ${routes} routes + ${count} articles + ${projectCount} case studies (no origin set)`,
+        )
         return
       }
 
-      const urls = await writeSitemap(dist, origin, articles, pages)
+      const urls = await writeSitemap(dist, origin, articles, pages, projects)
       await writeRobots(dist, origin)
       await writeLlmsTxt(dist, origin, articles)
 
       this.info(
-        `SEO: prerendered ${routes} routes + ${count} articles, sitemap.xml with ` +
+        `SEO: prerendered ${routes} routes + ${count} articles + ${projectCount} case ` +
+          `studies, sitemap.xml with ` +
           `${urls} URLs, robots.txt + llms.txt` +
           `${overrides.length ? `, ${overrides.length} dashboard override(s)` : ""} (origin ${origin})`,
       )
