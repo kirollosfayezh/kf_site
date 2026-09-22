@@ -56,7 +56,7 @@ export function About() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={`${s.pageHeroInner} ${s.heroSplit}`}>
           <Reveal>
-            <span className={s.eyebrowPink}>// ABOUT</span>
+            <span className={s.eyebrowPink}>{t("// ABOUT")}</span>
             <h1 className={`${s.pageTitle} ${s.pageTitleMd}`}>{t("We don't just write code. We build products.")}</h1>
             <p className={s.pageLede}>
               KF Tech Solutions is a software studio based in Cairo, partnering with businesses to turn ideas into
@@ -75,7 +75,7 @@ export function About() {
               loading="lazy"
               decoding="async"
             />
-            <div className={s.portraitCaption}>Kirollos Fayez &middot; Founder</div>
+            <div className={s.portraitCaption}>{t("Kirollos Fayez \u00B7 Founder")}</div>
             <div className={s.workspaceGrid}>
               {WORKSPACE.map((w) => (
                 <div key={w.src} className={s.workspaceCell}>
@@ -90,7 +90,7 @@ export function About() {
       <section className={s.sectionAlt}>
         <div className={s.section}>
           <Reveal style={{ maxWidth: 640 }}>
-            <span className={s.eyebrow}>// WHY KF TECH</span>
+            <span className={s.eyebrow}>{t("// WHY KF TECH")}</span>
             <h2 className={s.h2sm}>{t("A partner, not just a developer.")}</h2>
           </Reveal>
           <div className={s.grid2}>
@@ -113,7 +113,7 @@ export function About() {
 
       <section className={s.section}>
         <Reveal style={{ maxWidth: 640 }}>
-          <span className={s.eyebrowPink}>// PROCESS</span>
+          <span className={s.eyebrowPink}>{t("// PROCESS")}</span>
           <h2 className={s.h2sm}>{t("From idea to launch.")}</h2>
         </Reveal>
         <div className={s.gridSteps}>

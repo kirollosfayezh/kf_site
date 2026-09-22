@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, metaString, metaPoints } from "../lib/content-helpers";
+import { pick, metaString, metaPoints, pickPlain } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
@@ -50,7 +50,7 @@ export function Solutions() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={s.pageHeroInner}>
           <Reveal>
-            <span className={s.eyebrowPink}>// SOLUTIONS</span>
+            <span className={s.eyebrowPink}>{t("// SOLUTIONS")}</span>
             <h1 className={`${s.pageTitle} ${s.pageTitleLg}`} style={{ maxWidth: 820 }}>{t("Technology built around your business.")}</h1>
             <p className={s.pageLedeLg}>
               {t(
@@ -81,7 +81,7 @@ export function Solutions() {
                 </div>
               )}
               <div>
-                {item.tag && <span className={s.solutionTag}>{item.tag}</span>}
+                {item.tag && <span className={s.solutionTag}>{pickPlain(item.tag, lang)}</span>}
                 <h2 className={s.solutionTitle}>{item.title}</h2>
                 <p className={s.solutionDesc}>{item.desc}</p>
               </div>
@@ -91,7 +91,7 @@ export function Solutions() {
                   {item.points.map((pt) => (
                     <div key={pt} className={s.checkItem}>
                       <CheckIcon />
-                      {pt}
+                      {pickPlain(pt, lang)}
                     </div>
                   ))}
                 </div>

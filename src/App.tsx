@@ -1,10 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 import { Suspense, lazy, useEffect, useState } from "react";
-import { I18nProvider, type Lang } from "./lib/i18n";
+import { I18nProvider, isLang, type Lang } from "./lib/i18n";
 import { ThemeProvider } from "./lib/theme";
 import { Layout } from "./components/Layout";
 import { getSettings } from "./services/content";
 import { AnalyticsProvider } from "./lib/analytics-provider";
+import { SeoProvider } from "./components/Seo";
 import type { SiteSettings } from "./services/api-types";
 
 /**
@@ -21,6 +22,7 @@ const Blog = lazy(() => import("./pages/Blog").then((m) => ({ default: m.Blog })
 const Article = lazy(() => import("./pages/Article").then((m) => ({ default: m.Article })));
 const Contact = lazy(() => import("./pages/Contact").then((m) => ({ default: m.Contact })));
 const Campaign = lazy(() => import("./pages/Campaign").then((m) => ({ default: m.Campaign })));
+const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 
 /**
  * Held while a page chunk loads. It reserves a full viewport of the page
@@ -36,8 +38,9 @@ function PageFallback() {
   );
 }
 
-function useSiteSettings(): { lang: Lang; settings: SiteSettings | null } {
+function useSiteSettings(): { lang: Lang; enabled: Lang[] | undefined; settings: SiteSettings | null } {
   const [lang, setLang] = useState<Lang>("en");
+  const [enabled, setEnabled] = useState<Lang[] | undefined>(undefined);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -45,9 +48,14 @@ function useSiteSettings(): { lang: Lang; settings: SiteSettings | null } {
       .then((value) => {
         if (cancelled) return;
         setSettings(value);
-        if (value.defaultLanguage === "en" || value.defaultLanguage === "ar") {
-          setLang(value.defaultLanguage);
-        }
+        if (isLang(value.defaultLanguage)) setLang(value.defaultLanguage);
+        // Which languages the switcher offers is an editor decision, made in
+        // the dashboard's Site settings screen.
+        const codes = (value.languages ?? [])
+          .filter((l) => l.enabled)
+          .map((l) => l.code)
+          .filter(isLang);
+        if (codes.length) setEnabled(codes);
       })
       .catch(() => {
         /* keep English default, and load no pixels, if settings can't be fetched */
@@ -56,16 +64,17 @@ function useSiteSettings(): { lang: Lang; settings: SiteSettings | null } {
       cancelled = true;
     };
   }, []);
-  return { lang, settings };
+  return { lang, enabled, settings };
 }
 
 export default function App() {
-  const { lang: defaultLang, settings } = useSiteSettings();
+  const { lang: defaultLang, enabled, settings } = useSiteSettings();
 
   return (
     <ThemeProvider>
-      <I18nProvider defaultLang={defaultLang}>
+      <I18nProvider defaultLang={defaultLang} enabled={enabled}>
         <AnalyticsProvider settings={settings} />
+        <SeoProvider>
         <Routes>
           <Route element={<Layout />}>
             <Route
@@ -140,8 +149,19 @@ export default function App() {
                 </Suspense>
               }
             />
+            {/* Catch-all. Without this, an unknown URL rendered an empty
+                Outlet: a black screen with no nav, footer or way back. */}
+            <Route
+              path="*"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <NotFound />
+                </Suspense>
+              }
+            />
           </Route>
         </Routes>
+        </SeoProvider>
       </I18nProvider>
     </ThemeProvider>
   );

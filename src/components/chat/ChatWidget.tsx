@@ -9,6 +9,7 @@ import {
   setTyping,
   type ChatMessage,
 } from "../../services/chat";
+import { useI18n } from "../../lib/i18n";
 import styles from "./ChatWidget.module.css";
 
 const QUICK = ["I need a POS system", "Website or web app", "AI automation", "How much does it cost?"];
@@ -31,6 +32,7 @@ function mergeMessage(list: ChatMessage[], incoming: ChatMessage): ChatMessage[]
 }
 
 export function ChatWidget() {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [started, setStarted] = useState(false);
   const [visitorId] = useState<string>(() => getVisitorId());
@@ -192,7 +194,7 @@ export function ChatWidget() {
       <button
         className={styles.fab}
         data-track="chat.launcher"
-        aria-label={open ? "Close chat" : "Chat with us"}
+        aria-label={open ? t("Close chat") : t("Chat with us")}
         onClick={toggle}
       >
         <svg viewBox="0 0 24 24">
@@ -241,11 +243,11 @@ export function ChatWidget() {
                 }}
               >
                 <label className={styles.fld}>
-                  <span>Your name</span>
+                  <span>{t("Your name")}</span>
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Optional" />
                 </label>
                 <label className={styles.fld}>
-                  <span>Email or WhatsApp</span>
+                  <span>{t("Email or WhatsApp")}</span>
                   <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Optional" />
                 </label>
                 <button className={styles.go} type="submit" disabled={starting}>
@@ -290,7 +292,7 @@ export function ChatWidget() {
                       }
                     }}
                   />
-                  <button className={styles.send} type="button" disabled={!draft.trim()} onClick={handleSend} aria-label="Send message">
+                  <button className={styles.send} type="button" disabled={!draft.trim()} onClick={handleSend} aria-label={t("Send message")}>
                     <svg viewBox="0 0 24 24">
                       <path d="M22 2L11 13" />
                       <path d="M22 2l-7 20-4-9-9-4 20-7z" />

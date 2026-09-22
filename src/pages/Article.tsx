@@ -1,5 +1,8 @@
+import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
+import { useSeo } from "../components/Seo";
+import { PAGES, articlePageSeo, type PageSeo } from "../lib/seo";
 import { pick } from "../lib/content-helpers";
 import { useContentItem } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
@@ -10,6 +13,20 @@ export function Article() {
   const { id } = useParams<{ id: string }>();
   const { t, lang } = useI18n();
   const { data: post, loading, error } = useContentItem("blogPosts", id);
+
+  /**
+   * The Layout's RouteSeo deliberately skips `/blog/:id`, so the article owns
+   * its own tags. Until the post arrives there is nothing truthful to say about
+   * it, so hold the generic blog metadata rather than publishing a title built
+   * from an empty object; a missing post falls back to a noindex entry so a
+   * dead article URL can't be indexed as a soft 404.
+   */
+  const seo = useMemo<PageSeo>(
+    () => (post ? articlePageSeo(post, lang) : error ? PAGES.notFound : PAGES.blog),
+    [post, error, lang],
+  );
+
+  useSeo(seo);
 
   if (loading) return <p className={s.state} style={{ paddingTop: 160 }}>Loading article…</p>;
   if (error || !post) {

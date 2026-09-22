@@ -124,19 +124,19 @@ export function Campaign() {
                     <input className={c.input} value={form.name} onChange={(e) => onField("name", e.target.value)} placeholder={t("Full name")} />
                   </label>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Email</span>
+                    <span className={c.fieldLabel}>{t("Email")}</span>
                     <input className={c.input} type="email" value={form.email} onChange={(e) => onField("email", e.target.value)} placeholder="you@company.com" />
                   </label>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Phone / WhatsApp</span>
+                    <span className={c.fieldLabel}>{t("Phone / WhatsApp")}</span>
                     <input className={c.input} value={form.phone} onChange={(e) => onField("phone", e.target.value)} placeholder="+20 ..." />
                   </label>
                   <label className={c.field}>
                     <span className={c.fieldLabel}>{t("What do you need?")}</span>
                     <select className={c.input} value={form.type} onChange={(e) => onField("type", e.target.value)}>
-                      <option value="">Select...</option>
+                      <option value="">{t("Select...")}</option>
                       {PROJECT_TYPES.map((p) => (
-                        <option key={p}>{p}</option>
+                        <option key={p} value={p}>{t(p)}</option>
                       ))}
                     </select>
                   </label>
@@ -203,8 +203,8 @@ export function Campaign() {
               <Reveal key={st.n}>
                 <div className={s.stepBar} />
                 <div className={s.stepNum}>{st.n}</div>
-                <h3 className={s.stepTitle}>{st.title}</h3>
-                <p className={s.stepDesc}>{st.desc}</p>
+                <h3 className={s.stepTitle}>{t(st.title)}</h3>
+                <p className={s.stepDesc}>{t(st.desc)}</p>
               </Reveal>
             ))}
           </div>

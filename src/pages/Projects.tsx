@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, metaString, metaPoints } from "../lib/content-helpers";
+import { pick, metaString, metaPoints, pickPlain } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_PROJECTS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
@@ -47,7 +47,7 @@ export function Projects() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={s.pageHeroInner}>
           <Reveal>
-            <span className={s.eyebrow}>// PROJECTS</span>
+            <span className={s.eyebrow}>{t("// PROJECTS")}</span>
             <div className={s.titleRow}>
               <h1 className={`${s.pageTitle} ${s.pageTitleLg}`} style={{ maxWidth: 800 }}>{t("From ideas to real products.")}</h1>
               <span className={s.titleNote}>{t("Sample layouts · real screenshots drop in later")}</span>
@@ -69,7 +69,7 @@ export function Projects() {
                 ) : (
                   <div className={s.cardMediaFallback}>{item.title[0]}</div>
                 )}
-                {item.tag && <span className={s.cardTag}>{item.tag}</span>}
+                {item.tag && <span className={s.cardTag}>{pickPlain(item.tag, lang)}</span>}
               </div>
               <div className={s.cardBody} style={{ padding: 24 }}>
                 <h2 className={s.cardTitle} style={{ fontSize: 20 }}>{item.title}</h2>
@@ -82,7 +82,7 @@ export function Projects() {
                   </div>
                 )}
                 <div className={s.projFooter}>
-                  <span className={s.projResult}>{item.result ?? ""}</span>
+                  <span className={s.projResult}>{pickPlain(item.result ?? "", lang)}</span>
                   <span className={s.projView}>
                     {t("View")} <span aria-hidden="true">&rarr;</span>
                   </span>
@@ -97,7 +97,7 @@ export function Projects() {
       <section className={s.sectionAlt}>
         <div className={s.section}>
           <Reveal>
-            <span className={s.eyebrowPink}>// FEATURED CASE STUDY</span>
+            <span className={s.eyebrowPink}>{t("// FEATURED CASE STUDY")}</span>
             <h2 className={s.caseTitle}>{t("A restaurant chain, from paper tickets to one connected system.")}</h2>
           </Reveal>
           <div className={s.caseGrid}>

@@ -1,9 +1,46 @@
 import type { LocalizedText } from "../services/api-types";
-import type { Lang } from "./i18n";
+import dict from "./i18n-dict.json";
+import type { Lang } from "./langs";
 
+const DICT = dict as Record<string, Record<Lang, string>>;
+
+/**
+ * Reads the requested language out of a CMS field, falling back to the UI
+ * dictionary before falling back to English.
+ *
+ * `LocalizedText` only has `en` and `ar` fields — those are the two languages
+ * the CMS stores. German and French therefore always resolve through the
+ * dictionary, which is correct: the copy was lifted from the design export and
+ * that export ships a German and French translation for each of those strings.
+ *
+ * Arabic additionally needs this because the seeder writes `ar: ""` "until
+ * translations are supplied through the dashboard"; without the lookup the
+ * whole catalogue renders in English on a non-English page.
+ *
+ * Doing it here rather than in the seed data also fixes already-seeded
+ * databases, and anything an admin types in the dashboard still wins — a real
+ * stored value is always preferred over the dictionary.
+ */
 export function pick(text: LocalizedText | undefined, lang: Lang): string {
   if (!text) return "";
-  return (lang === "ar" ? text.ar : text.en) || text.en || text.ar || "";
+
+  const stored = lang === "ar" ? text.ar : lang === "en" ? text.en : undefined;
+  if (stored?.trim()) return stored;
+
+  const english = (text.en || text.ar || "").trim();
+  if (lang !== "en" && english) {
+    const translated = DICT[english]?.[lang];
+    if (translated?.trim()) return translated;
+  }
+  return english;
+}
+
+/** Same dictionary fallback for plain (non-localised) CMS strings, such as the
+ *  bullet lists stored in `meta.points`. */
+export function pickPlain(value: string | undefined, lang: Lang): string {
+  const s = (value || "").trim();
+  if (!s || lang === "en") return s;
+  return DICT[s]?.[lang]?.trim() || s;
 }
 
 /**

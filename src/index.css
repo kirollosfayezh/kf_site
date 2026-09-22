@@ -22,7 +22,9 @@ html.lenis-smooth { scroll-behavior: auto; }
   --text3: rgba(255, 255, 255, .46);
   --hover: rgba(255, 255, 255, .06);
   --grid: rgba(255, 255, 255, .03);
-  --navbg: rgba(10, 10, 13, .72);
+  /* .55, matching the design export exactly — the rebuild had drifted to .72,
+     which made the scrolled nav noticeably more opaque than the original. */
+  --navbg: rgba(10, 10, 13, .55);
   --field: #0C0C10;
 
   --brand-orange: #FF6A00;
@@ -164,7 +166,14 @@ img { max-width: 100%; display: block; }
 /* Route-chunk placeholder: holds a viewport of page background so a navigation
    never flashes an empty screen or collapses the footer upward. */
 .kf-page-fallback {
-  min-height: 70vh;
+  /* A full viewport, not 70vh.
+     Every route is code-split, so the first paint is this placeholder and the
+     real page mounts a beat later. At 70vh the footer landed ~665px down — on
+     screen — and then dropped ~8,400px when the page chunk arrived: a single
+     0.30 layout shift, which was the entire CLS score and the one thing keeping
+     Performance off 90+. Reserving the full viewport puts the footer at the
+     fold, so the growth happens below it and is not a visible shift. */
+  min-height: 100vh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
