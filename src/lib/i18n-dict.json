@@ -2488,5 +2488,35 @@
     "ar": "أقسام الموقع",
     "de": "Seitenbereiche",
     "fr": "Sections du site"
+  },
+  "KF Assistant": {
+    "en": "KF Assistant",
+    "ar": "مساعد KF",
+    "de": "KF Assistent",
+    "fr": "Assistant KF"
+  },
+  "A person is with you now": {
+    "en": "A person is with you now",
+    "ar": "أحد أفراد الفريق معك الآن",
+    "de": "Ein Mitarbeiter ist jetzt für Sie da",
+    "fr": "Une personne est avec vous"
+  },
+  "Usually replies within minutes": {
+    "en": "Usually replies within minutes",
+    "ar": "عادةً نرد خلال دقائق",
+    "de": "Antwortet meist innerhalb von Minuten",
+    "fr": "Répond généralement en quelques minutes"
+  },
+  "Minimise chat": {
+    "en": "Minimise chat",
+    "ar": "تصغير المحادثة",
+    "de": "Chat minimieren",
+    "fr": "Réduire le chat"
+  },
+  "Close chat": {
+    "en": "Close chat",
+    "ar": "إغلاق المحادثة",
+    "de": "Chat schließen",
+    "fr": "Fermer le chat"
   }
 }

@@ -15,7 +15,9 @@
   color: #fff;
 }
 .fab:hover { transform: scale(1.07); }
-.fab svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* No blanket `stroke`/`fill` here any more: the launcher holds the shaded
+   avatar, and forcing a stroke colour on it flattens every gradient inside. */
+.fabAvatar { filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .45)); }
 
 .dot {
   position: absolute;
@@ -63,6 +65,8 @@
   background: linear-gradient(135deg, rgba(255, 106, 0, .16), rgba(255, 0, 128, .1));
   border-bottom: 1px solid var(--border);
 }
+.hdAvatar { flex-shrink: 0; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .4)); }
+
 .av {
   width: 38px;
   height: 38px;
@@ -94,7 +98,21 @@
 .log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 190px; }
 .row { display: flex; gap: 8px; max-width: 88%; flex-direction: column; }
 .rowMe { align-self: flex-end; align-items: flex-end; }
-.rowThem { align-self: flex-start; align-items: flex-start; }
+
+/* The incoming side carries a face, so it becomes a two-column grid: avatar
+   pinned to the bottom of the bubble, bubble and timestamp stacked beside it.
+   `.rowMe` stays a plain column — the visitor does not need their own avatar. */
+.rowThem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 8px;
+  align-self: flex-start;
+  align-items: end;
+  max-width: 94%;
+}
+.rowThem .rowAvatar { grid-column: 1; grid-row: 1; align-self: end; }
+.rowThem .bub { grid-column: 2; grid-row: 1; justify-self: start; }
+.rowThem .ts { grid-column: 2; grid-row: 2; }
 .bub { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.5; word-break: break-word; unicode-bidi: plaintext; }
 .rowThem .bub { background: var(--panel2); border-bottom-left-radius: 5px; }
 .rowMe .bub { background: var(--brand-gradient); color: #fff; border-bottom-right-radius: 5px; }

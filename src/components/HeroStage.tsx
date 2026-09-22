@@ -149,9 +149,23 @@ const FOG = `
   }
 `;
 
-// The ripple is the original's, unchanged — it just runs here instead of in a
-// JavaScript loop. It reads the *local* position, so the wave stays fixed in
-// model space while the mesh itself is translated forward, exactly as before.
+/**
+ * The ripple is the original export's, with one correction: the height field is
+ * sampled at the *travelled* distance, not at the vertex's local z.
+ *
+ * The mesh scrolls forward and wraps by one cell pair, which is invisible for
+ * the grid lines because a uniform lattice looks identical after that shift.
+ * The height field, though, was read from local z — so it stayed pinned to the
+ * mesh and snapped back to the same hills every time the mesh wrapped: a
+ * visible repeat every (SZ * 2) / FLY_SPEED = 0.55 s, which reads as a short
+ * looping clip rather than flight.
+ *
+ * Sampling at `aPos.z + uTravel` fixes it. A vertex rendered at world z
+ * `aPos.z + uOffset.z` gets the height of `aPos.z + uTravel`, and because
+ * `uOffset.z` is exactly `uTravel` wrapped by the cell pair, that is the same
+ * point on a terrain extending infinitely ahead — so a vertex re-entering at
+ * the back shows genuinely new ground. No period, nothing to loop.
+ */
 const TERRAIN_VS = `
   precision highp float;
   attribute vec3 aPos;
@@ -160,13 +174,15 @@ const TERRAIN_VS = `
   uniform mat4 uView;
   uniform vec3 uOffset;
   uniform float uTime;
+  uniform float uTravel;
   varying vec3 vColor;
   varying float vDepth;
   void main() {
+    float z = aPos.z + uTravel;
     float y =
       sin(aPos.x * 0.16 + uTime * 0.55) * 1.9 +
-      cos(aPos.z * 0.13 - uTime * 0.78) * 1.6 +
-      sin((aPos.x + aPos.z) * 0.07 + uTime * 0.3) * 1.0;
+      cos(z * 0.13 - uTime * 0.78) * 1.6 +
+      sin((aPos.x + z) * 0.07 + uTime * 0.3) * 1.0;
     vec4 mv = uView * vec4(aPos.x + uOffset.x, y + uOffset.y, aPos.z + uOffset.z, 1.0);
     vDepth = -mv.z;
     vColor = aColor;
@@ -226,6 +242,8 @@ const COLS = 78;
 const ROWS = 120;
 const SX = 1.5;
 const SZ = 1.5;
+/** Forward flight speed, in world units per second. */
+const FLY_SPEED = 5.5;
 const DUST_COUNT = 900;
 
 /**
@@ -376,6 +394,7 @@ export function HeroStage({ className }: { className?: string }) {
           uView: gl.getUniformLocation(terrainProg, "uView"),
           uOffset: gl.getUniformLocation(terrainProg, "uOffset"),
           uTime: gl.getUniformLocation(terrainProg, "uTime"),
+          uTravel: gl.getUniformLocation(terrainProg, "uTravel"),
         },
         dust: {
           aPos: gl.getAttribLocation(dustProg, "aPos"),
@@ -480,9 +499,12 @@ export function HeroStage({ className }: { className?: string }) {
         gl.uniformMatrix4fv(loc.terrain.uProj, false, proj);
         gl.uniformMatrix4fv(loc.terrain.uView, false, view);
         gl.uniform1f(loc.terrain.uTime, t);
-        // mesh.position.y = -2.6, and z scrolls forward then wraps by one cell
-        // pair so the grid appears to fly past endlessly.
-        gl.uniform3f(loc.terrain.uOffset, 0, -2.6, (t * 5.5) % (SZ * 2));
+        // The mesh wraps by one cell pair (invisible on a uniform lattice); the
+        // height field reads the unwrapped distance, so the ground ahead never
+        // repeats. Computed in JS so the modulo is done in double precision.
+        const travel = t * FLY_SPEED;
+        gl.uniform1f(loc.terrain.uTravel, travel);
+        gl.uniform3f(loc.terrain.uOffset, 0, -2.6, travel % (SZ * 2));
         gl.bindBuffer(gl.ARRAY_BUFFER, terrainPos);
         gl.enableVertexAttribArray(loc.terrain.aPos);
         gl.vertexAttribPointer(loc.terrain.aPos, 3, gl.FLOAT, false, 0, 0);
