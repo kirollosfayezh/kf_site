@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useI18n } from "../lib/i18n";
+import { LANG_META, useI18n } from "../lib/i18n";
 import { useTheme } from "../lib/theme";
 import styles from "./Nav.module.css";
 
@@ -14,47 +14,54 @@ const NAV_ITEMS = [
   { label: "Contact", href: "/contact" },
 ];
 
-const LANGS: { code: "en" | "ar"; short: string; label: string }[] = [
-  { code: "en", short: "EN", label: "English" },
-  { code: "ar", short: "AR", label: "العربية" },
-];
-
 export function Nav() {
-  const { t, lang, setLang } = useI18n();
+  const { t, lang, setLang, available } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
 
-  // Lenis drives the scroll frame by frame, so this listener fires at display
-  // rate. Reading `window.scrollY` straight from the handler forced a layout
-  // flush on every one of those frames; coalescing into a single rAF means at
-  // most one read per painted frame, and React bails out of the re-render
-  // whenever the boolean has not actually flipped.
+  /**
+   * Watches a sentinel at the top of the document instead of listening for
+   * scroll events.
+   *
+   * Lenis moves the page programmatically and emits no native `scroll` event
+   * while it is driving, so a `window.addEventListener("scroll", ...)` here
+   * never fired: `scrolled` stayed false for the whole session and the bar kept
+   * the transparent state, where the design export shows a blurred translucent
+   * bar with a bottom border once the page moves.
+   *
+   * An IntersectionObserver is indifferent to how the page got scrolled, so it
+   * works whether Lenis is driving or — under `prefers-reduced-motion`, where
+   * Lenis never starts — the browser is. It also costs nothing per frame.
+   */
   useEffect(() => {
-    let frame = 0;
-    const read = () => {
-      frame = 0;
-      setScrolled(window.scrollY > 40);
-    };
-    const onScroll = () => {
-      if (frame === 0) frame = requestAnimationFrame(read);
-    };
-    read();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame !== 0) cancelAnimationFrame(frame);
-    };
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   useEffect(() => setMenuOpen(false), [location.pathname]);
 
-  const current = LANGS.find((l) => l.code === lang) ?? LANGS[0];
+  const current = LANG_META[lang];
 
   return (
     <>
+      {/* Sits at the very top of the document; once it leaves the viewport the
+          page has been scrolled. See the observer above for why this replaces a
+          scroll listener. 41px matches the old `scrollY > 40` threshold. */}
+      <div
+        ref={sentinelRef}
+        aria-hidden="true"
+        style={{ position: "absolute", top: 0, insetInlineStart: 0, width: 1, height: 41, pointerEvents: "none" }}
+      />
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ""}`}>
         <div className={styles.inner}>
           <Link to="/" className={styles.brand} aria-label="KF Tech Solutions home">
@@ -84,7 +91,7 @@ export function Nav() {
               <button
                 type="button"
                 className={styles.langBtn}
-                aria-label="Change language"
+                aria-label={t("Change language")}
                 aria-expanded={langOpen}
                 onClick={() => setLangOpen((o) => !o)}
               >
@@ -96,27 +103,28 @@ export function Nav() {
                 <span className={styles.langCode}>{current.short}</span>
               </button>
               {langOpen && (
-                <div role="menu" aria-label="Language" className={styles.langMenu}>
-                  {LANGS.map((l) => (
+                <div role="menu" aria-label={t("Language")} className={styles.langMenu}>
+                  {available.map((code) => (
                     <button
-                      key={l.code}
+                      key={code}
                       type="button"
                       role="menuitem"
-                      className={`${styles.langItem} ${l.code === lang ? styles.langItemActive : ""}`}
+                      lang={code}
+                      className={`${styles.langItem} ${code === lang ? styles.langItemActive : ""}`}
                       onClick={() => {
-                        setLang(l.code);
+                        setLang(code);
                         setLangOpen(false);
                       }}
                     >
-                      <span className={styles.langShort}>{l.short}</span>
-                      <span className={styles.langLabel}>{l.label}</span>
+                      <span className={styles.langShort}>{LANG_META[code].short}</span>
+                      <span className={styles.langLabel}>{LANG_META[code].label}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            <button type="button" className={styles.iconBtn} aria-label="Toggle light and dark theme" onClick={toggleTheme}>
+            <button type="button" className={styles.iconBtn} aria-label={t("Toggle light and dark theme")} onClick={toggleTheme}>
               {theme === "dark" ? (
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="4" />
@@ -135,7 +143,7 @@ export function Nav() {
 
             <button
               type="button"
-              aria-label="Open menu"
+              aria-label={t("Open menu")}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
               className={`${styles.iconBtn} kf-mobile-btn`}
@@ -148,10 +156,10 @@ export function Nav() {
         </div>
       </header>
 
-      <div role="dialog" aria-label="Menu" className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : styles.mobileMenuClosed}`}>
+      <div role="dialog" aria-label={t("Menu")} className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : styles.mobileMenuClosed}`}>
         <div className={styles.mobileTop}>
           <span className={styles.mobileTitle}>{t("Menu")}</span>
-          <button type="button" aria-label="Close menu" className={styles.iconBtn} onClick={() => setMenuOpen(false)}>
+          <button type="button" aria-label={t("Close menu")} className={styles.iconBtn} onClick={() => setMenuOpen(false)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>

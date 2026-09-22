@@ -44,8 +44,53 @@ copy, and the chat widget shows a "couldn't connect" note instead of failing har
 | Variable | Purpose |
 |---|---|
 | `VITE_API_BASE_URL` | Origin of the `kf_backend` server — no trailing slash, no `/api` suffix. REST calls append `/api`; Socket.io connects to the bare origin. |
+| `VITE_SITE_URL` | Absolute origin of the deployed site, e.g. `https://kftechsolutions.com`. Optional locally, **required for full SEO in production** — see below. |
 
-That is the only variable the site needs.
+`VITE_API_BASE_URL` is the only variable the site needs to *function*; without it
+the build fails rather than shipping a site that calls its own static host.
+
+## SEO
+
+`src/lib/seo.ts` is the React port of `kf-seo.js` from the design export, and is
+the single source of truth: one `PAGES` table drives titles, meta descriptions,
+canonicals, hreflang, Open Graph, Twitter cards and JSON-LD.
+
+It has two consumers, both deriving from the same `seoTags()` descriptors so a
+crawler that runs no JavaScript and a browser that does can never disagree:
+
+- **Runtime** — `components/Seo.tsx`. `RouteSeo` (mounted in the Layout) applies
+  the entry for the current route; `Article.tsx` calls `useSeo()` with the
+  fetched post, because CMS content isn't known until it arrives.
+- **Build** — `build/seo-build.ts`, run by the `kf-seo-prerender` Vite plugin.
+  It writes a real HTML file per route with the head tags baked in
+  (`/services` → `dist/services/index.html`), one per published article fetched
+  from the API, plus `404.html`, `sitemap.xml` and `robots.txt`.
+
+Because those static files exist, `vercel.json` narrows its SPA rewrite to
+`/blog/*` only. Everything else resolves from the filesystem, and an unknown URL
+falls through to `404.html` with a genuine 404 status instead of being answered
+by the homepage.
+
+### Adding a page
+
+Add an entry to `PAGES` **and** a route in `App.tsx`. The prerender iterates
+`PAGES`, so a route without an entry has no prerendered HTML and will 404 on
+Vercel — deliberately loud rather than silently unindexed.
+
+### Without `VITE_SITE_URL`
+
+Routes are still prerendered with their titles, descriptions and share cards,
+but canonical, hreflang, `og:url`, JSON-LD and `sitemap.xml` are omitted: they
+need an absolute origin, and a canonical pointing at the wrong host is worse
+than none. The build warns and carries on. At runtime the client re-applies the
+full set using the origin actually serving the page, so a preview deployment
+canonicalises to itself rather than claiming to be production.
+
+### Languages
+
+Language is `en`/`ar`, and `?lang=ar` in the URL overrides the stored
+preference. That is what makes the published hreflang alternates truthful —
+they point at URLs that really do render in that language.
 
 ## Scripts
 

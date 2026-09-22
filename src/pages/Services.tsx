@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, metaPoints } from "../lib/content-helpers";
+import { pick, metaPoints, pickPlain } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SERVICES } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
@@ -40,7 +40,7 @@ export function Services() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={s.pageHeroInner}>
           <Reveal>
-            <span className={s.eyebrow}>// SERVICES</span>
+            <span className={s.eyebrow}>{t("// SERVICES")}</span>
             <h1 className={`${s.pageTitle} ${s.pageTitleLg}`} style={{ maxWidth: 800 }}>
               {t("Software development services that ship real products.")}
             </h1>
@@ -83,7 +83,7 @@ export function Services() {
                     {item.points.map((pt) => (
                       <li key={pt} className={s.svcPoint}>
                         <CheckIcon size={15} />
-                        {pt}
+                        {pickPlain(pt, lang)}
                       </li>
                     ))}
                   </ul>

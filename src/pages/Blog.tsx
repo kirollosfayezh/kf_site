@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, metaString } from "../lib/content-helpers";
+import { pick, metaString, pickPlain } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { Img } from "../components/Img";
@@ -78,7 +78,7 @@ export function Blog() {
                 className={`${s.catBtn} ${c === cat ? s.catBtnOn : ""}`}
                 onClick={() => setCat(c)}
               >
-                {c}
+                {pickPlain(c, lang)}
               </button>
             ))}
           </div>
@@ -96,7 +96,7 @@ export function Blog() {
 
         {featured && (
           <Reveal>
-            <Link to={`/blog/${featured.id}`} className={s.featured}>
+            <Link to={`/blog/${featured.slug || featured.id}`} className={s.featured}>
               <div className={s.featuredMedia}>
                 {featured.media?.[0] ? (
                   /* Top of the page once loaded — the LCP candidate, so eager. */
@@ -112,7 +112,7 @@ export function Blog() {
                 <p className={s.featuredDesc}>{pick(featured.summary, lang)}</p>
                 <div className={s.featuredByline}>
                   <span className={s.featuredAvatar} aria-hidden="true">KF</span>
-                  <span className={s.projResult}>Kirollos Fayez</span>
+                  <span className={s.projResult}>{t("Kirollos Fayez")}</span>
                 </div>
               </div>
             </Link>
@@ -123,7 +123,7 @@ export function Blog() {
           {rest.map((post) => {
             const tag = metaString(post.meta, "tag");
             return (
-              <Link key={post.id} to={`/blog/${post.id}`} className={s.card}>
+              <Link key={post.id} to={`/blog/${post.slug || post.id}`} className={s.card}>
                 <Reveal>
                   <div className={s.cardMedia}>
                     {post.media?.[0] ? (
@@ -131,7 +131,7 @@ export function Blog() {
                     ) : (
                       <div className={s.cardMediaFallback}>{pick(post.title, lang)[0]}</div>
                     )}
-                    {tag && <span className={s.cardTag}>{tag}</span>}
+                    {tag && <span className={s.cardTag}>{pickPlain(tag, lang)}</span>}
                   </div>
                   <div className={s.cardBody}>
                     <div className={s.cardMetaLine}>{metaLine(post.createdAt, undefined)}</div>

@@ -108,7 +108,7 @@ export function Contact() {
                   </svg>
                 </span>
                 <span>
-                  <span className={c.contactLabel}>WhatsApp</span>
+                  <span className={c.contactLabel}>{t("WhatsApp")}</span>
                   <span className={c.contactValue}>+20 150 009 9671</span>
                 </span>
               </a>
@@ -120,7 +120,7 @@ export function Contact() {
                   </svg>
                 </span>
                 <span>
-                  <span className={c.contactLabel}>Email</span>
+                  <span className={c.contactLabel}>{t("Email")}</span>
                   <span className={c.contactValue}>{EMAIL}</span>
                 </span>
               </a>
@@ -132,8 +132,8 @@ export function Contact() {
                   </svg>
                 </span>
                 <span>
-                  <span className={c.contactLabel}>Based in</span>
-                  <span className={c.contactValue}>Cairo, Egypt · working worldwide</span>
+                  <span className={c.contactLabel}>{t("Based in")}</span>
+                  <span className={c.contactValue}>{t("Cairo, Egypt · working worldwide")}</span>
                 </span>
               </div>
             </div>
@@ -154,20 +154,20 @@ export function Contact() {
               <>
                 <div className={c.fieldsGrid}>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Name *</span>
+                    <span className={c.fieldLabel}>{t("Name *")}</span>
                     <input
                       name="name"
                       type="text"
                       value={form.name}
                       onChange={(e) => onField("name", e.target.value)}
                       aria-invalid={!!errors.name}
-                      placeholder="Your name"
+                      placeholder={t("Your name")}
                       className={`${c.input} ${errors.name ? c.inputInvalid : ""}`}
                     />
-                    {errors.name && <span className={c.errorText}>Please enter your name.</span>}
+                    {errors.name && <span className={c.errorText}>{t("Please enter your name.")}</span>}
                   </label>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Company</span>
+                    <span className={c.fieldLabel}>{t("Company")}</span>
                     <input
                       name="company"
                       type="text"
@@ -178,7 +178,7 @@ export function Contact() {
                     />
                   </label>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Email *</span>
+                    <span className={c.fieldLabel}>{t("Email *")}</span>
                     <input
                       name="email"
                       type="email"
@@ -188,10 +188,10 @@ export function Contact() {
                       placeholder="you@company.com"
                       className={`${c.input} ${errors.email ? c.inputInvalid : ""}`}
                     />
-                    {errors.email && <span className={c.errorText}>Enter a valid email.</span>}
+                    {errors.email && <span className={c.errorText}>{t("Enter a valid email.")}</span>}
                   </label>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Phone / WhatsApp</span>
+                    <span className={c.fieldLabel}>{t("Phone / WhatsApp")}</span>
                     <input
                       name="phone"
                       type="tel"
@@ -202,27 +202,27 @@ export function Contact() {
                     />
                   </label>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Project type</span>
+                    <span className={c.fieldLabel}>{t("Project type")}</span>
                     <select name="ptype" value={form.ptype} onChange={(e) => onField("ptype", e.target.value)} className={c.input}>
-                      <option value="">Select...</option>
+                      <option value="">{t("Select...")}</option>
                       {PROJECT_TYPES.map((p) => (
-                        <option key={p}>{p}</option>
+                        <option key={p} value={p}>{t(p)}</option>
                       ))}
                     </select>
                   </label>
                   <label className={c.field}>
-                    <span className={c.fieldLabel}>Budget range</span>
+                    <span className={c.fieldLabel}>{t("Budget range")}</span>
                     <select name="budget" value={form.budget} onChange={(e) => onField("budget", e.target.value)} className={c.input}>
-                      <option value="">Select...</option>
+                      <option value="">{t("Select...")}</option>
                       {BUDGETS.map((b) => (
-                        <option key={b}>{b}</option>
+                        <option key={b} value={b}>{t(b)}</option>
                       ))}
                     </select>
                   </label>
                 </div>
 
                 <label className={c.field} style={{ marginTop: 16 }}>
-                  <span className={c.fieldLabel}>Project description *</span>
+                  <span className={c.fieldLabel}>{t("Project description *")}</span>
                   <textarea
                     name="message"
                     rows={4}
@@ -232,14 +232,14 @@ export function Contact() {
                     placeholder="What are you trying to build?"
                     className={`${c.input} ${c.textarea} ${errors.message ? c.inputInvalid : ""}`}
                   />
-                  {errors.message && <span className={c.errorText}>Tell us a little about your project.</span>}
+                  {errors.message && <span className={c.errorText}>{t("Tell us a little about your project.")}</span>}
                 </label>
 
                 <button type="submit" disabled={submitting} data-track="contact.submit" className={`btn btn-primary ${c.submitBtn}`}>
                   {submitting ? "Sending…" : t("Send Project Request")} <span>&rarr;</span>
                 </button>
                 {submitError && <p className={c.formError}>{submitError}</p>}
-                <p className={c.formNote}>We'll never share your details. Typical reply within one business day.</p>
+                <p className={c.formNote}>{t("We'll never share your details. Typical reply within one business day.")}</p>
               </>
             )}
           </Reveal>
@@ -248,13 +248,22 @@ export function Contact() {
 
       <section className={s.sectionNarrow}>
         <Reveal className={s.headCenter}>
-          <span className={s.eyebrow}>// FAQ</span>
+          <span className={s.eyebrow}>{t("// FAQ")}</span>
           <h2 className={s.h2sm}>{t("Common questions.")}</h2>
         </Reveal>
         <div className={s.faqList}>
           {faqItems.map((f, i) => (
             <Reveal key={f.q} className={s.faqItem}>
-              <button type="button" className={s.faqQ} aria-expanded={openFaq === i} onClick={() => setOpenFaq((cur) => (cur === i ? -1 : i))}>
+              {/* Answer text lives in the DOM only while open, so the SEO layer
+                  reads both halves from these attributes — see Home.tsx. */}
+              <button
+                type="button"
+                className={s.faqQ}
+                aria-expanded={openFaq === i}
+                data-kf-faq-q={f.q}
+                data-kf-faq-a={f.a}
+                onClick={() => setOpenFaq((cur) => (cur === i ? -1 : i))}
+              >
                 <span>{f.q}</span>
                 <span className={`${s.faqChevron} ${openFaq === i ? s.faqChevronOpen : ""}`} aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round">

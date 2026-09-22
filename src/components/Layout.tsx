@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { Nav } from "./Nav";
 import { Footer } from "./Footer";
 import { useSmoothScroll } from "../lib/smooth-scroll";
+import { RouteSeo } from "./Seo";
 
 /**
  * The chat widget pulls in socket.io-client, which is the single largest
@@ -51,6 +52,7 @@ export function Layout() {
 
   return (
     <div style={{ position: "relative", width: "100%", minHeight: "100vh", background: "var(--bg)" }}>
+      <RouteSeo />
       <Nav />
       <main>
         <Outlet />

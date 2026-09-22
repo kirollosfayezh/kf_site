@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick } from "../lib/content-helpers";
+import { pick, pickPlain } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_FAQS, FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
@@ -283,8 +283,8 @@ export function Home() {
                   >
                     <span className={`${h.aiRecipeIcon} ${on ? h.aiRecipeIconOn : ""}`}>&bull;</span>
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span className={h.aiRecipeTitle}>{r.title}</span>
-                      <div className={h.aiRecipeTag}>{r.tag}</div>
+                      <span className={h.aiRecipeTitle}>{t(r.title)}</span>
+                      <div className={h.aiRecipeTag}>{t(r.tag)}</div>
                     </span>
                   </button>
                 );
@@ -292,7 +292,7 @@ export function Home() {
             </Reveal>
 
             <Reveal className={h.aiFlow}>
-              <h3 className={h.aiFlowTitle}>{activeRecipe.title}</h3>
+              <h3 className={h.aiFlowTitle}>{t(activeRecipe.title)}</h3>
               <div style={{ marginTop: 20 }}>
                 {activeRecipe.steps.map((step, i) => (
                   <div key={step.title} className={h.aiStep}>
@@ -301,8 +301,8 @@ export function Home() {
                     <span className={h.aiStepBadge} style={{ background: KIND_COLOR[step.kind] + "1f", color: KIND_COLOR[step.kind], border: `1px solid ${KIND_COLOR[step.kind]}4d` }}>
                       {step.kind}
                     </span>
-                    <div className={h.aiStepTitle}>{step.title}</div>
-                    <p className={h.aiStepDetail}>{step.detail}</p>
+                    <div className={h.aiStepTitle}>{t(step.title)}</div>
+                    <p className={h.aiStepDetail}>{t(step.detail)}</p>
                   </div>
                 ))}
               </div>
@@ -310,7 +310,7 @@ export function Home() {
                 {activeRecipe.outcome.map((o) => (
                   <div key={o.l}>
                     <div className={h.aiOutcomeValue}>{o.v}</div>
-                    <div className={h.aiOutcomeLabel}>{o.l}</div>
+                    <div className={h.aiOutcomeLabel}>{t(o.l)}</div>
                   </div>
                 ))}
               </div>
@@ -346,7 +346,7 @@ export function Home() {
                 <Reveal>
                   <div className={s.cardMedia}>
                     {item.media ? <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
-                    {item.tag && <div className={s.cardTag} style={{ position: "absolute", insetInlineStart: 16, bottom: 12, top: "auto", background: "none", border: "none", padding: 0 }}>{item.tag}</div>}
+                    {item.tag && <div className={s.cardTag} style={{ position: "absolute", insetInlineStart: 16, bottom: 12, top: "auto", background: "none", border: "none", padding: 0 }}>{pickPlain(item.tag, lang)}</div>}
                   </div>
                   <div className={s.cardBody}>
                     <h3 className={s.cardTitle} style={{ fontSize: 21 }}>{item.title}</h3>
@@ -384,7 +384,7 @@ export function Home() {
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
                 {item.media ? <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
-                {item.category && <span className={s.cardTag}>{item.category}</span>}
+                {item.category && <span className={s.cardTag}>{pickPlain(item.category, lang)}</span>}
               </div>
               <div className={s.cardBody} style={{ padding: 24 }}>
                 <h3 className={s.cardTitle} style={{ fontSize: 20 }}>{item.title}</h3>
@@ -402,7 +402,7 @@ export function Home() {
       <section className={s.sectionAlt}>
         <div className={s.section}>
           <Reveal style={{ maxWidth: 640 }}>
-            <span className={s.eyebrowPink}>// PROCESS</span>
+            <span className={s.eyebrowPink}>{t("// PROCESS")}</span>
             <h2 className={s.h2}>{t("From idea to launch.")}</h2>
           </Reveal>
           <div className={s.gridSteps}>
@@ -421,7 +421,7 @@ export function Home() {
       {/* WHY */}
       <section className={s.section}>
         <Reveal style={{ maxWidth: 640 }}>
-          <span className={s.eyebrow}>// WHY KF TECH</span>
+          <span className={s.eyebrow}>{t("// WHY KF TECH")}</span>
           <h2 className={s.h2sm}>{t("A partner, not just a developer.")}</h2>
         </Reveal>
         <div className={s.grid2}>
@@ -457,7 +457,7 @@ export function Home() {
             />
           </Reveal>
           <Reveal>
-            <span className={s.eyebrowPink}>// ABOUT</span>
+            <span className={s.eyebrowPink}>{t("// ABOUT")}</span>
             <h2 className={s.h2sm}>{t("We don't just write code. We build products.")}</h2>
             <p className={s.lede} style={{ maxWidth: "none" }}>
               {t(
@@ -479,13 +479,24 @@ export function Home() {
       {/* FAQ */}
       <section className={s.sectionNarrow}>
         <Reveal className={s.headCenter}>
-          <span className={s.eyebrow}>// FAQ</span>
+          <span className={s.eyebrow}>{t("// FAQ")}</span>
           <h2 className={s.h2sm}>{t("Questions, answered.")}</h2>
         </Reveal>
         <div className={s.faqList}>
           {faqItems.map((f, i) => (
             <Reveal key={f.q} className={s.faqItem}>
-              <button type="button" className={s.faqQ} aria-expanded={openFaq === i} onClick={() => setOpenFaq((cur) => (cur === i ? -1 : i))}>
+              {/* The answer is only in the DOM while the item is open, so the
+                  SEO layer reads both halves from these attributes instead —
+                  the same contract kf-seo.js used in the design export. This
+                  keeps the FAQPage schema and the visible accordion in step. */}
+              <button
+                type="button"
+                className={s.faqQ}
+                aria-expanded={openFaq === i}
+                data-kf-faq-q={f.q}
+                data-kf-faq-a={f.a}
+                onClick={() => setOpenFaq((cur) => (cur === i ? -1 : i))}
+              >
                 <span>{f.q}</span>
                 <span className={`${s.faqChevron} ${openFaq === i ? s.faqChevronOpen : ""}`} aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round">

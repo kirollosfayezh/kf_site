@@ -14,6 +14,18 @@ const SOCIAL = [
   { label: "GitHub", href: "https://github.com/koko619911" },
 ];
 
+/**
+ * The dictionary keys the whole copyright line, year included, because that is
+ * the exact string the design export translated. Keeping the year dynamic and
+ * substituting it into the translated string gives both: a correct year and a
+ * translated line. An untranslated year still falls back to the English key.
+ */
+const COPYRIGHT_KEY = "\u00A9 2026 KF Tech Solutions. All rights reserved.";
+
+function copyright(t: (k: string) => string): string {
+  return t(COPYRIGHT_KEY).replace("2026", String(new Date().getFullYear()));
+}
+
 export function Footer() {
   const { t } = useI18n();
 
@@ -39,7 +51,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h2 className={styles.colTitle}>Company</h2>
+            <h2 className={styles.colTitle}>{t("Company")}</h2>
             <div className={styles.colLinks}>
               <Link to="/services">{t("Services")}</Link>
               <Link to="/solutions">{t("Solutions")}</Link>
@@ -51,18 +63,18 @@ export function Footer() {
           </div>
 
           <div>
-            <h2 className={styles.colTitle}>Legal</h2>
+            <h2 className={styles.colTitle}>{t("Legal")}</h2>
             <div className={styles.colLinks}>
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
+              <a href="#">{t("Privacy Policy")}</a>
+              <a href="#">{t("Terms of Service")}</a>
             </div>
           </div>
 
           <div>
-            <h2 className={styles.colTitle}>Get in touch</h2>
+            <h2 className={styles.colTitle}>{t("Get in touch")}</h2>
             <div className={styles.colLinks}>
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
-                WhatsApp
+                {t("WhatsApp")}
               </a>
               <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
             </div>
@@ -70,7 +82,7 @@ export function Footer() {
         </div>
 
         <div className={styles.bottom}>
-          <span className={styles.bottomText}>&copy; {new Date().getFullYear()} KF Tech Solutions. All rights reserved.</span>
+          <span className={styles.bottomText}>{copyright(t)}</span>
           <span className={styles.bottomMono}>{t("Ideas into real, working products")}</span>
         </div>
       </div>
@@ -79,7 +91,7 @@ export function Footer() {
         href={WA_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp" data-track="footer.whatsapp"
+        aria-label={t("Chat on WhatsApp")} data-track="footer.whatsapp"
         style={{
           position: "fixed",
           insetInlineEnd: 22,
