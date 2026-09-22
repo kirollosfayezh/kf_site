@@ -59,8 +59,9 @@ export function About() {
             <span className={s.eyebrowPink}>{t("// ABOUT")}</span>
             <h1 className={`${s.pageTitle} ${s.pageTitleMd}`}>{t("We don't just write code. We build products.")}</h1>
             <p className={s.pageLede}>
-              KF Tech Solutions is a software studio based in Cairo, partnering with businesses to turn ideas into
-              working products — from understanding the problem to engineering the system and supporting it after launch.
+              {t(
+                "KF Tech Solutions is a software studio based in Cairo, partnering with businesses to turn ideas into working products — from understanding the problem to engineering the system and supporting it after launch.",
+              )}
             </p>
           </Reveal>
           {/* The founder portrait and workspace strip from the original export. */}

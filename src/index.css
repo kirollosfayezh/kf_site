@@ -211,8 +211,23 @@ img { max-width: 100%; display: block; }
 }
 
 /* RTL support */
+
+/**
+ * Arabic is a connected script, so every letter-spacing the Latin design sets
+ * is wrong here — and wrong in both directions. The display headings use
+ * -.03em, which overlaps glyphs that should join; the mono labels use +.06em,
+ * which pulls them apart into what reads as a spelled-out word. Neither is a
+ * stylistic choice in Arabic, so reset the lot.
+ *
+ * The universal selector outranks the CSS-module classes that set it
+ * (`html[dir="rtl"] *` is 0-1-1 against their 0-1-0), which is the point.
+ */
+html[dir="rtl"] * { letter-spacing: normal; }
+
+/* The mono tags are forced to LTR just below because their content is Latin —
+   "// PROJECTS", version numbers — so their tracking is put back. */
 html[dir="rtl"] .mono-tag,
-html[dir="rtl"] .ts-mono { direction: ltr; unicode-bidi: embed; }
+html[dir="rtl"] .ts-mono { direction: ltr; unicode-bidi: embed; letter-spacing: 0.06em; }
 /* Arrow glyphs in CTA labels point the other way in Arabic. */
 html[dir="rtl"] .btn span[aria-hidden="true"],
 html[dir="rtl"] .btn > span:last-child { transform: scaleX(-1); display: inline-block; }

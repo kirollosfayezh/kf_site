@@ -2518,5 +2518,629 @@
     "ar": "إغلاق المحادثة",
     "de": "Chat schließen",
     "fr": "Fermer le chat"
+  },
+  "Software built to run on, not to demo well.": {
+    "en": "Software\nbuilt to *run* on,\nnot to demo well.",
+    "ar": "برمجيات\nتُبنى *لتعمل*،\nلا لتبدو جيدة فقط.",
+    "de": "Software,\ndie wirklich *läuft* —\nnicht nur gut aussieht.",
+    "fr": "Des logiciels\nconçus pour *tourner*,\npas pour la démo."
+  },
+  "OPEN FOR WORK": {
+    "en": "OPEN FOR WORK",
+    "ar": "مفتوحون لمشاريع جديدة",
+    "de": "OFFEN FÜR PROJEKTE",
+    "fr": "DISPONIBLES POUR VOS PROJETS"
+  },
+  "CAIRO, EG": {
+    "en": "CAIRO, EG",
+    "ar": "القاهرة، مصر",
+    "de": "KAIRO, ÄGYPTEN",
+    "fr": "LE CAIRE, ÉGYPTE"
+  },
+  "Custom platforms, POS systems, dashboards and AI automation — engineered around how your business actually operates, then supported long after launch.": {
+    "en": "Custom platforms, POS systems, dashboards and AI automation — engineered around how your business actually operates, then supported long after launch.",
+    "ar": "منصات مخصصة وأنظمة نقاط بيع ولوحات تحكم وأتمتة بالذكاء الاصطناعي — مهندسة حول طريقة عمل شركتك فعلياً، ومدعومة بعد الإطلاق بوقت طويل.",
+    "de": "Individuelle Plattformen, Kassensysteme, Dashboards und KI-Automatisierung — gebaut um die tatsächlichen Abläufe Ihres Unternehmens herum und lange nach dem Launch betreut.",
+    "fr": "Plateformes sur mesure, systèmes de caisse, tableaux de bord et automatisation IA — conçus autour du fonctionnement réel de votre entreprise, et suivis bien après le lancement."
+  },
+  "Start a project": {
+    "en": "Start a project",
+    "ar": "ابدأ مشروعاً",
+    "de": "Projekt starten",
+    "fr": "Démarrer un projet"
+  },
+  "See the work": {
+    "en": "See the work",
+    "ar": "شاهد أعمالنا",
+    "de": "Arbeiten ansehen",
+    "fr": "Voir nos réalisations"
+  },
+  "PROJECTS": {
+    "en": "PROJECTS",
+    "ar": "مشاريع",
+    "de": "PROJEKTE",
+    "fr": "PROJETS"
+  },
+  "YEARS": {
+    "en": "YEARS",
+    "ar": "سنوات",
+    "de": "JAHRE",
+    "fr": "ANNÉES"
+  },
+  "LANGUAGES": {
+    "en": "LANGUAGES",
+    "ar": "لغات",
+    "de": "SPRACHEN",
+    "fr": "LANGUES"
+  },
+  "SERVICES": {
+    "en": "SERVICES",
+    "ar": "الخدمات",
+    "de": "LEISTUNGEN",
+    "fr": "SERVICES"
+  },
+  "SOLUTIONS": {
+    "en": "SOLUTIONS",
+    "ar": "الحلول",
+    "de": "LÖSUNGEN",
+    "fr": "SOLUTIONS"
+  },
+  "CUSTOM SOFTWARE": {
+    "en": "CUSTOM SOFTWARE",
+    "ar": "برمجيات مخصصة",
+    "de": "INDIVIDUALSOFTWARE",
+    "fr": "LOGICIELS SUR MESURE"
+  },
+  "POS SYSTEMS": {
+    "en": "POS SYSTEMS",
+    "ar": "أنظمة نقاط البيع",
+    "de": "KASSENSYSTEME",
+    "fr": "SYSTÈMES DE CAISSE"
+  },
+  "WEB PLATFORMS": {
+    "en": "WEB PLATFORMS",
+    "ar": "منصات ويب",
+    "de": "WEB-PLATTFORMEN",
+    "fr": "PLATEFORMES WEB"
+  },
+  "MOBILE APPS": {
+    "en": "MOBILE APPS",
+    "ar": "تطبيقات موبايل",
+    "de": "MOBILE APPS",
+    "fr": "APPLICATIONS MOBILES"
+  },
+  "AI AUTOMATION": {
+    "en": "AI AUTOMATION",
+    "ar": "أتمتة بالذكاء الاصطناعي",
+    "de": "KI-AUTOMATISIERUNG",
+    "fr": "AUTOMATISATION IA"
+  },
+  "DASHBOARDS": {
+    "en": "DASHBOARDS",
+    "ar": "لوحات تحكم",
+    "de": "DASHBOARDS",
+    "fr": "TABLEAUX DE BORD"
+  },
+  "TRIGGER": {
+    "en": "TRIGGER",
+    "ar": "المُحفّز",
+    "de": "AUSLÖSER",
+    "fr": "DÉCLENCHEUR"
+  },
+  "ACTION": {
+    "en": "ACTION",
+    "ar": "إجراء",
+    "de": "AKTION",
+    "fr": "ACTION"
+  },
+  "LOG": {
+    "en": "LOG",
+    "ar": "تسجيل",
+    "de": "PROTOKOLL",
+    "fr": "JOURNAL"
+  },
+  "A message arrives": {
+    "en": "A message arrives",
+    "ar": "تصل رسالة",
+    "de": "Eine Nachricht kommt an",
+    "fr": "Un message arrive"
+  },
+  "WhatsApp, the website form or your inbox — all land in one queue.": {
+    "en": "WhatsApp, the website form or your inbox — all land in one queue.",
+    "ar": "واتساب أو نموذج الموقع أو بريدك — كلها تصل إلى قائمة واحدة.",
+    "de": "WhatsApp, das Formular auf der Website oder Ihr Postfach — alles landet in einer Warteschlange.",
+    "fr": "WhatsApp, le formulaire du site ou votre boîte mail — tout arrive dans une seule file."
+  },
+  "Read and classify": {
+    "en": "Read and classify",
+    "ar": "قراءة وتصنيف",
+    "de": "Lesen und einordnen",
+    "fr": "Lire et classer"
+  },
+  "The agent works out what they want, how urgent it is and which service it maps to.": {
+    "en": "The agent works out what they want, how urgent it is and which service it maps to.",
+    "ar": "يحدد الوكيل ما يريده العميل ومدى إلحاحه وأي خدمة يتبع.",
+    "de": "Der Agent erkennt, was gewünscht wird, wie dringend es ist und zu welcher Leistung es gehört.",
+    "fr": "L'agent détermine la demande, son urgence et le service concerné."
+  },
+  "Reply or escalate": {
+    "en": "Reply or escalate",
+    "ar": "الرد أو التصعيد",
+    "de": "Antworten oder eskalieren",
+    "fr": "Répondre ou escalader"
+  },
+  "Common questions get an instant answer. Real leads are flagged and assigned to you.": {
+    "en": "Common questions get an instant answer. Real leads are flagged and assigned to you.",
+    "ar": "الأسئلة الشائعة تحصل على رد فوري، والفرص الحقيقية تُعلَّم وتُحال إليك.",
+    "de": "Häufige Fragen werden sofort beantwortet. Echte Anfragen werden markiert und Ihnen zugewiesen.",
+    "fr": "Les questions courantes reçoivent une réponse immédiate. Les vraies pistes sont signalées et vous sont assignées."
+  },
+  "Record the lead": {
+    "en": "Record the lead",
+    "ar": "تسجيل الفرصة",
+    "de": "Anfrage erfassen",
+    "fr": "Enregistrer la piste"
+  },
+  "Contact details, source and summary written straight into your CRM or sheet.": {
+    "en": "Contact details, source and summary written straight into your CRM or sheet.",
+    "ar": "بيانات التواصل والمصدر والملخص تُكتب مباشرة في نظام إدارة العملاء أو الجدول.",
+    "de": "Kontaktdaten, Quelle und Zusammenfassung landen direkt in Ihrem CRM oder Ihrer Tabelle.",
+    "fr": "Coordonnées, source et résumé écrits directement dans votre CRM ou votre tableur."
+  },
+  "first response time": {
+    "en": "first response time",
+    "ar": "زمن أول رد",
+    "de": "Zeit bis zur ersten Antwort",
+    "fr": "délai de première réponse"
+  },
+  "handled without you": {
+    "en": "handled without you",
+    "ar": "يُعالَج دون تدخلك",
+    "de": "ohne Ihr Zutun erledigt",
+    "fr": "traité sans vous"
+  },
+  "enquiries lost": {
+    "en": "enquiries lost",
+    "ar": "استفسارات ضائعة",
+    "de": "verlorene Anfragen",
+    "fr": "demandes perdues"
+  },
+  "KF Tech Solutions is a software studio based in Cairo, partnering with businesses to turn ideas into working products — from understanding the problem to engineering the system and supporting it after launch.": {
+    "en": "KF Tech Solutions is a software studio based in Cairo, partnering with businesses to turn ideas into working products — from understanding the problem to engineering the system and supporting it after launch.",
+    "ar": "KF Tech Solutions استوديو برمجيات مقره القاهرة، يعمل مع الشركات لتحويل الأفكار إلى منتجات تعمل — من فهم المشكلة إلى هندسة النظام ودعمه بعد الإطلاق.",
+    "de": "KF Tech Solutions ist ein Softwarestudio in Kairo, das gemeinsam mit Unternehmen Ideen in funktionierende Produkte verwandelt — vom Verständnis des Problems über die Umsetzung bis zur Betreuung nach dem Launch.",
+    "fr": "KF Tech Solutions est un studio logiciel basé au Caire qui accompagne les entreprises pour transformer des idées en produits qui fonctionnent — de la compréhension du problème à l'ingénierie du système et son suivi après lancement."
+  },
+  "iOS & Android from one codebase": {
+    "en": "iOS & Android from one codebase",
+    "ar": "iOS و Android من قاعدة كود واحدة",
+    "de": "iOS und Android aus einer Codebasis",
+    "fr": "iOS et Android depuis une seule base de code"
+  },
+  "// INSIGHTS": {
+    "en": "// INSIGHTS",
+    "ar": "// مقالات",
+    "de": "// EINBLICKE",
+    "fr": "// ARTICLES"
+  },
+  "All": {
+    "en": "All",
+    "ar": "الكل",
+    "de": "Alle",
+    "fr": "Tout"
+  },
+  "FROM 1 WEEK": {
+    "en": "FROM 1 WEEK",
+    "ar": "من أسبوع واحد",
+    "de": "AB 1 WOCHE",
+    "fr": "À PARTIR D'1 SEMAINE"
+  },
+  "FROM 2 WEEKS": {
+    "en": "FROM 2 WEEKS",
+    "ar": "من أسبوعين",
+    "de": "AB 2 WOCHEN",
+    "fr": "À PARTIR DE 2 SEMAINES"
+  },
+  "FROM 3 WEEKS": {
+    "en": "FROM 3 WEEKS",
+    "ar": "من 3 أسابيع",
+    "de": "AB 3 WOCHEN",
+    "fr": "À PARTIR DE 3 SEMAINES"
+  },
+  "Tell us what you need": {
+    "en": "Tell us what you need",
+    "ar": "أخبرنا بما تحتاجه",
+    "de": "Sagen Sie uns, was Sie brauchen",
+    "fr": "Dites-nous ce qu'il vous faut"
+  },
+  "A short form or a WhatsApp message is enough to start.": {
+    "en": "A short form or a WhatsApp message is enough to start.",
+    "ar": "نموذج قصير أو رسالة واتساب تكفي للبدء.",
+    "de": "Ein kurzes Formular oder eine WhatsApp-Nachricht genügt.",
+    "fr": "Un court formulaire ou un message WhatsApp suffit."
+  },
+  "Get a fixed quote": {
+    "en": "Get a fixed quote",
+    "ar": "احصل على عرض سعر ثابت",
+    "de": "Festpreis-Angebot erhalten",
+    "fr": "Obtenir un devis fixe"
+  },
+  "Clear scope and price before anything is built.": {
+    "en": "Clear scope and price before anything is built.",
+    "ar": "نطاق وسعر واضحان قبل بناء أي شيء.",
+    "de": "Klarer Umfang und Preis, bevor etwas gebaut wird.",
+    "fr": "Périmètre et prix clairs avant toute réalisation."
+  },
+  "See a working demo": {
+    "en": "See a working demo",
+    "ar": "شاهد نسخة تجريبية تعمل",
+    "de": "Funktionierende Demo sehen",
+    "fr": "Voir une démo fonctionnelle"
+  },
+  "You review a real, working version before committing.": {
+    "en": "You review a real, working version before committing.",
+    "ar": "تراجع نسخة حقيقية تعمل قبل الالتزام.",
+    "de": "Sie prüfen eine echte, lauffähige Version, bevor Sie sich festlegen.",
+    "fr": "Vous testez une version réelle et fonctionnelle avant de vous engager."
+  },
+  "We deploy it and stay on for support after launch.": {
+    "en": "We deploy it and stay on for support after launch.",
+    "ar": "ننشره ونبقى معك للدعم بعد الإطلاق.",
+    "de": "Wir bringen es live und bleiben nach dem Launch für den Support an Bord.",
+    "fr": "Nous le déployons et restons pour le support après le lancement."
+  },
+  "Our POS finally matches how we actually work.": {
+    "en": "Our POS finally matches how we actually work.",
+    "ar": "أخيراً أصبح نظام نقاط البيع مطابقاً لطريقة عملنا فعلاً.",
+    "de": "Unser Kassensystem passt endlich zu unseren tatsächlichen Abläufen.",
+    "fr": "Notre caisse correspond enfin à notre façon de travailler."
+  },
+  "Reporting that used to take a day now takes a minute.": {
+    "en": "Reporting that used to take a day now takes a minute.",
+    "ar": "تقارير كانت تستغرق يوماً صارت تستغرق دقيقة.",
+    "de": "Auswertungen, die früher einen Tag dauerten, dauern jetzt eine Minute.",
+    "fr": "Des rapports qui prenaient une journée prennent désormais une minute."
+  },
+  "Delivered on time and communicated clearly throughout.": {
+    "en": "Delivered on time and communicated clearly throughout.",
+    "ar": "سُلّم في الموعد مع تواصل واضح طوال الوقت.",
+    "de": "Pünktlich geliefert und durchgehend klar kommuniziert.",
+    "fr": "Livré dans les délais, avec une communication claire du début à la fin."
+  },
+  "Owner, Café Delight": {
+    "en": "Owner, Café Delight",
+    "ar": "المالك، Café Delight",
+    "de": "Inhaber, Café Delight",
+    "fr": "Propriétaire, Café Delight"
+  },
+  "Director, Farouk Retail": {
+    "en": "Director, Farouk Retail",
+    "ar": "مدير، Farouk Retail",
+    "de": "Geschäftsführer, Farouk Retail",
+    "fr": "Directeur, Farouk Retail"
+  },
+  "PM, Bauwerk GmbH": {
+    "en": "PM, Bauwerk GmbH",
+    "ar": "مدير مشروع، Bauwerk GmbH",
+    "de": "Projektleiter, Bauwerk GmbH",
+    "fr": "Chef de projet, Bauwerk GmbH"
+  },
+  "How fast do you reply?": {
+    "en": "How fast do you reply?",
+    "ar": "ما سرعة ردكم؟",
+    "de": "Wie schnell antworten Sie?",
+    "fr": "Sous quel délai répondez-vous ?"
+  },
+  "Within one business day, usually much sooner.": {
+    "en": "Within one business day, usually much sooner.",
+    "ar": "خلال يوم عمل واحد، وغالباً أسرع بكثير.",
+    "de": "Innerhalb eines Werktags, meist deutlich schneller.",
+    "fr": "Sous un jour ouvré, souvent bien plus vite."
+  },
+  "Is the quote really fixed?": {
+    "en": "Is the quote really fixed?",
+    "ar": "هل عرض السعر ثابت فعلاً؟",
+    "de": "Ist das Angebot wirklich ein Festpreis?",
+    "fr": "Le devis est-il vraiment fixe ?"
+  },
+  "Yes — once we agree scope, the price does not move unless the scope does.": {
+    "en": "Yes — once we agree scope, the price does not move unless the scope does.",
+    "ar": "نعم — بمجرد الاتفاق على النطاق، لا يتغير السعر إلا إذا تغير النطاق.",
+    "de": "Ja — sobald der Umfang steht, ändert sich der Preis nur, wenn sich der Umfang ändert.",
+    "fr": "Oui — une fois le périmètre validé, le prix ne bouge que si le périmètre bouge."
+  },
+  "Do I need to know exactly what I want?": {
+    "en": "Do I need to know exactly what I want?",
+    "ar": "هل يجب أن أعرف بالضبط ما أريد؟",
+    "de": "Muss ich genau wissen, was ich will?",
+    "fr": "Dois-je savoir exactement ce que je veux ?"
+  },
+  "No. A rough idea of the problem is enough to start the conversation.": {
+    "en": "No. A rough idea of the problem is enough to start the conversation.",
+    "ar": "لا. فكرة مبدئية عن المشكلة تكفي لبدء الحديث.",
+    "de": "Nein. Eine grobe Vorstellung des Problems genügt für den Anfang.",
+    "fr": "Non. Une idée générale du problème suffit pour commencer."
+  },
+  "A free scoping call, a fixed quote, and a working demo before you commit to the full build.": {
+    "en": "A free scoping call, a fixed quote, and a working demo before you commit to the full build.",
+    "ar": "مكالمة تحديد نطاق مجانية، وعرض سعر ثابت، ونسخة تجريبية تعمل قبل الالتزام بالبناء الكامل.",
+    "de": "Ein kostenloses Scoping-Gespräch, ein Festpreis-Angebot und eine funktionierende Demo, bevor Sie sich für die volle Umsetzung entscheiden.",
+    "fr": "Un appel de cadrage gratuit, un devis fixe et une démo fonctionnelle avant de vous engager sur la réalisation complète."
+  },
+  "KF Tech Solutions — Custom Software, Web & AI Automation": {
+    "en": "KF Tech Solutions — Custom Software, Web & AI Automation",
+    "ar": "KF Tech Solutions — برمجيات مخصصة ومواقع وأتمتة بالذكاء الاصطناعي",
+    "de": "KF Tech Solutions — Individualsoftware, Web & KI-Automatisierung",
+    "fr": "KF Tech Solutions — Logiciels sur mesure, web & automatisation IA"
+  },
+  "Software Development & AI Automation Services | KF Tech Solutions": {
+    "en": "Software Development & AI Automation Services | KF Tech Solutions",
+    "ar": "خدمات تطوير البرمجيات والأتمتة بالذكاء الاصطناعي | KF Tech Solutions",
+    "de": "Softwareentwicklung & KI-Automatisierung | KF Tech Solutions",
+    "fr": "Développement logiciel & automatisation IA | KF Tech Solutions"
+  },
+  "Industry Solutions — POS, Retail, Real Estate, Clinics | KF Tech": {
+    "en": "Industry Solutions — POS, Retail, Real Estate, Clinics | KF Tech",
+    "ar": "حلول حسب القطاع — كاشير ومطاعم وتجزئة وعقارات وعيادات | KF Tech",
+    "de": "Branchenlösungen — Kassensysteme, Handel, Immobilien, Kliniken | KF Tech",
+    "fr": "Solutions par secteur — caisse, commerce, immobilier, cliniques | KF Tech"
+  },
+  "Our Work — Software Projects & Case Studies | KF Tech Solutions": {
+    "en": "Our Work — Software Projects & Case Studies | KF Tech Solutions",
+    "ar": "أعمالنا — مشاريع برمجية ودراسات حالة | KF Tech Solutions",
+    "de": "Referenzen — Softwareprojekte & Fallstudien | KF Tech Solutions",
+    "fr": "Nos réalisations — projets logiciels & études de cas | KF Tech Solutions"
+  },
+  "About KF Tech Solutions — Software Studio in Cairo": {
+    "en": "About KF Tech Solutions — Software Studio in Cairo",
+    "ar": "عن KF Tech Solutions — استوديو برمجيات في القاهرة",
+    "de": "Über KF Tech Solutions — Software-Studio in Kairo",
+    "fr": "À propos de KF Tech Solutions — studio logiciel au Caire"
+  },
+  "Contact KF Tech Solutions — Get a Free Project Quote": {
+    "en": "Contact KF Tech Solutions — Get a Free Project Quote",
+    "ar": "تواصل مع KF Tech Solutions — احصل على عرض سعر مجاني",
+    "de": "Kontakt KF Tech Solutions — kostenloses Angebot anfordern",
+    "fr": "Contact KF Tech Solutions — devis gratuit pour votre projet"
+  },
+  "Insights on Software, Automation & Business Systems | KF Tech": {
+    "en": "Insights on Software, Automation & Business Systems | KF Tech",
+    "ar": "مقالات عن البرمجيات والأتمتة وأنظمة الأعمال | KF Tech",
+    "de": "Einblicke zu Software, Automatisierung & Business-Systemen | KF Tech",
+    "fr": "Articles sur le logiciel, l'automatisation et les systèmes | KF Tech"
+  },
+  "Custom Software Built for Your Business | Free Quote — KF Tech": {
+    "en": "Custom Software Built for Your Business | Free Quote — KF Tech",
+    "ar": "برمجيات مخصصة لشركتك | عرض سعر مجاني — KF Tech",
+    "de": "Individuelle Software für Ihr Unternehmen | Angebot — KF Tech",
+    "fr": "Logiciels sur mesure pour votre entreprise | Devis — KF Tech"
+  },
+  "Page not found — KF Tech Solutions": {
+    "en": "Page not found — KF Tech Solutions",
+    "ar": "الصفحة غير موجودة — KF Tech Solutions",
+    "de": "Seite nicht gefunden — KF Tech Solutions",
+    "fr": "Page introuvable — KF Tech Solutions"
+  },
+  "Custom software, web and mobile development plus AI automation for growing businesses. POS systems, dashboards and integrations built around how you actually work.": {
+    "en": "Custom software, web and mobile development plus AI automation for growing businesses. POS systems, dashboards and integrations built around how you actually work.",
+    "ar": "برمجيات مخصصة وتطوير ويب وتطبيقات موبايل وأتمتة بالذكاء الاصطناعي للشركات النامية. أنظمة كاشير ولوحات تحكم وتكاملات مبنية حول طريقة عملك الفعلية.",
+    "de": "Individuelle Software, Web- und Mobile-Entwicklung sowie KI-Automatisierung für wachsende Unternehmen. Kassensysteme, Dashboards und Integrationen, gebaut um Ihre tatsächlichen Abläufe herum.",
+    "fr": "Logiciels sur mesure, développement web et mobile et automatisation IA pour les entreprises en croissance. Caisses, tableaux de bord et intégrations conçus autour de votre façon de travailler."
+  },
+  "Custom software, web and mobile apps, business systems, automation, IoT, AI integration and backend APIs — delivered end to end from Cairo.": {
+    "en": "Custom software, web and mobile apps, business systems, automation, IoT, AI integration and backend APIs — delivered end to end from Cairo.",
+    "ar": "برمجيات مخصصة وتطبيقات ويب وموبايل وأنظمة أعمال وأتمتة وإنترنت الأشياء وتكامل الذكاء الاصطناعي وواجهات خلفية — من الفكرة للإطلاق من القاهرة.",
+    "de": "Individuelle Software, Web- und Mobile-Apps, Business-Systeme, Automatisierung, IoT, KI-Integration und Backend-APIs — end-to-end aus Kairo.",
+    "fr": "Logiciels sur mesure, applications web et mobiles, systèmes métier, automatisation, IoT, intégration IA et API backend — de bout en bout depuis Le Caire."
+  },
+  "Software built for how your industry actually operates: restaurants, retail, real estate, startups and enterprises.": {
+    "en": "Software built for how your industry actually operates: restaurants, retail, real estate, startups and enterprises.",
+    "ar": "برمجيات مبنية على طريقة عمل قطاعك فعلياً: مطاعم وتجزئة وعقارات وشركات ناشئة ومؤسسات.",
+    "de": "Software, gebaut für die tatsächlichen Abläufe Ihrer Branche: Gastronomie, Handel, Immobilien, Start-ups und Konzerne.",
+    "fr": "Des logiciels conçus pour le fonctionnement réel de votre secteur : restauration, commerce, immobilier, start-ups et grandes entreprises."
+  },
+  "Delivered platforms, dashboards and mobile apps, with the problem, the approach and the technology behind each build.": {
+    "en": "Delivered platforms, dashboards and mobile apps, with the problem, the approach and the technology behind each build.",
+    "ar": "منصات ولوحات تحكم وتطبيقات موبايل تم تسليمها، مع المشكلة والأسلوب والتقنية وراء كل مشروع.",
+    "de": "Ausgelieferte Plattformen, Dashboards und Mobile-Apps — mit Problem, Ansatz und Technologie hinter jedem Projekt.",
+    "fr": "Plateformes, tableaux de bord et applications mobiles livrés, avec le problème, l'approche et la technologie de chaque projet."
+  },
+  "A software studio founded on one idea: businesses do not need more tools, they need the right system built around how they work.": {
+    "en": "A software studio founded on one idea: businesses do not need more tools, they need the right system built around how they work.",
+    "ar": "استوديو برمجيات قام على فكرة واحدة: الشركات لا تحتاج أدوات أكثر، بل النظام الصحيح المبني حول طريقة عملها.",
+    "de": "Ein Software-Studio, gegründet auf einer Idee: Unternehmen brauchen nicht mehr Tools, sondern das richtige System für ihre Arbeitsweise.",
+    "fr": "Un studio logiciel fondé sur une idée : les entreprises n'ont pas besoin de plus d'outils, mais du bon système conçu pour leur façon de travailler."
+  },
+  "Tell us what you need built. Free scoping call, fixed written quote and a reply within one business day.": {
+    "en": "Tell us what you need built. Free scoping call, fixed written quote and a reply within one business day.",
+    "ar": "أخبرنا بما تريد بناءه. مكالمة تحديد نطاق مجانية وعرض سعر مكتوب وثابت ورد خلال يوم عمل واحد.",
+    "de": "Sagen Sie uns, was Sie bauen möchten. Kostenloses Scoping-Gespräch, schriftliches Festpreisangebot und Antwort innerhalb eines Werktags.",
+    "fr": "Dites-nous ce que vous voulez construire. Appel de cadrage gratuit, devis écrit à prix fixe et réponse sous un jour ouvré."
+  },
+  "Practical notes on software, AI automation and running a better business — written for owners, not engineers.": {
+    "en": "Practical notes on software, AI automation and running a better business — written for owners, not engineers.",
+    "ar": "ملاحظات عملية عن البرمجيات والأتمتة وإدارة أعمال أفضل — مكتوبة لأصحاب الشركات، لا للمهندسين.",
+    "de": "Praxisnahe Beiträge zu Software, KI-Automatisierung und besserer Unternehmensführung — für Inhaber geschrieben, nicht für Entwickler.",
+    "fr": "Des notes pratiques sur le logiciel, l'automatisation IA et une meilleure gestion — écrites pour les dirigeants, pas les ingénieurs."
+  },
+  "POS systems, dashboards, web platforms and automation. Fixed scope, clear pricing and a working demo before you commit.": {
+    "en": "POS systems, dashboards, web platforms and automation. Fixed scope, clear pricing and a working demo before you commit.",
+    "ar": "أنظمة كاشير ولوحات تحكم ومنصات ويب وأتمتة. نطاق محدد وسعر واضح ونسخة تجريبية تعمل قبل الالتزام.",
+    "de": "Kassensysteme, Dashboards, Web-Plattformen und Automatisierung. Fester Umfang, klarer Preis und eine funktionierende Demo, bevor Sie sich festlegen.",
+    "fr": "Caisses, tableaux de bord, plateformes web et automatisation. Périmètre fixe, prix clair et démo fonctionnelle avant tout engagement."
+  },
+  "That page doesn't exist. Browse our services, work and insights instead.": {
+    "en": "That page doesn't exist. Browse our services, work and insights instead.",
+    "ar": "هذه الصفحة غير موجودة. تصفّح خدماتنا وأعمالنا ومقالاتنا بدلاً من ذلك.",
+    "de": "Diese Seite existiert nicht. Sehen Sie sich stattdessen unsere Leistungen, Referenzen und Beiträge an.",
+    "fr": "Cette page n'existe pas. Découvrez plutôt nos services, nos réalisations et nos articles."
+  },
+  "custom software development, web development egypt, ai automation, pos system, business dashboards": {
+    "en": "custom software development, web development egypt, ai automation, pos system, business dashboards",
+    "ar": "برمجة سوفت وير, شركة برمجة مواقع مصر, اتمتة بالذكاء الاصطناعي, برنامج كاشير, لوحات تحكم للشركات",
+    "de": "individualsoftware entwicklung, webentwicklung ägypten, ki automatisierung, kassensystem, business dashboards",
+    "fr": "développement logiciel sur mesure, développement web égypte, automatisation ia, logiciel de caisse, tableaux de bord"
+  },
+  "software development services, mobile app development, ai integration, api development": {
+    "en": "software development services, mobile app development, ai integration, api development",
+    "ar": "خدمات برمجة, عمل ابلكيشن موبايل, دمج الذكاء الاصطناعي, برمجة api",
+    "de": "softwareentwicklung dienstleistungen, app entwicklung, ki integration, api entwicklung",
+    "fr": "services de développement logiciel, développement d'applications mobiles, intégration ia, développement d'api"
+  },
+  "pos system restaurants, retail software, real estate portal, industry software solutions": {
+    "en": "pos system restaurants, retail software, real estate portal, industry software solutions",
+    "ar": "برنامج كاشير مطاعم, سوفت وير محلات, موقع عقارات, حلول برمجية للقطاعات",
+    "de": "kassensystem gastronomie, einzelhandelssoftware, immobilienportal, branchensoftware",
+    "fr": "logiciel de caisse restaurant, logiciel commerce de détail, portail immobilier, solutions logicielles sectorielles"
+  },
+  "software case studies, software portfolio, pos platform project": {
+    "en": "software case studies, software portfolio, pos platform project",
+    "ar": "دراسات حالة برمجية, اعمال شركة برمجة, مشروع منصة كاشير",
+    "de": "software fallstudien, software portfolio, kassensystem projekt",
+    "fr": "études de cas logiciels, portfolio logiciel, projet plateforme de caisse"
+  },
+  "software studio cairo, software company egypt, kirollos fayez": {
+    "en": "software studio cairo, software company egypt, kirollos fayez",
+    "ar": "شركة برمجة في القاهرة, شركة سوفت وير مصر, كيرلس فايز",
+    "de": "software studio kairo, softwarefirma ägypten, kirollos fayez",
+    "fr": "studio logiciel le caire, société de logiciels égypte, kirollos fayez"
+  },
+  "software development quote, hire software developer egypt, contact software company": {
+    "en": "software development quote, hire software developer egypt, contact software company",
+    "ar": "عرض سعر برمجة, مبرمج فري لانس مصر, التواصل مع شركة برمجة",
+    "de": "angebot softwareentwicklung, softwareentwickler ägypten, softwarefirma kontaktieren",
+    "fr": "devis développement logiciel, développeur logiciel égypte, contacter une société de logiciels"
+  },
+  "software blog, business automation guide, pos system roi": {
+    "en": "software blog, business automation guide, pos system roi",
+    "ar": "مدونة برمجة, دليل اتمتة الاعمال, عائد برنامج الكاشير",
+    "de": "software blog, leitfaden geschäftsautomatisierung, kassensystem roi",
+    "fr": "blog logiciel, guide automatisation des processus, rentabilité logiciel de caisse"
+  },
+  "custom software quote, pos system quote, business automation egypt": {
+    "en": "custom software quote, pos system quote, business automation egypt",
+    "ar": "عرض سعر سوفت وير مخصص, سعر برنامج كاشير, اتمتة الاعمال في مصر",
+    "de": "angebot individualsoftware, kassensystem preis, geschäftsautomatisierung ägypten",
+    "fr": "devis logiciel sur mesure, prix logiciel de caisse, automatisation des processus égypte"
+  },
+  "Custom Software Development": {
+    "en": "Custom Software Development",
+    "ar": "تطوير برمجيات مخصصة",
+    "de": "Individuelle Softwareentwicklung",
+    "fr": "Développement logiciel sur mesure"
+  },
+  "Mobile Application Development": {
+    "en": "Mobile Application Development",
+    "ar": "تطوير تطبيقات الموبايل",
+    "de": "Mobile App-Entwicklung",
+    "fr": "Développement d'applications mobiles"
+  },
+  "Cross-platform apps for iOS and Android.": {
+    "en": "Cross-platform apps for iOS and Android.",
+    "ar": "تطبيقات تعمل على iOS وأندرويد بكود واحد.",
+    "de": "Plattformübergreifende Apps für iOS und Android.",
+    "fr": "Applications multiplateformes pour iOS et Android."
+  },
+  "Business Systems & POS": {
+    "en": "Business Systems & POS",
+    "ar": "أنظمة الأعمال والكاشير",
+    "de": "Business-Systeme & Kassensysteme",
+    "fr": "Systèmes métier & caisse"
+  },
+  "POS, inventory, HR and internal management systems.": {
+    "en": "POS, inventory, HR and internal management systems.",
+    "ar": "أنظمة كاشير ومخزون وموارد بشرية وإدارة داخلية.",
+    "de": "Kassen-, Lager-, HR- und interne Verwaltungssysteme.",
+    "fr": "Caisse, stocks, RH et systèmes de gestion interne."
+  },
+  "AI Automation": {
+    "en": "AI Automation",
+    "ar": "الأتمتة بالذكاء الاصطناعي",
+    "de": "KI-Automatisierung",
+    "fr": "Automatisation par IA"
+  },
+  "AI agents and automated workflows integrated into real operations.": {
+    "en": "AI agents and automated workflows integrated into real operations.",
+    "ar": "وكلاء ذكاء اصطناعي وسير عمل مؤتمت مدمج في التشغيل الفعلي.",
+    "de": "KI-Agenten und automatisierte Workflows, integriert in den realen Betrieb.",
+    "fr": "Agents IA et flux de travail automatisés intégrés aux opérations réelles."
+  },
+  "Connected devices, sensors and telemetry dashboards.": {
+    "en": "Connected devices, sensors and telemetry dashboards.",
+    "ar": "أجهزة متصلة وحساسات ولوحات قياس عن بُعد.",
+    "de": "Vernetzte Geräte, Sensoren und Telemetrie-Dashboards.",
+    "fr": "Objets connectés, capteurs et tableaux de bord de télémétrie."
+  },
+  "API & Backend Engineering": {
+    "en": "API & Backend Engineering",
+    "ar": "هندسة الـ API والأنظمة الخلفية",
+    "de": "API- & Backend-Engineering",
+    "fr": "Ingénierie API & backend"
+  },
+  "Built with": {
+    "en": "Built with",
+    "ar": "مبني باستخدام",
+    "de": "Umgesetzt mit",
+    "fr": "Réalisé avec"
+  },
+  "Client": {
+    "en": "Client",
+    "ar": "العميل",
+    "de": "Kunde",
+    "fr": "Client"
+  },
+  "Duration": {
+    "en": "Duration",
+    "ar": "المدة",
+    "de": "Dauer",
+    "fr": "Durée"
+  },
+  "Live demo": {
+    "en": "Live demo",
+    "ar": "تجربة مباشرة",
+    "de": "Live-Demo",
+    "fr": "Démo en ligne"
+  },
+  "Loading…": {
+    "en": "Loading…",
+    "ar": "جارٍ التحميل…",
+    "de": "Wird geladen…",
+    "fr": "Chargement…"
+  },
+  "See more work": {
+    "en": "See more work",
+    "ar": "شاهد أعمالاً أخرى",
+    "de": "Weitere Arbeiten ansehen",
+    "fr": "Voir d'autres réalisations"
+  },
+  "Source code": {
+    "en": "Source code",
+    "ar": "الكود المصدري",
+    "de": "Quellcode",
+    "fr": "Code source"
+  },
+  "This project doesn't have a write-up yet.": {
+    "en": "This project doesn't have a write-up yet.",
+    "ar": "لا يوجد شرح تفصيلي لهذا المشروع بعد.",
+    "de": "Für dieses Projekt gibt es noch keine Beschreibung.",
+    "fr": "Ce projet n'a pas encore de description détaillée."
+  },
+  "Want something like this?": {
+    "en": "Want something like this?",
+    "ar": "تريد شيئاً مثل هذا؟",
+    "de": "Möchten Sie etwas Ähnliches?",
+    "fr": "Vous voulez quelque chose de similaire ?"
+  },
+  "We couldn't load this project. It may have been unpublished, or the connection dropped.": {
+    "en": "We couldn't load this project. It may have been unpublished, or the connection dropped.",
+    "ar": "تعذّر تحميل هذا المشروع. ربما تم إلغاء نشره أو انقطع الاتصال.",
+    "de": "Dieses Projekt konnte nicht geladen werden. Möglicherweise wurde es zurückgezogen oder die Verbindung ist abgebrochen.",
+    "fr": "Impossible de charger ce projet. Il a peut-être été dépublié, ou la connexion a été interrompue."
+  },
+  "Year": {
+    "en": "Year",
+    "ar": "السنة",
+    "de": "Jahr",
+    "fr": "Année"
   }
 }

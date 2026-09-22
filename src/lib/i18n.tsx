@@ -37,6 +37,25 @@ function readStored(): Lang | null {
  * visitor on this browser happened to pick. Announcing an alternate that
  * renders in English is worse for ranking than announcing none.
  */
+/**
+ * The language is the **first path segment** — `/de/services`. That is the URL
+ * shape the prerender and the hreflang set now use, so it has to be what the
+ * running app reads too.
+ *
+ * `?lang=` is still honoured as a fallback so old shared links keep working, but
+ * it is no longer what the site advertises: Google rates URL parameters "Not
+ * recommended" for language targeting, and a parameter cannot select a different
+ * static file, so those URLs always served English HTML to a crawler.
+ */
+function readPathLang(): Lang | null {
+  try {
+    const first = window.location.pathname.split("/").filter(Boolean)[0];
+    return isLang(first) ? first : null;
+  } catch {
+    return null;
+  }
+}
+
 function readParam(): Lang | null {
   try {
     const v = new URLSearchParams(window.location.search).get("lang");
@@ -44,6 +63,11 @@ function readParam(): Lang | null {
   } catch {
     return null;
   }
+}
+
+/** Path first, then the legacy query parameter. */
+function readUrlLang(): Lang | null {
+  return readPathLang() ?? readParam();
 }
 
 export function I18nProvider({
@@ -56,7 +80,7 @@ export function I18nProvider({
   /** Enabled language codes from site settings; English is always offered. */
   enabled?: Lang[];
 }) {
-  const [lang, setLangState] = useState<Lang>(() => readParam() ?? readStored() ?? defaultLang);
+  const [lang, setLangState] = useState<Lang>(() => readUrlLang() ?? readStored() ?? defaultLang);
 
   /**
    * Driven by `settings.languages` so switching a language on in the dashboard
@@ -82,7 +106,7 @@ export function I18nProvider({
   useEffect(() => {
     // Only apply the backend-provided default when the visitor has expressed no
     // preference at all — neither in the URL nor from a previous visit.
-    if (readParam() === null && readStored() === null) setLangState(defaultLang);
+    if (readUrlLang() === null && readStored() === null) setLangState(defaultLang);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultLang]);
 

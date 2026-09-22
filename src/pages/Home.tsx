@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, pickPlain } from "../lib/content-helpers";
+import { pick, pickPlain, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_FAQS, FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
@@ -126,6 +126,43 @@ const AI_RECIPES: AiRecipe[] = [
   },
 ];
 
+/**
+ * The hero headline, translated.
+ *
+ * It used to be three hardcoded spans, which is also how the design export
+ * wrote it — and why neither the export nor this rebuild ever translated it:
+ * the sentence is split across elements, so no single text node matches a
+ * dictionary key. An Arabic visitor read an English headline.
+ *
+ * The dictionary value carries the two things a flat string cannot: `\n` marks
+ * the three staggered lines, and `*word*` marks the gradient word. Both differ
+ * per language — Arabic and French break the sentence in different places and
+ * emphasise a different word — so they belong in the translation, not the JSX.
+ *
+ * The last line keeps the dimmed treatment; the stagger delays come from the
+ * `up` animation, one step per line, exactly as before.
+ */
+function heroHeadline(t: (key: string) => string) {
+  const lines = t("Software built to run on, not to demo well.").split("\n");
+  return lines.map((line, i) => (
+    <span
+      key={line}
+      className={`up ${h.heroTitleLine} ${i === lines.length - 1 ? h.heroTitleDim : ""}`}
+    >
+      {line.split(/\*([^*]+)\*/).map((part, j) =>
+        // Odd indices are what sat between the asterisks — the gradient word.
+        j % 2 === 1 ? (
+          <em key={j} style={{ fontStyle: "normal" }} className="gradient-text">
+            {part}
+          </em>
+        ) : (
+          part
+        ),
+      )}
+    </span>
+  ));
+}
+
 export function Home() {
   const { t, lang } = useI18n();
   const [openFaq, setOpenFaq] = useState(-1);
@@ -160,16 +197,10 @@ export function Home() {
               {t("OPEN FOR WORK")}
             </span>
             <span className={h.heroRule} aria-hidden="true" />
-            <span>CAIRO, EG</span>
+            <span>{t("CAIRO, EG")}</span>
           </div>
 
-          <h1 className={h.heroTitle}>
-            <span className={`up ${h.heroTitleLine}`}>Software</span>
-            <span className={`up ${h.heroTitleLine}`}>
-              built to <em style={{ fontStyle: "normal" }} className="gradient-text">run</em> on,
-            </span>
-            <span className={`up ${h.heroTitleLine} ${h.heroTitleDim}`}>not to demo well.</span>
-          </h1>
+          <h1 className={h.heroTitle}>{heroHeadline(t)}</h1>
 
           <div className={h.heroRow}>
             <p className={`up ${h.heroLede}`}>
@@ -188,7 +219,7 @@ export function Home() {
             <dl className={`up ${h.heroStats}`}>
               {HERO_STATS.map((stat) => (
                 <div key={stat.l}>
-                  <dt className={h.heroStatLabel}>{stat.l}</dt>
+                  <dt className={h.heroStatLabel}>{t(stat.l)}</dt>
                   <dd className={h.heroStatValue}>{stat.v}</dd>
                 </div>
               ))}
@@ -197,7 +228,7 @@ export function Home() {
 
           <div className={h.heroMarquee}>
             {HERO_MARQUEE.map((m) => (
-              <span key={m}>{m}</span>
+              <span key={m}>{t(m)}</span>
             ))}
           </div>
         </div>
@@ -299,7 +330,7 @@ export function Home() {
                     {i !== activeRecipe.steps.length - 1 && <span className={h.aiStepRail} />}
                     <span className={h.aiStepDot} />
                     <span className={h.aiStepBadge} style={{ background: KIND_COLOR[step.kind] + "1f", color: KIND_COLOR[step.kind], border: `1px solid ${KIND_COLOR[step.kind]}4d` }}>
-                      {step.kind}
+                      {t(step.kind)}
                     </span>
                     <div className={h.aiStepTitle}>{t(step.title)}</div>
                     <p className={h.aiStepDetail}>{t(step.detail)}</p>
@@ -374,12 +405,17 @@ export function Home() {
           {(projects.data && projects.data.length > 0
             ? projects.data.slice(0, 4).map((item) => ({
                 key: item.id,
-                category: (item.meta?.category as string) || "",
+                slug: item.slug || item.id,
+                // `tag`, not `category` — the seeder writes `meta.tag`, so this
+                // read was always empty and the project chips on the homepage
+                // rendered blank against live CMS data (they only appeared in
+                // the static fallback path).
+                category: metaString(item.meta, "tag") ?? "",
                 title: pick(item.title, lang),
                 desc: pick(item.summary, lang),
                 media: item.media?.[0],
               }))
-            : FALLBACK_PROJECTS.map((f) => ({ key: f.key, category: f.tag ?? "", title: t(f.title), desc: t(f.desc), media: f.img }))
+            : FALLBACK_PROJECTS.map((f) => ({ key: f.key, slug: undefined as string | undefined, category: f.tag ?? "", title: t(f.title), desc: t(f.desc), media: f.img }))
           ).map((item) => (
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
@@ -389,7 +425,10 @@ export function Home() {
               <div className={s.cardBody} style={{ padding: 24 }}>
                 <h3 className={s.cardTitle} style={{ fontSize: 20 }}>{item.title}</h3>
                 <p className={s.cardDesc}>{item.desc}</p>
-                <Link to="/projects" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 16, fontSize: 14, fontWeight: 600, color: "var(--brand-orange)" }}>
+                {/* Straight to the case study when the project has one; the
+                    static fallbacks have no page, so they keep pointing at the
+                    gallery rather than at a URL that would 404. */}
+                <Link to={item.slug ? `/projects/${item.slug}` : "/projects"} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 16, fontSize: 14, fontWeight: 600, color: "var(--brand-orange)" }}>
                   {t("View project")} <span>&rarr;</span>
                 </Link>
               </div>

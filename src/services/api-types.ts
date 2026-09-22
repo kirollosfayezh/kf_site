@@ -35,6 +35,9 @@ export interface Lead extends LeadPayload {
 export interface LocalizedText {
   en: string;
   ar: string;
+  /** Optional so existing documents, which predate these two, still type. */
+  de?: string;
+  fr?: string;
 }
 
 export interface ContentItem {

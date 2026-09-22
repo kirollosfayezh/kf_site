@@ -186,7 +186,7 @@ export function Campaign() {
               <div className={s.cardBody}>
                 <h3 className={s.cardTitle} style={{ fontSize: 18 }}>{o.title}</h3>
                 <p className={s.cardDesc}>{o.desc}</p>
-                <div className={s.cardFrom}>{o.from}</div>
+                <div className={s.cardFrom}>{t(o.from)}</div>
               </div>
             </Reveal>
           ))}
@@ -221,7 +221,7 @@ export function Campaign() {
                 <span className={s.quoteAvatar} aria-hidden="true">{q.i}</span>
                 <span>
                   <span className={s.quoteName} style={{ display: "block" }}>{q.n}</span>
-                  <span className={s.quoteRole}>{q.r}</span>
+                  <span className={s.quoteRole}>{t(q.r)}</span>
                 </span>
               </div>
             </Reveal>
@@ -236,8 +236,8 @@ export function Campaign() {
         <div className={s.faqList}>
           {FAQS.map((f) => (
             <div key={f.q} className={s.faqItem}>
-              <div className={s.faqQ} style={{ cursor: "default" }}>{f.q}</div>
-              <p className={s.faqA}>{f.a}</p>
+              <div className={s.faqQ} style={{ cursor: "default" }}>{t(f.q)}</div>
+              <p className={s.faqA}>{t(f.a)}</p>
             </div>
           ))}
         </div>
