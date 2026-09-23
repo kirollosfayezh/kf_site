@@ -231,3 +231,94 @@ html[dir="rtl"] .ts-mono { direction: ltr; unicode-bidi: embed; letter-spacing: 
 /* Arrow glyphs in CTA labels point the other way in Arabic. */
 html[dir="rtl"] .btn span[aria-hidden="true"],
 html[dir="rtl"] .btn > span:last-child { transform: scaleX(-1); display: inline-block; }
+
+/* ------------------------------------------------------------------ prose */
+
+/*
+ * Typography for a rendered article body. Global rather than a CSS module
+ * because `renderRichText` emits plain `h2`/`p`/`table` elements with no
+ * classes — the parser stays free of styling concerns, and the same rules then
+ * apply anywhere a body is rendered.
+ */
+.kf-prose { color: var(--text2); font-size: 17px; line-height: 1.75; }
+.kf-prose > * + * { margin-top: 1.15em; }
+
+.kf-prose h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 28px);
+  line-height: 1.25;
+  color: var(--text);
+  margin-top: 1.9em;
+  /* The sticky header would otherwise sit on top of a heading jumped to from
+     the table of contents. */
+  scroll-margin-top: 96px;
+}
+.kf-prose h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(18px, 2.4vw, 21px);
+  color: var(--text);
+  margin-top: 1.6em;
+  scroll-margin-top: 96px;
+}
+
+.kf-prose a { color: var(--brand-orange); text-underline-offset: 3px; }
+.kf-prose strong { color: var(--text); font-weight: 650; }
+.kf-prose code {
+  font-family: var(--font-mono);
+  font-size: .88em;
+  background: rgba(127, 127, 127, .14);
+  border-radius: 5px;
+  padding: 2px 5px;
+}
+.kf-prose pre {
+  background: rgba(127, 127, 127, .12);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  direction: ltr;
+  text-align: start;
+}
+.kf-prose pre code { background: none; padding: 0; font-size: 13.5px; line-height: 1.6; }
+
+.kf-prose ul, .kf-prose ol { padding-inline-start: 1.35em; }
+.kf-prose ul { list-style: disc; }
+.kf-prose ol { list-style: decimal; }
+.kf-prose li + li { margin-top: .5em; }
+.kf-prose li::marker { color: var(--brand-orange); }
+
+.kf-prose blockquote {
+  border-inline-start: 3px solid var(--brand-orange);
+  padding: 4px 0 4px 20px;
+  padding-inline-start: 20px;
+  font-size: 18.5px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.kf-prose blockquote cite {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  font-style: normal;
+  color: var(--text3);
+}
+
+/* Tables carry the price comparisons the content plan calls for, so they have
+   to survive a phone: the wrapper scrolls rather than forcing the page wide. */
+.kf-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+.kf-prose table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.kf-prose thead th {
+  text-align: start;
+  font-weight: 650;
+  color: var(--text);
+  background: rgba(127, 127, 127, .08);
+  white-space: nowrap;
+}
+.kf-prose th, .kf-prose td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.kf-prose tbody tr:last-child td { border-bottom: 0; }
+
+@media (max-width: 700px) {
+  .kf-prose { font-size: 16.5px; }
+}

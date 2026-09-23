@@ -3142,5 +3142,317 @@
     "ar": "السنة",
     "de": "Jahr",
     "fr": "Année"
+  },
+  "min read": {
+    "en": "min read",
+    "ar": "دقيقة قراءة",
+    "de": "Min. Lesezeit",
+    "fr": "min de lecture"
+  },
+  "This article doesn't have body content yet.": {
+    "en": "This article doesn't have body content yet.",
+    "ar": "لا يوجد محتوى لهذا المقال بعد.",
+    "de": "Dieser Beitrag hat noch keinen Inhalt.",
+    "fr": "Cet article n'a pas encore de contenu."
+  },
+  "We couldn't load this article. It may have been unpublished, or the connection dropped.": {
+    "en": "We couldn't load this article. It may have been unpublished, or the connection dropped.",
+    "ar": "تعذّر تحميل هذا المقال. ربما تم إلغاء نشره أو انقطع الاتصال.",
+    "de": "Dieser Beitrag konnte nicht geladen werden. Möglicherweise wurde er zurückgezogen oder die Verbindung ist abgebrochen.",
+    "fr": "Impossible de charger cet article. Il a peut-être été dépublié, ou la connexion a été interrompue."
+  },
+  "0 EGP": {
+    "en": "0 EGP",
+    "ar": "صفر جنيه",
+    "de": "0 €",
+    "fr": "0 €"
+  },
+  "1 week": {
+    "en": "1 week",
+    "ar": "أسبوع واحد",
+    "de": "1 Woche",
+    "fr": "1 semaine"
+  },
+  "1-2 hours": {
+    "en": "1-2 hours",
+    "ar": "ساعة – ساعتين",
+    "de": "1–2 Stunden",
+    "fr": "1 à 2 heures"
+  },
+  "15-20%": {
+    "en": "15-20%",
+    "ar": "15–20%",
+    "de": "15–20 %",
+    "fr": "15–20 %"
+  },
+  "2-4 weeks": {
+    "en": "2-4 weeks",
+    "ar": "2 – 4 أسابيع",
+    "de": "2–4 Wochen",
+    "fr": "2 à 4 semaines"
+  },
+  "20-40 min": {
+    "en": "20-40 min",
+    "ar": "20 – 40 دقيقة",
+    "de": "20–40 Min.",
+    "fr": "20 à 40 min"
+  },
+  "3": {
+    "en": "3",
+    "ar": "3",
+    "de": "3",
+    "fr": "3"
+  },
+  "30-50%": {
+    "en": "30-50%",
+    "ar": "30–50%",
+    "de": "30–50 %",
+    "fr": "30–50 %"
+  },
+  "4-6 weeks": {
+    "en": "4-6 weeks",
+    "ar": "4 – 6 أسابيع",
+    "de": "4–6 Wochen",
+    "fr": "4 à 6 semaines"
+  },
+  "6-16 weeks": {
+    "en": "6-16 weeks",
+    "ar": "6 – 16 أسبوع",
+    "de": "6–16 Wochen",
+    "fr": "6 à 16 semaines"
+  },
+  "a manager spends closing a till by hand each night": {
+    "en": "a manager spends closing a till by hand each night",
+    "ar": "يقضيها المدير في تقفيل الكاشير يدوياً كل ليلة",
+    "de": "braucht eine Führungskraft für den abendlichen Kassenabschluss von Hand",
+    "fr": "que passe un responsable à clôturer la caisse à la main chaque soir"
+  },
+  "contract clauses that matter more than the day rate": {
+    "en": "contract clauses that matter more than the day rate",
+    "ar": "بنود تعاقدية أهم من سعر اليوم",
+    "de": "Vertragsklauseln, die wichtiger sind als der Tagessatz",
+    "fr": "clauses contractuelles plus importantes que le tarif journalier"
+  },
+  "cost of the ETA portal itself": {
+    "en": "cost of the ETA portal itself",
+    "ar": "تكلفة بوابة المصلحة نفسها",
+    "de": "kostet das Portal der Steuerbehörde selbst",
+    "fr": "coût du portail de l'administration fiscale lui-même"
+  },
+  "length of the paid trial project that de-risks everything": {
+    "en": "length of the paid trial project that de-risks everything",
+    "ar": "مدة المشروع التجريبي المدفوع الذي يقلّل المخاطر",
+    "de": "Dauer des bezahlten Testprojekts, das das Risiko nimmt",
+    "fr": "durée du projet pilote payant qui réduit le risque"
+  },
+  "of a typical app budget is the backend, not the screens": {
+    "en": "of a typical app budget is the backend, not the screens",
+    "ar": "من ميزانية التطبيق عادةً هي الباك إند، مش الشاشات",
+    "de": "eines App-Budgets entfallen auf das Backend, nicht auf die Oberfläche",
+    "fr": "du budget d'une app va au backend, pas aux écrans"
+  },
+  "of build cost per year to keep an app alive": {
+    "en": "of build cost per year to keep an app alive",
+    "ar": "من تكلفة البناء سنوياً للحفاظ على التطبيق شغال",
+    "de": "der Baukosten pro Jahr, um eine App am Leben zu halten",
+    "fr": "du coût de développement par an pour maintenir l'app"
+  },
+  "of observation before any vendor conversation": {
+    "en": "of observation before any vendor conversation",
+    "ar": "من الملاحظة قبل أي حديث مع مورّد",
+    "de": "Beobachtung vor dem ersten Anbietergespräch",
+    "fr": "d'observation avant toute discussion avec un fournisseur"
+  },
+  "questions that decide buy vs build": {
+    "en": "questions that decide buy vs build",
+    "ar": "أسئلة تحسم: تشتري ولا تبني",
+    "de": "Fragen entscheiden über Kaufen oder Bauen",
+    "fr": "questions qui tranchent entre acheter et construire"
+  },
+  "separate systems most businesses discover they need to connect": {
+    "en": "separate systems most businesses discover they need to connect",
+    "ar": "أنظمة منفصلة تكتشف معظم الشركات أنها محتاجة تربطها",
+    "de": "getrennte Systeme, die verbunden werden müssen",
+    "fr": "systèmes distincts qu'il faut relier"
+  },
+  "time difference between Cairo and Central Europe": {
+    "en": "time difference between Cairo and Central Europe",
+    "ar": "فرق التوقيت بين القاهرة وأوروبا الوسطى",
+    "de": "Zeitunterschied zwischen Kairo und Mitteleuropa",
+    "fr": "décalage horaire entre Le Caire et l'Europe centrale"
+  },
+  "typical build phase": {
+    "en": "typical build phase",
+    "ar": "مرحلة البناء عادةً",
+    "de": "typische Bauphase",
+    "fr": "phase de développement type"
+  },
+  "typical integration time for an existing POS": {
+    "en": "typical integration time for an existing POS",
+    "ar": "زمن الربط المعتاد لنظام كاشير قائم",
+    "de": "übliche Integrationsdauer für ein bestehendes Kassensystem",
+    "fr": "durée d'intégration habituelle pour une caisse existante"
+  },
+  "Every receipt a POS prints is a document the tax authority expects to receive a signed copy of.": {
+    "en": "Every receipt a POS prints is a document the tax authority expects to receive a signed copy of.",
+    "ar": "كل إيصال بيطبعه الكاشير هو مستند المصلحة مستنية نسخة موقّعة منه.",
+    "de": "Jeder Kassenbon ist ein Dokument, von dem die Steuerbehörde eine signierte Kopie erwartet.",
+    "fr": "Chaque ticket imprimé est un document dont l'administration fiscale attend une copie signée."
+  },
+  "The licence fee is never the interesting number. The integrations are.": {
+    "en": "The licence fee is never the interesting number. The integrations are.",
+    "ar": "رسوم الترخيص مش الرقم المهم أبداً. التكاملات هي المهمة.",
+    "de": "Die Lizenzgebühr ist nie die interessante Zahl. Die Integrationen sind es.",
+    "fr": "Le prix de la licence n'est jamais le chiffre intéressant. Les intégrations le sont."
+  },
+  "The right answer is decided on a Friday night, not in a showroom.": {
+    "en": "The right answer is decided on a Friday night, not in a showroom.",
+    "ar": "الإجابة الصح بتتحدد في ليلة جمعة مزحومة، مش في صالة عرض.",
+    "de": "Die richtige Antwort entscheidet sich am Freitagabend, nicht im Showroom.",
+    "fr": "La bonne réponse se décide un vendredi soir, pas dans une salle d'exposition."
+  },
+  "Nearshoring rarely fails on technical grounds. It fails on requirements that never survived the language boundary.": {
+    "en": "Nearshoring rarely fails on technical grounds. It fails on requirements that never survived the language boundary.",
+    "ar": "الاستعانة القريبة نادراً ما تفشل تقنياً. بتفشل بسبب متطلبات لم تنجُ من عبور حاجز اللغة.",
+    "de": "Nearshoring scheitert selten an der Technik, sondern an Anforderungen, die die Sprachgrenze nicht überstanden haben.",
+    "fr": "Le nearshoring échoue rarement pour des raisons techniques, mais sur des exigences qui n'ont pas survécu à la barrière de la langue."
+  },
+  "ETA": {
+    "en": "ETA",
+    "ar": "مصلحة الضرائب",
+    "de": "ETA",
+    "fr": "ETA"
+  },
+  "e-invoicing": {
+    "en": "e-invoicing",
+    "ar": "الفاتورة الإلكترونية",
+    "de": "E-Rechnung",
+    "fr": "facturation électronique"
+  },
+  "e-receipt": {
+    "en": "e-receipt",
+    "ar": "الإيصال الإلكتروني",
+    "de": "E-Beleg",
+    "fr": "reçu électronique"
+  },
+  "compliance": {
+    "en": "compliance",
+    "ar": "التوافق الضريبي",
+    "de": "Compliance",
+    "fr": "conformité"
+  },
+  "POS": {
+    "en": "POS",
+    "ar": "كاشير",
+    "de": "Kassensystem",
+    "fr": "caisse"
+  },
+  "app development": {
+    "en": "app development",
+    "ar": "تطوير التطبيقات",
+    "de": "App-Entwicklung",
+    "fr": "développement d'applications"
+  },
+  "pricing": {
+    "en": "pricing",
+    "ar": "التسعير",
+    "de": "Preise",
+    "fr": "tarification"
+  },
+  "Egypt": {
+    "en": "Egypt",
+    "ar": "مصر",
+    "de": "Ägypten",
+    "fr": "Égypte"
+  },
+  "MVP": {
+    "en": "MVP",
+    "ar": "نسخة أولى",
+    "de": "MVP",
+    "fr": "MVP"
+  },
+  "restaurants": {
+    "en": "restaurants",
+    "ar": "المطاعم",
+    "de": "Gastronomie",
+    "fr": "restauration"
+  },
+  "custom software": {
+    "en": "custom software",
+    "ar": "برمجيات مخصصة",
+    "de": "Individualsoftware",
+    "fr": "logiciel sur mesure"
+  },
+  "buy vs build": {
+    "en": "buy vs build",
+    "ar": "تشتري ولا تبني",
+    "de": "Kaufen oder Bauen",
+    "fr": "acheter ou construire"
+  },
+  "nearshoring": {
+    "en": "nearshoring",
+    "ar": "الاستعانة القريبة",
+    "de": "Nearshoring",
+    "fr": "nearshoring"
+  },
+  "outsourcing": {
+    "en": "outsourcing",
+    "ar": "الإسناد الخارجي",
+    "de": "Outsourcing",
+    "fr": "externalisation"
+  },
+  "GDPR": {
+    "en": "GDPR",
+    "ar": "اللائحة الأوروبية لحماية البيانات",
+    "de": "DSGVO",
+    "fr": "RGPD"
+  },
+  "contracts": {
+    "en": "contracts",
+    "ar": "العقود",
+    "de": "Verträge",
+    "fr": "contrats"
+  },
+  "AI": {
+    "en": "AI",
+    "ar": "الذكاء الاصطناعي",
+    "de": "KI",
+    "fr": "IA"
+  },
+  "Mobile": {
+    "en": "Mobile",
+    "ar": "تطبيقات الموبايل",
+    "de": "Mobile",
+    "fr": "Mobile"
+  },
+  "Cookie settings": {
+    "en": "Cookie settings",
+    "ar": "إعدادات الكوكيز",
+    "de": "Cookie-Einstellungen",
+    "fr": "Paramètres des cookies"
+  },
+  "Cookie choices": {
+    "en": "Cookie choices",
+    "ar": "خيارات الكوكيز",
+    "de": "Cookie-Auswahl",
+    "fr": "Choix concernant les cookies"
+  },
+  "Accept": {
+    "en": "Accept",
+    "ar": "موافق",
+    "de": "Akzeptieren",
+    "fr": "Accepter"
+  },
+  "Decline": {
+    "en": "Decline",
+    "ar": "رفض",
+    "de": "Ablehnen",
+    "fr": "Refuser"
+  },
+  "We use cookies to measure how the site is used and to make our advertising relevant. You can decline and the site works exactly the same.": {
+    "en": "We use cookies to measure how the site is used and to make our advertising relevant. You can decline and the site works exactly the same.",
+    "ar": "بنستخدم كوكيز لقياس استخدام الموقع ولجعل إعلاناتنا أكثر ملاءمة. تقدر ترفض والموقع هيشتغل بنفس الطريقة بالظبط.",
+    "de": "Wir verwenden Cookies, um die Nutzung der Website zu messen und unsere Werbung relevant zu halten. Sie können ablehnen — die Website funktioniert genauso.",
+    "fr": "Nous utilisons des cookies pour mesurer l'utilisation du site et rendre nos publicités pertinentes. Vous pouvez refuser : le site fonctionne exactement pareil."
   }
 }

@@ -148,31 +148,26 @@ export async function prerenderPages(
 
   // Real per-article HTML, so a shared link or a crawler gets the post's own
   // title, description, share image and BlogPosting schema without JavaScript.
-  // English only, unlike the routes above: an article's body is whatever the
-  // CMS holds, and nothing translates it. `/ar/blog/x` still resolves for a
-  // reader (vercel.json rewrites it to the shell), but it is not a separate
-  // document to index — `articlePageSeo` marks articles `translated: false`, so
-  // every language canonicalises to the one English URL.
+  // One document per language the article is actually written in, which for
+  // most is English alone. `articlePageSeo` reports that set, so an Arabic post
+  // gets a real `/ar/blog/x` to index while an untranslated one does not claim
+  // a page it cannot serve.
   let articleCount = 0;
   for (const post of articles) {
-    const page = articlePageSeo(post, "en");
-    await writePage(distDir, shell, page, origin, fileFor(page.path), "en");
-    articleCount++;
+    for (const lang of articlePageSeo(post, "en").langs ?? ["en"]) {
+      const page = articlePageSeo(post, lang);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang);
+      articleCount++;
+    }
   }
 
-  // Case-study pages, on the same terms as articles: the write-up is CMS text,
-  // so only a project translated into all four languages gets language variants.
+  // Case-study pages, on the same terms as articles.
   let projectCount = 0;
   for (const item of projects) {
-    const page = projectPageSeo(item, "en");
-    await writePage(distDir, shell, page, origin, fileFor(page.path), "en");
-    projectCount++;
-    if (page.translated) {
-      for (const lang of LANGS.filter((l) => l !== "en")) {
-        const localised = projectPageSeo(item, lang);
-        await writePage(distDir, shell, localised, origin, fileFor(localePath(lang, page.path)), lang);
-        projectCount++;
-      }
+    for (const lang of projectPageSeo(item, "en").langs ?? ["en"]) {
+      const page = projectPageSeo(item, lang);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang);
+      projectCount++;
     }
   }
 
@@ -227,31 +222,24 @@ export async function writeSitemap(
         priority: p.path === "/" ? "1.0" : "0.8",
         path: p.path,
         alternates: true,
+        langs: LANGS as readonly Lang[] as Lang[],
       })),
     ),
-    // One entry per article, not one per language: the translations do not
-    // exist as distinct content, so listing them would submit four URLs that
-    // all resolve to the same English post.
-    ...projects.flatMap((item) => {
-      const page = projectPageSeo(item, "en");
-      const langs = page.translated ? LANGS : (["en"] as const);
+    // One <url> per language the item genuinely exists in — never four URLs
+    // that all resolve to the same English document.
+    ...[
+      ...projects.map((item) => ({ item, seo: projectPageSeo(item, "en"), priority: "0.7" })),
+      ...articles.map((item) => ({ item, seo: articlePageSeo(item, "en"), priority: "0.6" })),
+    ].flatMap(({ item, seo, priority }) => {
+      const langs = seo.langs ?? (["en"] as Lang[]);
       return langs.map((lang) => ({
-        loc: absolute(origin, localePath(lang, page.path)),
+        loc: absolute(origin, localePath(lang, seo.path)),
         lastmod: (item.updatedAt || today).slice(0, 10),
-        priority: "0.7",
-        path: page.path,
-        alternates: !!page.translated,
+        priority,
+        path: seo.path,
+        alternates: langs.length > 1,
+        langs,
       }));
-    }),
-    ...articles.map((post) => {
-      const page = articlePageSeo(post, "en");
-      return {
-        loc: absolute(origin, page.path),
-        lastmod: (post.updatedAt || today).slice(0, 10),
-        priority: "0.6",
-        path: page.path,
-        alternates: false,
-      };
     }),
   ];
 
@@ -265,7 +253,7 @@ ${entries
     <lastmod>${e.lastmod}</lastmod>
     <priority>${e.priority}</priority>${
       e.alternates
-        ? `\n${languageAlternates(origin, e.path)
+        ? `\n${languageAlternates(origin, e.path, e.langs)
             .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}" />`)
             .join("\n")}`
         : ""
