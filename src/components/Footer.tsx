@@ -66,8 +66,8 @@ export function Footer() {
           <div>
             <h2 className={styles.colTitle}>{t("Legal")}</h2>
             <div className={styles.colLinks}>
-              <a href="#">{t("Privacy Policy")}</a>
-              <a href="#">{t("Terms of Service")}</a>
+              <Link to="/legal/privacy-policy">{t("Privacy Policy")}</Link>
+              <Link to="/legal/terms-of-service">{t("Terms of Service")}</Link>
               {/* Withdrawing consent must be as easy as granting it, so this
                   sits with the other legal links rather than behind a settings
                   page. A button, not an anchor: it opens the banner, it does

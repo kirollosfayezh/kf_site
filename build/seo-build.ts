@@ -13,6 +13,7 @@ import {
   absolute,
   articlePageSeo,
   projectPageSeo,
+  legalPageSeo,
   localePath,
   languageAlternates,
   seoTags,
@@ -25,6 +26,20 @@ import {
   type SeoOverride,
 } from "../src/lib/seo.ts";
 import { LANGS, dirOf } from "../src/lib/langs.ts";
+import { primeDict } from "../src/lib/dict/index.ts";
+import ar from "../src/lib/dict/ar.json" with { type: "json" };
+import de from "../src/lib/dict/de.json" with { type: "json" };
+import fr from "../src/lib/dict/fr.json" with { type: "json" };
+
+/**
+ * The browser loads one language on demand; the prerender needs all of them at
+ * once, because it writes every page in every language in a single pass.
+ * Priming the shared cache keeps both halves using one translator, so a page's
+ * static HTML and its client-side re-render can never disagree.
+ */
+primeDict("ar", ar);
+primeDict("de", de);
+primeDict("fr", fr);
 
 /** Strip the placeholder title/description shipped in index.html so a
  *  generated page doesn't end up declaring each of them twice. */
@@ -82,6 +97,11 @@ async function fetchProjects(apiBase: string | undefined): Promise<ArticleLike[]
   return fetchCollection(apiBase, "projects");
 }
 
+/** Privacy policy, terms — rendered at `/legal/:slug`. */
+async function fetchLegal(apiBase: string | undefined): Promise<ArticleLike[]> {
+  return fetchCollection(apiBase, "legalPages");
+}
+
 /**
  * Per-page SEO edited in the dashboard. Fetched at build time so the static
  * HTML a crawler reads carries the edited title and description, not just the
@@ -121,6 +141,7 @@ export interface PrerenderResult {
   routes: number;
   articles: number;
   projects: number;
+  legal: number;
 }
 
 export async function prerenderPages(
@@ -129,6 +150,7 @@ export async function prerenderPages(
   articles: ArticleLike[],
   pages: Record<string, PageSeo> = PAGES,
   projects: ArticleLike[] = [],
+  legal: ArticleLike[] = [],
 ): Promise<PrerenderResult> {
   const shell = stripStaticHead(await readFile(join(distDir, "index.html"), "utf8"));
   const prerenderable = Object.values(pages).filter((p) => p.path !== "/404");
@@ -171,6 +193,16 @@ export async function prerenderPages(
     }
   }
 
+  // Legal documents, on the same terms.
+  let legalCount = 0;
+  for (const doc of legal) {
+    for (const lang of legalPageSeo(doc, "en").langs ?? ["en"]) {
+      const page = legalPageSeo(doc, lang);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang);
+      legalCount++;
+    }
+  }
+
   /**
    * Vercel serves `404.html` — with a real 404 status — for any path matching
    * neither a static file nor a rewrite. Without it the old catch-all rewrite
@@ -195,7 +227,7 @@ export async function prerenderPages(
     "utf8",
   );
 
-  return { routes: pageCount + 1, articles: articleCount, projects: projectCount };
+  return { routes: pageCount + 1, articles: articleCount, projects: projectCount, legal: legalCount };
 }
 
 export async function writeSitemap(
@@ -204,6 +236,7 @@ export async function writeSitemap(
   articles: ArticleLike[],
   pages: Record<string, PageSeo> = PAGES,
   projects: ArticleLike[] = [],
+  legal: ArticleLike[] = [],
 ): Promise<number> {
   const today = new Date().toISOString().slice(0, 10);
 
@@ -230,6 +263,7 @@ export async function writeSitemap(
     ...[
       ...projects.map((item) => ({ item, seo: projectPageSeo(item, "en"), priority: "0.7" })),
       ...articles.map((item) => ({ item, seo: articlePageSeo(item, "en"), priority: "0.6" })),
+      ...legal.map((item) => ({ item, seo: legalPageSeo(item, "en"), priority: "0.3" })),
     ].flatMap(({ item, seo, priority }) => {
       const langs = seo.langs ?? (["en"] as Lang[]);
       return langs.map((lang) => ({
@@ -373,4 +407,4 @@ ${
   await writeFile(join(distDir, "llms.txt"), body, "utf8");
 }
 
-export { fetchArticles, fetchProjects };
+export { fetchArticles, fetchProjects, fetchLegal };

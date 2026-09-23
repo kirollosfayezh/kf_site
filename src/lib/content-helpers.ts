@@ -1,8 +1,7 @@
 import type { LocalizedText } from "../services/api-types";
-import dict from "./i18n-dict.json";
+import { dictFor } from "./dict";
 import type { Lang } from "./langs";
 
-const DICT = dict as Record<string, Record<Lang, string>>;
 
 /**
  * Reads the requested language out of a CMS field, falling back to the UI
@@ -25,7 +24,7 @@ export function pick(text: LocalizedText | undefined, lang: Lang): string {
 
   const english = (text.en || text.ar || "").trim();
   if (lang !== "en" && english) {
-    const translated = DICT[english]?.[lang];
+    const translated = dictFor(lang)[english];
     if (translated?.trim()) return translated;
   }
   return english;
@@ -36,7 +35,7 @@ export function pick(text: LocalizedText | undefined, lang: Lang): string {
 export function pickPlain(value: string | undefined, lang: Lang): string {
   const s = (value || "").trim();
   if (!s || lang === "en") return s;
-  return DICT[s]?.[lang]?.trim() || s;
+  return dictFor(lang)[s]?.trim() || s;
 }
 
 /**

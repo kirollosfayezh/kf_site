@@ -1,12 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import dict from "./i18n-dict.json";
+import { isDictLoaded, loadDict, translate } from "./dict";
 import { LANGS, LANG_META, dirOf, isLang, type Lang } from "./langs";
 
 export { LANGS, LANG_META, dirOf, isLang };
 export type { Lang };
 
-type DictEntry = Record<Lang, string>;
-const DICT = dict as Record<string, DictEntry>;
 
 const STORAGE_KEY = "kf-lang";
 
@@ -17,6 +15,16 @@ interface I18nContextValue {
   available: Lang[];
   setLang: (lang: Lang) => void;
   t: (key: string) => string;
+  /**
+   * Whether the active language's dictionary has arrived. Always true for
+   * English, which needs none.
+   *
+   * Consumers that write to the DOM once, rather than re-rendering — the SEO
+   * tags are the only one — must wait for this. Without it `applySeo` runs
+   * before the dictionary lands and overwrites the prerendered Arabic <title>
+   * with the English key.
+   */
+  dictReady: boolean;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -126,13 +134,28 @@ export function I18nProvider({
 
   /** Falls back to English — and then to the key itself, which *is* the English
    *  copy — so a missing translation degrades to readable text, never to blank. */
+  // Re-renders once the active language's dictionary arrives. `ready` is only a
+  // render trigger — `translate` reads the module-level cache, not this state.
+  const [dictReady, setDictReady] = useState(() => lang === "en");
+  useEffect(() => {
+    if (lang === "en") {
+      setDictReady(true);
+      return;
+    }
+    let cancelled = false;
+    setDictReady(isDictLoaded(lang));
+    void loadDict(lang).then(() => {
+      if (!cancelled) setDictReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
   const t = useCallback(
-    (key: string) => {
-      const entry = DICT[key];
-      if (!entry) return key;
-      return entry[lang]?.trim() || entry.en || key;
-    },
-    [lang],
+    (key: string) => translate(key, lang),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lang, dictReady],
   );
 
   /** A stored preference for a language that has since been turned off must not
@@ -142,8 +165,8 @@ export function I18nProvider({
   }, [available, lang]);
 
   const value = useMemo<I18nContextValue>(
-    () => ({ lang, dir: dirOf(lang), available, setLang, t }),
-    [lang, available, setLang, t],
+    () => ({ lang, dir: dirOf(lang), available, setLang, t, dictReady }),
+    [lang, available, setLang, t, dictReady],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

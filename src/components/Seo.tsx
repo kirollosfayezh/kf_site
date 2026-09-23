@@ -112,10 +112,13 @@ function faqFromDom() {
  * whose metadata depends on fetched data — currently the article template.
  */
 export function useSeo(page: PageSeo | null) {
-  const { lang } = useI18n();
+  const { lang, dictReady } = useI18n();
 
   useEffect(() => {
-    if (!page) return;
+    // Waiting on the dictionary matters: the prerendered HTML already carries
+    // the translated title, and applying tags before the translations land
+    // would overwrite it with the English key.
+    if (!page || !dictReady) return;
     applySeo(page, lang);
 
     // The FAQ accordion mounts after this effect on a cold load, so poll
@@ -136,7 +139,7 @@ export function useSeo(page: PageSeo | null) {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [page, lang]);
+  }, [page, lang, dictReady]);
 }
 
 /**
