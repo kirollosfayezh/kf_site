@@ -6,6 +6,7 @@ import { Layout } from "./components/Layout";
 import { getSettings } from "./services/content";
 import { AnalyticsProvider } from "./lib/analytics-provider";
 import { ConsentBanner } from "./components/ConsentBanner";
+import { PromoDialog } from "./components/PromoDialog";
 import { SeoProvider } from "./components/Seo";
 import type { SiteSettings } from "./services/api-types";
 
@@ -80,6 +81,7 @@ export default function App() {
       <I18nProvider defaultLang={defaultLang} enabled={enabled}>
         <AnalyticsProvider settings={settings} />
         <ConsentBanner settings={settings} />
+        <PromoDialog />
         <SeoProvider>
         <Routes>
           <Route element={<Layout />}>
