@@ -15,9 +15,10 @@ const DISMISS_KEY = "kf-promo-seen";
  * Shows the first published promo whose window is open, once per visitor per
  * promo. Deliberately:
  *
- * - **Not on the first paint.** It waits a few seconds so someone who lands and
- *   immediately reads something is not interrupted mid-sentence. An offer that
- *   covers the page before it has rendered reads as an ad, not an offer.
+ * - **Shown promptly, and the delay is yours to set.** `delaySeconds` on the
+ *   offer controls it; 1.5s is the default and 0 shows it as soon as the offer
+ *   loads. The short pause exists only so the page paints first — an offer that
+ *   lands over a blank screen reads as an ad, not an offer.
  * - **Dismissal is remembered per promo id**, so publishing a new offer shows
  *   again while re-visiting during the same campaign does not.
  * - **Never shown to a crawler**: it is client-only and not in the prerendered
@@ -54,7 +55,20 @@ export function PromoDialog() {
 
   useEffect(() => {
     if (!promo || dismissed.includes(promo.id)) return;
-    const id = window.setTimeout(() => setOpen(true), 4000);
+
+    // Measured from when the page loaded, not from when the offer arrived —
+    // otherwise the fetch time is added to the delay, and a slow connection
+    // pushes the offer past the point anyone is still looking.
+    const configured = Number(metaString(promo.meta, "delaySeconds") ?? "");
+    const wanted = Number.isFinite(configured) && configured >= 0 ? configured * 1000 : 1500;
+    const elapsed = performance.now();
+    const remaining = Math.max(0, wanted - elapsed);
+
+    if (remaining === 0) {
+      setOpen(true);
+      return;
+    }
+    const id = window.setTimeout(() => setOpen(true), remaining);
     return () => window.clearTimeout(id);
   }, [promo, dismissed]);
 
