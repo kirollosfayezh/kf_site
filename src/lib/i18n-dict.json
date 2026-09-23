@@ -3454,5 +3454,11 @@
     "ar": "بنستخدم كوكيز لقياس استخدام الموقع ولجعل إعلاناتنا أكثر ملاءمة. تقدر ترفض والموقع هيشتغل بنفس الطريقة بالظبط.",
     "de": "Wir verwenden Cookies, um die Nutzung der Website zu messen und unsere Werbung relevant zu halten. Sie können ablehnen — die Website funktioniert genauso.",
     "fr": "Nous utilisons des cookies pour mesurer l'utilisation du site et rendre nos publicités pertinentes. Vous pouvez refuser : le site fonctionne exactement pareil."
+  },
+  "We couldn't load this page. It may have been unpublished, or the connection dropped.": {
+    "en": "We couldn't load this page. It may have been unpublished, or the connection dropped.",
+    "ar": "تعذّر تحميل هذه الصفحة. ربما تم إلغاء نشرها أو انقطع الاتصال.",
+    "de": "Diese Seite konnte nicht geladen werden. Möglicherweise wurde sie zurückgezogen oder die Verbindung ist abgebrochen.",
+    "fr": "Impossible de charger cette page. Elle a peut-être été dépubliée, ou la connexion a été interrompue."
   }
 }

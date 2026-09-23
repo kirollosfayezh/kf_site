@@ -22,6 +22,7 @@ const Projects = lazy(() => import("./pages/Projects").then((m) => ({ default: m
 const ProjectCaseStudy = lazy(() =>
   import("./pages/ProjectCaseStudy").then((m) => ({ default: m.ProjectCaseStudy })),
 );
+const Legal = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Legal })));
 const Blog = lazy(() => import("./pages/Blog").then((m) => ({ default: m.Blog })));
 const Article = lazy(() => import("./pages/Article").then((m) => ({ default: m.Article })));
 const Contact = lazy(() => import("./pages/Contact").then((m) => ({ default: m.Contact })));
@@ -145,6 +146,16 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <Article />
+                </Suspense>
+              }
+            />
+            {/* Privacy policy and terms. These were `href="#"` in the footer
+                since launch — a business site with dead legal links. */}
+            <Route
+              path="/legal/:slug"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <Legal />
                 </Suspense>
               }
             />

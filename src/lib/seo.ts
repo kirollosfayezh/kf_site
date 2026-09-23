@@ -17,7 +17,7 @@
  */
 
 import { LANGS, type Lang } from "./langs.ts";
-import dict from "./i18n-dict.json" with { type: "json" };
+import { translate } from "./dict/index.ts";
 
 export type { Lang };
 
@@ -204,8 +204,7 @@ function tr(text: string, lang: Lang): string;
 function tr(text: string | undefined, lang: Lang): string | undefined;
 function tr(text: string | undefined, lang: Lang): string | undefined {
   if (!text || lang === "en") return text;
-  const entry = (dict as Record<string, Partial<Record<Lang, string>>>)[text];
-  return entry?.[lang]?.trim() || text;
+  return translate(text, lang);
 }
 
 export function localePath(lang: Lang, path: string): string {
@@ -730,6 +729,25 @@ export function projectSchema(origin: string, item: ArticleLike, lang: Lang, url
     ...(client ? { sourceOrganization: { "@type": "Organization", name: client } } : {}),
     ...(year ? { dateCreated: year } : {}),
     ...(tech.length ? { keywords: tech.join(", ") } : {}),
+  };
+}
+
+/**
+ * A legal document's SEO entry.
+ *
+ * `noindex` is deliberately off — a privacy policy should be findable, and
+ * search engines treat a missing one as a trust signal against a business site.
+ */
+export function legalPageSeo(doc: ArticleLike, lang: Lang): PageSeo {
+  const title = localized(doc.title, lang);
+  const brand = PAGES.home.title.split(" — ")[0];
+  return {
+    path: `/legal/${doc.slug || doc.id}`,
+    title: `${title} | ${brand}`,
+    desc: localized(doc.summary, lang) || localized(doc.body, lang).replace(/\s+/g, " ").slice(0, 155),
+    type: "website",
+    modified: doc.updatedAt,
+    langs: availableLangs(doc),
   };
 }
 
