@@ -55,12 +55,14 @@ interface AiRecipe {
   outcome: { v: string; l: string }[];
 }
 
+/** Tokens, not literals: a brand change is then one edit in `index.css`, and
+ *  these keep working when the light theme redefines them. */
 const KIND_COLOR: Record<AiStep["kind"], string> = {
-  TRIGGER: "#FF9A4D",
-  AI: "#FF0080",
-  ACTION: "#4ADE80",
-  LOG: "#7B9BFF",
-  ALERT: "#FF6A9E",
+  TRIGGER: "var(--warning)",
+  AI: "var(--brand-pink)",
+  ACTION: "var(--success)",
+  LOG: "var(--info)",
+  ALERT: "var(--danger)",
 };
 
 const AI_RECIPES: AiRecipe[] = [
@@ -380,7 +382,7 @@ export function Home() {
                     {item.tag && <div className={s.cardTag} style={{ position: "absolute", insetInlineStart: 16, bottom: 12, top: "auto", background: "none", border: "none", padding: 0 }}>{pickPlain(item.tag, lang)}</div>}
                   </div>
                   <div className={s.cardBody}>
-                    <h3 className={s.cardTitle} style={{ fontSize: 21 }}>{item.title}</h3>
+                    <h3 className={s.cardTitle} style={{ fontSize: "var(--fs-section)" }}>{item.title}</h3>
                     <p className={s.cardDesc}>{item.desc}</p>
                   </div>
                 </Reveal>
@@ -423,12 +425,12 @@ export function Home() {
                 {item.category && <span className={s.cardTag}>{pickPlain(item.category, lang)}</span>}
               </div>
               <div className={s.cardBody} style={{ padding: 24 }}>
-                <h3 className={s.cardTitle} style={{ fontSize: 20 }}>{item.title}</h3>
+                <h3 className={s.cardTitle} style={{ fontSize: "var(--fs-section)" }}>{item.title}</h3>
                 <p className={s.cardDesc}>{item.desc}</p>
                 {/* Straight to the case study when the project has one; the
                     static fallbacks have no page, so they keep pointing at the
                     gallery rather than at a URL that would 404. */}
-                <Link to={item.slug ? `/projects/${item.slug}` : "/projects"} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 16, fontSize: 14, fontWeight: 600, color: "var(--brand-orange)" }}>
+                <Link to={item.slug ? `/projects/${item.slug}` : "/projects"} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 16, fontSize: "var(--fs-ui)", fontWeight: 600, color: "var(--brand-orange)" }}>
                   {t("View project")} <span>&rarr;</span>
                 </Link>
               </div>

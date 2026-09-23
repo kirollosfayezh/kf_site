@@ -1,45 +1,45 @@
 .grid { position: relative; max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: clamp(32px, 5vw, 72px); }
 .contactCards { margin-top: 32px; display: flex; flex-direction: column; gap: 14px; }
-.contactCard { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); color: var(--text); }
+.contactCard { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--panel); color: var(--text); }
 .contactCard:hover { border-color: rgba(255, 106, 0, .4); color: var(--text); }
-.contactIcon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.contactLabel { display: block; font-size: 12px; color: var(--text3); }
+.contactIcon { width: 40px; height: 40px; border-radius: var(--r-control); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.contactLabel { display: block; font-size: var(--fs-label); color: var(--text3); }
 .contactValue { font-weight: 600; }
 
-.formCard { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: clamp(24px, 3vw, 36px); }
+.formCard { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r-card); padding: clamp(24px, 3vw, 36px); }
 .fieldsGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 560px) { .fieldsGrid { grid-template-columns: 1fr; } }
 
 .field { display: flex; flex-direction: column; gap: 7px; }
-.fieldLabel { font-size: 13px; color: var(--text2); }
+.fieldLabel { font-size: var(--fs-ui); color: var(--text2); }
 .input {
   background: var(--field);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 12px 14px;
   color: var(--text);
-  font-size: 15px;
+  font-size: var(--fs-body);
   width: 100%;
 }
 .inputInvalid { border-color: var(--danger); }
 .textarea { resize: vertical; min-height: 110px; }
-.errorText { font-size: 12px; color: var(--danger); }
+.errorText { font-size: var(--fs-label); color: var(--danger); }
 .submitBtn { margin-top: 22px; width: 100%; justify-content: center; }
-.formNote { margin-top: 14px; font-size: 12px; color: var(--text3); text-align: center; }
-.formError { margin-top: 14px; font-size: 13px; color: var(--danger); text-align: center; }
+.formNote { margin-top: 14px; font-size: var(--fs-label); color: var(--text3); text-align: center; }
+.formError { margin-top: 14px; font-size: var(--fs-ui); color: var(--danger); text-align: center; }
 
 .successState { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 50px 0; }
 .successIcon { width: 56px; height: 56px; border-radius: 50%; background: var(--brand-gradient); display: flex; align-items: center; justify-content: center; }
-.successTitle { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin-top: 20px; }
-.successDesc { margin-top: 10px; color: var(--text2); font-size: 15px; line-height: 1.5; max-width: 320px; }
+.successTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-section); margin-top: 20px; }
+.successDesc { margin-top: 10px; color: var(--text2); font-size: var(--fs-body); line-height: 1.5; max-width: 320px; }
 
 /* Keep the form comfortable to fill in at 375px: a 16px font on inputs also
    stops iOS Safari from zooming the viewport on focus (which itself caused a
    horizontal scroll once zoomed). */
 @media (max-width: 640px) {
-  .formCard { padding: 20px 16px; border-radius: 16px; }
-  .input { font-size: 16px; padding: 12px; }
+  .formCard { padding: 20px 16px; border-radius: var(--r-card); }
+  .input { font-size: var(--fs-body); padding: 12px; }
   .contactCard { padding: 14px; gap: 12px; }
-  .contactValue { font-size: 14.5px; }
+  .contactValue { font-size: var(--fs-ui); }
   .successDesc { max-width: none; }
 }
