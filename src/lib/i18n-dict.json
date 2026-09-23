@@ -3460,5 +3460,29 @@
     "ar": "تعذّر تحميل هذه الصفحة. ربما تم إلغاء نشرها أو انقطع الاتصال.",
     "de": "Diese Seite konnte nicht geladen werden. Möglicherweise wurde sie zurückgezogen oder die Verbindung ist abgebrochen.",
     "fr": "Impossible de charger cette page. Elle a peut-être été dépubliée, ou la connexion a été interrompue."
+  },
+  "Claim this offer": {
+    "en": "Claim this offer",
+    "ar": "اطلب العرض",
+    "de": "Angebot sichern",
+    "fr": "Profiter de l'offre"
+  },
+  "Maybe later": {
+    "en": "Maybe later",
+    "ar": "لاحقاً",
+    "de": "Später",
+    "fr": "Plus tard"
+  },
+  "Offer ends": {
+    "en": "Offer ends",
+    "ar": "العرض ينتهي",
+    "de": "Angebot endet",
+    "fr": "Offre valable jusqu'au"
+  },
+  "Close": {
+    "en": "Close",
+    "ar": "إغلاق",
+    "de": "Schließen",
+    "fr": "Fermer"
   }
 }

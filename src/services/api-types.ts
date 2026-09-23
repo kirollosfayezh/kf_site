@@ -62,7 +62,8 @@ export type ContentCollection =
   | "faqs"
   | "blogPosts"
   | "aboutSections"
-  | "legalPages";
+  | "legalPages"
+  | "promos";
 
 /** Marketing tags configured on the dashboard's Marketing screen. */
 export interface TrackingSettings {
