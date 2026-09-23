@@ -63,6 +63,21 @@ export type ContentCollection =
   | "blogPosts"
   | "aboutSections";
 
+/** Marketing tags configured on the dashboard's Marketing screen. */
+export interface TrackingSettings {
+  gtmId?: string;
+  googleAnalyticsId?: string;
+  googleAdsId?: string;
+  googleAdsLabel?: string;
+  metaPixelId?: string;
+  tiktokPixelId?: string;
+  snapchatPixelId?: string;
+  events?: Record<string, boolean>;
+  respectDnt?: boolean;
+  consentMode?: boolean;
+  debug?: boolean;
+}
+
 export interface SiteSettings {
   siteName: string;
   tagline: LocalizedText;
@@ -71,7 +86,7 @@ export interface SiteSettings {
   languages: { code: string; label: string; enabled: boolean }[];
   defaultLanguage: string;
   seo: { defaultTitle: string; defaultDescription: string };
-  pixels: { googleAnalyticsId?: string; metaPixelId?: string };
+  pixels: TrackingSettings;
   contact: { email?: string; phone?: string; whatsapp?: string };
   updatedAt: string;
 }

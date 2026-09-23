@@ -67,16 +67,20 @@ export interface PageSeo {
   modified?: string;
   section?: string;
   /**
-   * `false` when this content exists in one language only — currently every
-   * article, whose body comes from the CMS untranslated.
+   * The languages this page genuinely exists in. Omitted means all of them,
+   * which is true of every static page — their copy is in the dictionary.
    *
-   * Such a page canonicalises to its unprefixed path in every language and
-   * advertises no alternates. Claiming `/ar/blog/x` as the Arabic version while
-   * serving the English body is the misconfiguration hreflang is meant to
-   * prevent: Google checks that the target is actually in the language claimed
-   * and drops the cluster when it is not.
+   * CMS content is different: an article translated into Arabic but not German
+   * should be indexable at `/ar/blog/x` and absent from `/de/blog/x`. Claiming
+   * a language whose page serves English is the misconfiguration hreflang
+   * exists to prevent — Google checks the target really is in the language
+   * claimed and drops the whole cluster when it is not — but refusing to
+   * advertise a translation that *does* exist throws away the page.
+   *
+   * So the set is per item, and canonical, hreflang, the prerender and the
+   * sitemap all read from this one list.
    */
-  translated?: boolean;
+  langs?: Lang[];
 }
 
 export const PAGES: Record<string, PageSeo> = {
@@ -211,9 +215,9 @@ export function localePath(lang: Lang, path: string): string {
 }
 
 /** Every language variant of a page, as real URLs a crawler can fetch. */
-export function languageAlternates(origin: string, path: string) {
+export function languageAlternates(origin: string, path: string, langs: readonly Lang[] = LANGS) {
   return [
-    ...LANGS.map((l) => ({
+    ...langs.map((l) => ({
       hreflang: LOCALES[l].hreflang,
       href: absolute(origin, localePath(l, path)),
     })),
@@ -428,7 +432,10 @@ export function articleSchema(
     publisher: { "@id": `${origin}/#organization` },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": absolute(origin, page.translated === false ? page.path : localePath(lang, page.path)),
+      "@id": absolute(
+        origin,
+        (page.langs ?? LANGS).includes(lang) ? localePath(lang, page.path) : page.path,
+      ),
     },
   };
 }
@@ -484,7 +491,11 @@ export type SeoTag =
 export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
   // The canonical is the URL *for this language*. Pointing every translation at
   // the English path is what invalidated the hreflang cluster before.
-  const url = absolute(origin, page.translated === false ? page.path : localePath(lang, page.path));
+  // Only prefix the path for a language the page actually exists in; anything
+  // else canonicalises to the English URL rather than to a page that is not
+  // there.
+  const available = page.langs ?? LANGS;
+  const url = absolute(origin, available.includes(lang) ? localePath(lang, page.path) : page.path);
   const image = page.image || OG_IMAGE;
   const title = tr(page.title, lang);
   const desc = tr(page.desc, lang);
@@ -507,8 +518,10 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
   m("name", "geo.placename", SITE.city);
 
   if (origin) tags.push({ kind: "link", rel: "canonical", href: url });
-  if (origin && !page.noindex && page.translated !== false) {
-    languageAlternates(origin, page.path).forEach((a) =>
+  // A single-language page advertises nothing: a cluster of one is noise, and
+  // `x-default` on its own says less than the canonical already does.
+  if (origin && !page.noindex && available.length > 1) {
+    languageAlternates(origin, page.path, available).forEach((a) =>
       tags.push({ kind: "link", rel: "alternate", href: a.href, hreflang: a.hreflang }),
     );
   }
@@ -617,15 +630,19 @@ function localized(text: ArticleLike["title"], lang: Lang): string {
 }
 
 /**
- * Whether an item carries a real title in every language.
+ * The languages an item has real content in.
  *
- * Decides per item whether its page joins the hreflang cluster. Blanket-marking
- * all CMS content single-language was right while the schema only stored `en`
- * and `ar`; now that it stores four, an item someone has actually translated
- * should say so, and one they have not must still not claim to.
+ * English is always included: it is the fallback every other language resolves
+ * to, so the English URL always exists. A translation counts only when both the
+ * title and the body are present — a translated headline over an English body
+ * is exactly the page Google drops the cluster for.
  */
-export function isFullyTranslated(post: ArticleLike): boolean {
-  return LANGS.every((l) => (post.title?.[l] ?? "").trim().length > 0);
+export function availableLangs(post: ArticleLike): Lang[] {
+  return LANGS.filter(
+    (l) =>
+      l === "en" ||
+      ((post.title?.[l] ?? "").trim().length > 0 && (post.body?.[l] ?? "").trim().length > 0),
+  );
 }
 
 /**
@@ -656,7 +673,7 @@ export function articlePageSeo(post: ArticleLike, lang: Lang): PageSeo {
     published: post.createdAt,
     modified: post.updatedAt,
     section: category,
-    translated: isFullyTranslated(post),
+    langs: availableLangs(post),
   };
 }
 
@@ -684,7 +701,7 @@ export function projectPageSeo(item: ArticleLike, lang: Lang): PageSeo {
     image: item.media?.[0],
     modified: item.updatedAt,
     section: tag,
-    translated: isFullyTranslated(item),
+    langs: availableLangs(item),
   };
 }
 

@@ -5,6 +5,7 @@ import { ThemeProvider } from "./lib/theme";
 import { Layout } from "./components/Layout";
 import { getSettings } from "./services/content";
 import { AnalyticsProvider } from "./lib/analytics-provider";
+import { ConsentBanner } from "./components/ConsentBanner";
 import { SeoProvider } from "./components/Seo";
 import type { SiteSettings } from "./services/api-types";
 
@@ -77,6 +78,7 @@ export default function App() {
     <ThemeProvider>
       <I18nProvider defaultLang={defaultLang} enabled={enabled}>
         <AnalyticsProvider settings={settings} />
+        <ConsentBanner settings={settings} />
         <SeoProvider>
         <Routes>
           <Route element={<Layout />}>

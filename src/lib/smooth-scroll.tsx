@@ -5,9 +5,19 @@ import Lenis from "lenis";
 /**
  * Lenis smooth scrolling, wired once for the whole app.
  *
- * Same options the static export used (`_initLenis` in every `.dc.html`):
- * `{ duration: 1.05, smoothWheel: true, touchMultiplier: 1.6 }`, driven by a
- * rAF loop and skipped entirely under `prefers-reduced-motion`.
+ * Driven by a rAF loop and skipped entirely under `prefers-reduced-motion`.
+ *
+ * The static export used `duration: 1.05` (`_initLenis` in every `.dc.html`).
+ * That is Lenis' time-based mode: whatever you do, the page takes a fixed 1.05s
+ * to arrive. Measured on the built site, scrolling kept moving for **951ms
+ * after the last wheel event** while frames held a steady 60fps — so the page
+ * was not dropping frames, it was simply ignoring you for a second. That reads
+ * as lag, and no amount of paint optimisation would have touched it.
+ *
+ * `lerp` replaces it with frame-rate-independent exponential smoothing: the
+ * distance left is closed by a fraction each frame, so it starts moving on the
+ * first frame and settles in roughly a quarter of the time while staying just
+ * as smooth. Raise it towards 1 for snappier, lower for floatier.
  *
  * Unlike the static pages — where each document created and destroyed its own
  * instance — this is a single instance that survives client-side navigation.
@@ -29,7 +39,7 @@ export function useSmoothScroll() {
     const prevBehavior = root.style.scrollBehavior;
     root.style.scrollBehavior = "auto";
 
-    const lenis = new Lenis({ duration: 1.05, smoothWheel: true, touchMultiplier: 1.6 });
+    const lenis = new Lenis({ lerp: 0.2, smoothWheel: true, touchMultiplier: 1.6 });
     lenisRef.current = lenis;
 
     let raf = 0;

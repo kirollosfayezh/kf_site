@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { reopenConsent } from "../lib/pixels";
 import { useI18n } from "../lib/i18n";
 import styles from "./Footer.module.css";
 
@@ -67,6 +68,13 @@ export function Footer() {
             <div className={styles.colLinks}>
               <a href="#">{t("Privacy Policy")}</a>
               <a href="#">{t("Terms of Service")}</a>
+              {/* Withdrawing consent must be as easy as granting it, so this
+                  sits with the other legal links rather than behind a settings
+                  page. A button, not an anchor: it opens the banner, it does
+                  not navigate. */}
+              <button type="button" onClick={reopenConsent}>
+                {t("Cookie settings")}
+              </button>
             </div>
           </div>
 
@@ -95,7 +103,9 @@ export function Footer() {
         style={{
           position: "fixed",
           insetInlineEnd: 22,
-          bottom: 22,
+          // Lifts clear of the cookie bar while it is on screen. The variable is
+          // unset otherwise, so this is plain 22px the rest of the time.
+          bottom: "calc(22px + var(--kf-consent-h, 0px))",
           zIndex: 60,
           width: 58,
           height: 58,

@@ -1,7 +1,9 @@
 .fab {
   position: fixed;
   inset-inline-end: 20px;
-  bottom: 92px;
+  /* Lifts clear of the cookie bar while it is on screen; the variable is unset
+     the rest of the time, so this is just 92px. */
+  bottom: calc(92px + var(--kf-consent-h, 0px));
   z-index: 70;
   width: 58px;
   height: 58px;
@@ -40,7 +42,7 @@
 .panel {
   position: fixed;
   inset-inline-end: 20px;
-  bottom: 162px;
+  bottom: calc(162px + var(--kf-consent-h, 0px));
   z-index: 71;
   width: min(376px, calc(100vw - 32px));
   max-height: min(620px, calc(100dvh - 120px));
@@ -207,10 +209,10 @@
   .panel {
     inset-inline: 12px;
     width: auto;
-    bottom: 156px;
+    bottom: calc(156px + var(--kf-consent-h, 0px));
     max-height: calc(100dvh - 176px);
   }
-  .fab { bottom: 86px; inset-inline-end: 16px; }
+  .fab { bottom: calc(86px + var(--kf-consent-h, 0px)); inset-inline-end: 16px; }
   /* Tightened so the intro form (two fields + button + note) fits above the
      launcher at 375x667 instead of being cut off at the panel edge. */
   .log { min-height: 84px; }

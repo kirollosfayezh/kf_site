@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
 import { pick, metaString, pickPlain } from "../lib/content-helpers";
+import { readingMinutes } from "../lib/rich-text";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { Img } from "../components/Img";
@@ -9,16 +10,38 @@ import s from "../styles/sections.module.css";
 
 const ALL = "All";
 
-/** "12 Aug 2026 · 8 min" style meta line, as the original cards show. */
-function metaLine(iso: string | undefined, category: string | undefined): string {
+/**
+ * "POS SYSTEM · 12 AUG 2026 · 8 MIN" — the meta line the original cards show.
+ *
+ * Formatted in the reader's language rather than `en-GB`: an Arabic card was
+ * printing an English month name next to Arabic copy. `readMinutes` comes from
+ * the body, so a card and the article it links to can never disagree about how
+ * long the piece is.
+ */
+function metaLine(
+  iso: string | undefined,
+  category: string | undefined,
+  lang: string,
+  minutes: number,
+  minLabel: string,
+): string {
   const bits: string[] = [];
   if (category) bits.push(category.toUpperCase());
   if (iso) {
     const d = new Date(iso);
     if (!Number.isNaN(d.getTime())) {
-      bits.push(d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase());
+      bits.push(
+        d
+          .toLocaleDateString(lang === "ar" ? "ar-EG" : lang, {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .toUpperCase(),
+      );
     }
   }
+  if (minutes) bits.push(`${minutes} ${minLabel.toUpperCase()}`);
   return bits.join(" · ");
 }
 
@@ -107,7 +130,7 @@ export function Blog() {
                 <span className={s.featuredBadge}>{t("FEATURED")}</span>
               </div>
               <div className={s.featuredBody}>
-                <div className={s.featuredMeta}>{metaLine(featured.createdAt, metaString(featured.meta, "tag"))}</div>
+                <div className={s.featuredMeta}>{metaLine(featured.createdAt, pickPlain(metaString(featured.meta, "tag") ?? "", lang), lang, readingMinutes(pick(featured.body, lang)), t("min read"))}</div>
                 <h2 className={s.featuredTitle}>{pick(featured.title, lang)}</h2>
                 <p className={s.featuredDesc}>{pick(featured.summary, lang)}</p>
                 <div className={s.featuredByline}>
@@ -134,7 +157,7 @@ export function Blog() {
                     {tag && <span className={s.cardTag}>{pickPlain(tag, lang)}</span>}
                   </div>
                   <div className={s.cardBody}>
-                    <div className={s.cardMetaLine}>{metaLine(post.createdAt, undefined)}</div>
+                    <div className={s.cardMetaLine}>{metaLine(post.createdAt, pickPlain(metaString(post.meta, "tag") ?? "", lang), lang, readingMinutes(pick(post.body, lang)), t("min read"))}</div>
                     <h2 className={s.cardTitle} style={{ marginTop: 10 }}>{pick(post.title, lang)}</h2>
                     <p className={s.cardDesc}>{pick(post.summary, lang)}</p>
                     <span className={s.cardRead}>
