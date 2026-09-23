@@ -164,7 +164,7 @@ export function ProjectCaseStudy() {
         <Reveal
           style={{
             color: "var(--text2)",
-            fontSize: 16.5,
+            fontSize: "var(--fs-body)",
             lineHeight: 1.75,
             whiteSpace: "pre-wrap",
             overflowWrap: "anywhere",

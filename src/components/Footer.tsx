@@ -1,16 +1,21 @@
 import { Link } from "react-router-dom";
 import { reopenConsent } from "../lib/pixels";
 import { useI18n } from "../lib/i18n";
+import { SocialIcon, type SocialName } from "./SocialIcon";
 import styles from "./Footer.module.css";
 
 const WA_LINK =
   "https://wa.me/201500099671?text=" + encodeURIComponent("Hi KF Tech Solutions, I'd like to discuss a software project.");
 const EMAIL = "kirollos.fayez.h@gmail.com";
 
-const SOCIAL = [
+/**
+ * Only profiles that actually exist are listed. Instagram and TikTok were here
+ * with `href: "#"` — a link that looks live and goes nowhere is worse than an
+ * absent one, and it costs trust on the page where people check you are real.
+ * Add them back with a real URL when the accounts exist.
+ */
+const SOCIAL: { label: SocialName; href: string }[] = [
   { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61584985085435" },
-  { label: "Instagram", href: "#" },
-  { label: "TikTok", href: "#" },
   { label: "LinkedIn", href: "https://linkedin.com/in/kirollos-fayez-65a33931a" },
   { label: "GitHub", href: "https://github.com/koko619911" },
 ];
@@ -44,8 +49,16 @@ export function Footer() {
             </p>
             <div className={styles.social}>
               {SOCIAL.map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className={styles.socialBtn}>
-                  {s.label[0]}
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  className={styles.socialBtn}
+                >
+                  <SocialIcon name={s.label} />
                 </a>
               ))}
             </div>

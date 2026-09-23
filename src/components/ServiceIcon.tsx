@@ -78,8 +78,8 @@ export function ServiceIcon({ slug }: { slug: string }) {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#FF6A00" />
-          <stop offset="1" stopColor="#FF0080" />
+          <stop offset="0" style={{ stopColor: "var(--brand-orange)" }} />
+          <stop offset="1" style={{ stopColor: "var(--brand-pink)" }} />
         </linearGradient>
       </defs>
       <g stroke={`url(#${gid})`}>{PATHS[slug] ?? FALLBACK}</g>

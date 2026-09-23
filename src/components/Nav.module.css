@@ -45,28 +45,29 @@
   justify-content: space-between;
   gap: 16px;
 }
-.brand { display: flex; align-items: center; gap: 12px; color: var(--text); }
+.brand { display: flex; align-items: center; gap: 12px; color: var(--text);   min-height: var(--control);
+}
 .brandText { display: flex; flex-direction: column; line-height: 1; }
-.brandTitle { font-family: var(--font-display); font-weight: 600; font-size: 16px; letter-spacing: -.01em; }
-.brandSub { font-size: 10.5px; color: var(--text3); letter-spacing: .02em; margin-top: 3px; }
+.brandTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body); letter-spacing: -.01em; }
+.brandSub { font-size: var(--fs-label); color: var(--text3); letter-spacing: .02em; margin-top: 3px; }
 .logo { width: 40px; height: 40px; object-fit: contain; display: block; flex-shrink: 0; }
 
 .navLinks { display: flex; align-items: center; gap: 2px; }
-.navLink { padding: 8px 12px; font-size: 14.5px; border-radius: 8px; transition: color .2s, background .2s; color: var(--text2); }
+.navLink { padding: 8px 12px; font-size: var(--fs-ui); border-radius: var(--r-xs); transition: color .2s, background .2s; color: var(--text2); }
 .navLink:hover { color: var(--text); background: var(--hover); }
 .navLinkActive { color: var(--text); font-weight: 600; }
 
 .actions { display: flex; align-items: center; gap: 10px; }
 
 .iconBtn {
-  width: 42px;
-  height: 42px;
+  width: var(--control);
+  height: var(--control);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--hover);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: var(--text);
 }
 
@@ -75,17 +76,18 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  height: 42px;
+  height: var(--control);
+  min-width: var(--control);
   padding: 0 10px;
   background: var(--hover);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: var(--text);
   transition: background .2s, border-color .2s;
 }
 .langBtn:hover { background: var(--bstrong); border-color: var(--bstrong); }
 .langBtn[aria-expanded="true"] { background: var(--bstrong); border-color: var(--bstrong); }
-.langCode { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.langCode { font-family: var(--font-mono); font-size: var(--fs-label); font-weight: 600; letter-spacing: .02em; }
 .langChevron { color: var(--text3); transition: transform .2s; }
 .langChevronOpen { transform: rotate(180deg); }
 .langMenu {
@@ -100,7 +102,7 @@
   padding: 7px;
   z-index: 60;
   border: 1px solid var(--bstrong);
-  border-radius: 14px;
+  border-radius: var(--r-card);
   background: var(--panel);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -131,10 +133,10 @@
   min-height: 44px;
   padding: 0 11px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: transparent;
   color: var(--text2);
-  font-size: 14px;
+  font-size: var(--fs-ui);
   font-weight: 500;
   text-align: start;
   transition: background .15s, color .15s;
@@ -145,7 +147,7 @@
 .langItemActive:hover { background: rgba(255, 106, 0, .16); }
 .langShort {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-label);
   font-weight: 600;
   color: var(--text3);
   letter-spacing: .04em;
@@ -160,9 +162,9 @@
   background: var(--brand-gradient);
   color: #fff;
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--fs-ui);
   padding: 10px 18px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   box-shadow: 0 8px 24px -8px rgba(255, 0, 128, .6);
 }
 .cta:hover { color: #fff; }
@@ -179,9 +181,9 @@
 .mobileMenuOpen { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .mobileMenuClosed { opacity: 0; transform: translateY(-12px); pointer-events: none; }
 .mobileTop { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; }
-.mobileTitle { font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--text); }
+.mobileTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body); color: var(--text); }
 .mobileNav { display: flex; flex-direction: column; padding: 8px 24px 32px; gap: 2px; }
-.mobileLink { color: var(--text); font-family: var(--font-display); font-size: 26px; font-weight: 500; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.mobileLink { color: var(--text); font-family: var(--font-display); font-size: var(--fs-title); font-weight: 500; padding: 14px 0; border-bottom: 1px solid var(--border); }
 .mobileCta {
   margin-top: 20px;
   flex-shrink: 0;
@@ -192,9 +194,9 @@
   background: var(--brand-gradient);
   color: #fff;
   font-weight: 600;
-  font-size: 17px;
+  font-size: var(--fs-lead);
   padding: 16px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
 }
 
 /* ---- Small screens -------------------------------------------------------
@@ -205,18 +207,19 @@
   .inner { padding: 0 16px; gap: 10px; }
   .brand { gap: 9px; min-width: 0; }
   .brandSub { display: none; }
-  .brandTitle { font-size: 15px; white-space: nowrap; }
+  .brandTitle { font-size: var(--fs-body); white-space: nowrap; }
   .logo { width: 36px; height: 36px; }
   .actions { gap: 7px; }
-  .iconBtn { width: 38px; height: 38px; }
-  .langBtn { height: 38px; padding: 0 9px; gap: 6px; }
+  /* Height stays var(--control): a phone is where a 44px target matters
+     most, and this block used to shrink these two to 38. */
+  .langBtn { padding: 0 9px; gap: 6px; }
   .mobileTop { padding: 16px; }
   .mobileNav { padding: 4px 16px 28px; }
-  .mobileLink { font-size: 22px; padding: 13px 0; }
+  .mobileLink { font-size: var(--fs-section); padding: 13px 0; }
 }
 
 @media (max-width: 400px) {
-  .brandTitle { font-size: 14px; }
+  .brandTitle { font-size: var(--fs-ui); }
   /* Below 400px the row is tight, so the trigger drops to the flag alone — it
      is still a language control, just without the redundant code beside it.
      The button keeps its full accessible name either way. */

@@ -33,7 +33,7 @@ export function NotFound() {
               fontFamily: "var(--font-mono, monospace)",
               color: "var(--brand-orange)",
               letterSpacing: "0.12em",
-              fontSize: 13,
+              fontSize: "var(--fs-ui)",
               marginBottom: 18,
             }}
           >

@@ -1,39 +1,63 @@
 .footer { border-top: 1px solid var(--border); background: var(--bg); }
 .inner { max-width: 1280px; margin: 0 auto; padding: 64px 24px 40px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 40px; }
+/*
+ * Four blocks — brand, Company, Legal, Get in touch — in an explicit layout.
+ *
+ * This was `auto-fit, minmax(220px, 1fr)` with a 40px gap, which needs
+ * 4x220 + 3x40 = 1000px of content width to fit four tracks. Below that the
+ * fourth wrapped to its own row and left a column-wide void beside it, most
+ * visibly at common laptop widths. `auto-fit` is the wrong tool when the number
+ * of children is fixed and known.
+ *
+ * The brand column carries a paragraph, so it takes the extra width.
+ */
+.grid { display: grid; grid-template-columns: 1fr; gap: 36px; }
+
+@media (min-width: 620px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 32px; }
+}
+@media (min-width: 1000px) {
+  .grid { grid-template-columns: 1.6fr repeat(3, minmax(0, 1fr)); gap: 40px; }
+}
 .brandCol { max-width: 320px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--text); }
 .logo { width: 38px; height: 38px; object-fit: contain; display: block; flex-shrink: 0; }
-.brandTitle { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
-.desc { margin-top: 16px; color: var(--text2); font-size: 14.5px; line-height: 1.55; }
+.brandTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body); }
+.desc { margin-top: 16px; color: var(--text2); font-size: var(--fs-ui); line-height: 1.55; }
 .social { display: flex; gap: 9px; margin-top: 20px; }
 .socialBtn {
-  width: 38px;
-  height: 38px;
+  width: var(--control);
+  height: var(--control);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: var(--text2);
 }
 .socialBtn:hover { border-color: rgba(255, 106, 0, .5); color: var(--text); }
-.colTitle { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); font-family: var(--font-mono); font-weight: 500; }
-.colLinks { display: flex; flex-direction: column; gap: 11px; margin-top: 16px; }
+.colTitle { font-size: var(--fs-ui); text-transform: uppercase; letter-spacing: .08em; color: var(--text3); font-family: var(--font-mono); font-weight: 500; }
+.colLinks { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
 /* The cookie-settings control is a <button> because it opens the banner rather
    than navigating; it is styled with the anchors so the column reads as one
    list. `text-align: start` keeps it left-aligned in LTR and right in RTL,
    which a button does not do by default. */
+/* A comfortable row height for the whole column, so every footer link — the
+   anchors and the cookie-settings button alike — is a real target on a phone
+   rather than a 17px line of text. */
 .colLinks a,
 .colLinks button {
+  min-height: var(--control-sm);
+  display: flex;
+  align-items: center;
   color: var(--text2);
-  font-size: 14.5px;
+  font-size: var(--fs-ui);
   background: none;
   border: 0;
   padding: 0;
   text-align: start;
   font: inherit;
-  font-size: 14.5px;
+  font-size: var(--fs-ui);
   cursor: pointer;
 }
 .colLinks a:hover,
@@ -48,8 +72,8 @@
   align-items: center;
   justify-content: space-between;
 }
-.bottomText { font-size: 13px; color: var(--text3); }
-.bottomMono { font-size: 13px; color: var(--text3); font-family: var(--font-mono); }
+.bottomText { font-size: var(--fs-ui); color: var(--text3); }
+.bottomMono { font-size: var(--fs-ui); color: var(--text3); font-family: var(--font-mono); }
 
 .waFab {
   position: fixed;
@@ -62,7 +86,7 @@
 
 @media (max-width: 640px) {
   .inner { padding: 48px 16px 32px; }
-  .grid { gap: 30px; }
+  .grid { gap: 28px; }
   .brandCol { max-width: none; }
   .bottom { margin-top: 36px; }
   /* Long email addresses were the one real overflow source in the footer. */

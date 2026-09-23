@@ -76,7 +76,7 @@ export function Projects() {
                 {item.tag && <span className={s.cardTag}>{pickPlain(item.tag, lang)}</span>}
               </div>
               <div className={s.cardBody} style={{ padding: 24 }}>
-                <h2 className={s.cardTitle} style={{ fontSize: 20 }}>{item.title}</h2>
+                <h2 className={s.cardTitle} style={{ fontSize: "var(--fs-section)" }}>{item.title}</h2>
                 <p className={s.cardDesc}>{item.desc}</p>
                 {item.tech.length > 0 && (
                   <div className={s.projChips}>

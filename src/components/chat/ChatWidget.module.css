@@ -28,10 +28,10 @@
   min-width: 20px;
   height: 20px;
   padding: 0 5px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
   background: #fff;
   color: var(--brand-pink);
-  font-size: 11px;
+  font-size: var(--fs-label);
   font-weight: 700;
   display: grid;
   place-items: center;
@@ -49,7 +49,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: var(--r-card);
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--text);
@@ -76,19 +76,19 @@
   background: var(--brand-gradient);
   display: grid;
   place-items: center;
-  font-size: 13px;
+  font-size: var(--fs-ui);
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
 }
-.hd h2 { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
-.st { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text2); margin-top: 2px; }
+.hd h2 { font-family: var(--font-display); font-size: var(--fs-body); font-weight: 600; }
+.st { display: flex; align-items: center; gap: 6px; font-size: var(--fs-label); color: var(--text2); margin-top: 2px; }
 .live { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px rgba(74, 222, 128, .2); }
 .x {
   margin-inline-start: auto;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: var(--control-sm);
+  height: var(--control-sm);
+  border-radius: var(--r-xs);
   display: grid;
   place-items: center;
   color: var(--text2);
@@ -115,16 +115,16 @@
 .rowThem .rowAvatar { grid-column: 1; grid-row: 1; align-self: end; }
 .rowThem .bub { grid-column: 2; grid-row: 1; justify-self: start; }
 .rowThem .ts { grid-column: 2; grid-row: 2; }
-.bub { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.5; word-break: break-word; unicode-bidi: plaintext; }
+.bub { padding: 10px 14px; border-radius: var(--r-card); font-size: var(--fs-ui); line-height: 1.5; word-break: break-word; unicode-bidi: plaintext; }
 .rowThem .bub { background: var(--panel2); border-bottom-left-radius: 5px; }
 .rowMe .bub { background: var(--brand-gradient); color: #fff; border-bottom-right-radius: 5px; }
-.ts { font-size: 10.5px; color: var(--text3); margin-top: 4px; font-family: var(--font-mono); }
+.ts { font-size: var(--fs-label); color: var(--text3); margin-top: 4px; font-family: var(--font-mono); }
 
 .typing {
   display: flex;
   gap: 4px;
   padding: 12px 15px;
-  border-radius: 15px;
+  border-radius: var(--r-card);
   border-bottom-left-radius: 5px;
   background: var(--panel2);
   width: fit-content;
@@ -137,8 +137,8 @@
 .quick button {
   unicode-bidi: plaintext;
   padding: 8px 13px;
-  border-radius: 999px;
-  font-size: 12.5px;
+  border-radius: var(--r-full);
+  font-size: var(--fs-label);
   border: 1px solid var(--bstrong);
   color: var(--text2);
   background: none;
@@ -147,35 +147,35 @@
 .quick button:hover { border-color: rgba(255, 106, 0, .5); color: var(--text); }
 
 .form { border-top: 1px solid var(--border); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
-.fld span { display: block; font-size: 11.5px; font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+.fld span { display: block; font-size: var(--fs-label); font-weight: 600; color: var(--text2); margin-bottom: 5px; }
 .fld input {
   width: 100%;
   padding: 11px 13px;
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: var(--r-control);
+  font-size: var(--fs-ui);
   border: 1px solid var(--bstrong);
   background: var(--field);
   color: inherit;
 }
 .go {
   padding: 13px;
-  border-radius: 11px;
+  border-radius: var(--r-control);
   background: var(--brand-gradient);
   color: #fff;
-  font-size: 14.5px;
+  font-size: var(--fs-ui);
   font-weight: 600;
   border: none;
   transition: transform .2s;
 }
 .go:hover { transform: translateY(-1px); }
-.note { font-size: 11.5px; color: var(--text3); text-align: center; line-height: 1.5; }
+.note { font-size: var(--fs-label); color: var(--text3); text-align: center; line-height: 1.5; }
 
 .comp { display: flex; align-items: flex-end; gap: 9px; }
 .comp textarea {
   flex: 1;
   padding: 11px 13px;
-  border-radius: 12px;
-  font-size: 14px;
+  border-radius: var(--r-control);
+  font-size: var(--fs-ui);
   line-height: 1.5;
   resize: none;
   max-height: 104px;
@@ -187,7 +187,7 @@
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  border-radius: 11px;
+  border-radius: var(--r-control);
   display: grid;
   place-items: center;
   background: var(--brand-gradient);
@@ -197,7 +197,7 @@
 .send:disabled { opacity: .4; cursor: default; }
 .send svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-.errorNote { padding: 10px 16px; font-size: 12px; color: var(--danger); text-align: center; }
+.errorNote { padding: 10px 16px; font-size: var(--fs-label); color: var(--danger); text-align: center; }
 
 /* RTL: the panel grows from the bottom-left corner instead. */
 :global(html[dir="rtl"]) .panel { transform-origin: bottom left; }
@@ -217,12 +217,12 @@
      launcher at 375x667 instead of being cut off at the panel edge. */
   .log { min-height: 84px; }
   .form { padding: 10px 12px; gap: 8px; }
-  .fld span { font-size: 11px; margin-bottom: 4px; }
+  .fld span { font-size: var(--fs-label); margin-bottom: 4px; }
   .fld input { padding: 10px 12px; }
   .go { padding: 12px; }
-  .note { font-size: 11px; }
+  .note { font-size: var(--fs-label); }
   .quick { padding: 0 12px 10px; gap: 6px; }
-  .quick button { padding: 7px 11px; font-size: 12px; }
+  .quick button { padding: 7px 11px; font-size: var(--fs-label); }
 }
 
 /* Landscape phones: there is no room for a 620px panel above the button. */

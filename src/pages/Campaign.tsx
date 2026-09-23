@@ -116,8 +116,8 @@ export function Campaign() {
               </div>
             ) : (
               <>
-                <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 23 }}>{t("Get a free quote")}</h2>
-                <p style={{ marginTop: 8, color: "var(--text2)", fontSize: 14.5 }}>{t("Tell us what you need. We reply within one business day — no obligation.")}</p>
+                <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "var(--fs-section)" }}>{t("Get a free quote")}</h2>
+                <p style={{ marginTop: 8, color: "var(--text2)", fontSize: "var(--fs-ui)" }}>{t("Tell us what you need. We reply within one business day — no obligation.")}</p>
                 <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 14 }}>
                   <label className={c.field}>
                     <span className={c.fieldLabel}>{t("Your name")}</span>
@@ -184,7 +184,7 @@ export function Campaign() {
                 <div className={s.cardMediaScrim} aria-hidden="true" />
               </div>
               <div className={s.cardBody}>
-                <h3 className={s.cardTitle} style={{ fontSize: 18 }}>{o.title}</h3>
+                <h3 className={s.cardTitle} style={{ fontSize: "var(--fs-lead)" }}>{o.title}</h3>
                 <p className={s.cardDesc}>{o.desc}</p>
                 <div className={s.cardFrom}>{t(o.from)}</div>
               </div>
