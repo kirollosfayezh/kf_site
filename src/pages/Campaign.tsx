@@ -110,7 +110,7 @@ export function Campaign() {
                   </svg>
                 </span>
                 <h2 className={c.successTitle}>{t("Request received")}</h2>
-                <p className={c.successDesc}>Thanks — we will reply within one business day. For anything urgent, message us on WhatsApp.</p>
+                <p className={c.successDesc}>{t("Thanks — we will reply within one business day. For anything urgent, message us on WhatsApp.")}</p>
                 <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ marginTop: 20 }}>
                   {t("Open WhatsApp")}
                 </a>
@@ -152,7 +152,7 @@ export function Campaign() {
                     />
                   </label>
                 </div>
-                {err && <div className={c.formError}>{err}</div>}
+                {err && <div className={c.formError}>{t(err)}</div>}
                 <button type="submit" disabled={sending} data-track="campaign.submit" className={`btn btn-primary ${c.submitBtn}`}>
                   {sending ? t("Sending…") : t("Send my request")}
                 </button>
@@ -177,7 +177,7 @@ export function Campaign() {
                 alt: pick(o.title, lang),
                 from: OFFERS[i % OFFERS.length].from,
               }))
-            : OFFERS.map((o) => ({ key: o.title, title: t(o.title), desc: t(o.desc), img: o.img, alt: o.alt, from: o.from }))
+            : OFFERS.map((o) => ({ key: o.title, title: t(o.title), desc: t(o.desc), img: o.img, alt: t(o.alt), from: o.from }))
           ).map((o) => (
             <Reveal key={o.key} className={s.card}>
               <div className={s.cardMedia}>

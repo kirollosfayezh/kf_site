@@ -379,7 +379,7 @@ export function Home() {
               <div className={h.aiOutcomes}>
                 {activeRecipe.outcome.map((o) => (
                   <div key={o.l}>
-                    <div className={h.aiOutcomeValue}>{o.v}</div>
+                    <div className={h.aiOutcomeValue}>{t(o.v)}</div>
                     <div className={h.aiOutcomeLabel}>{t(o.l)}</div>
                   </div>
                 ))}
@@ -532,7 +532,7 @@ export function Home() {
             <img
               className={h.aboutImg}
               src="/founder.jpg"
-              alt="Kirollos Fayez, founder of KF Tech Solutions"
+              alt={t("Kirollos Fayez, founder of KF Tech Solutions")}
               width={1402}
               height={1122}
               loading="lazy"

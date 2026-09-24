@@ -71,7 +71,7 @@ export function About() {
             <img
               className={s.portrait}
               src="/founder.jpg"
-              alt="Kirollos Fayez, founder of KF Tech Solutions"
+              alt={t("Kirollos Fayez, founder of KF Tech Solutions")}
               width={1402}
               height={1122}
               loading="lazy"
@@ -81,7 +81,7 @@ export function About() {
             <div className={s.workspaceGrid}>
               {WORKSPACE.map((w) => (
                 <div key={w.src} className={s.workspaceCell}>
-                  <Img src={w.src} alt={w.alt} width={320} sizes="(max-width: 700px) 45vw, 320px" />
+                  <Img src={w.src} alt={t(w.alt)} width={320} sizes="(max-width: 700px) 45vw, 320px" />
                 </div>
               ))}
             </div>

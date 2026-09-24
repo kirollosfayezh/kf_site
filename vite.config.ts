@@ -95,6 +95,41 @@ function seoPrerender(origin: string, apiBase: string | undefined): Plugin {
   }
 }
 
+/**
+ * Publishes the shipped dictionary as `/i18n/catalog.json`.
+ *
+ * The dashboard's Translations screen reads it to list every piece of
+ * interface copy with its current Arabic, German and French, so an editor can
+ * correct any of them — the edits are stored as overrides in the backend and
+ * laid over this file on the site. Built from the same JSON the site bundles,
+ * so the two can never disagree.
+ */
+function i18nCatalog(): Plugin {
+  return {
+    name: 'kf-i18n-catalog',
+    apply: 'build',
+    async generateBundle() {
+      const { readFile } = await import('node:fs/promises')
+      const langs = ['ar', 'de', 'fr'] as const
+      const dicts = await Promise.all(
+        langs.map(async (l) => JSON.parse(await readFile(`src/lib/dict/${l}.json`, 'utf8')) as Record<string, string>),
+      )
+      const keys = [...new Set(dicts.flatMap((d) => Object.keys(d)))].sort((a, b) => a.localeCompare(b))
+      const entries = keys.map((key) => ({
+        key,
+        ar: dicts[0][key] ?? '',
+        de: dicts[1][key] ?? '',
+        fr: dicts[2][key] ?? '',
+      }))
+      this.emitFile({
+        type: 'asset',
+        fileName: 'i18n/catalog.json',
+        source: JSON.stringify({ generatedAt: new Date().toISOString(), entries }),
+      })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -118,6 +153,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [
       react(),
+      i18nCatalog(),
       seoPrerender(env.VITE_SITE_URL?.trim().replace(/\/+$/, '') ?? '', env.VITE_API_BASE_URL?.trim()),
     ],
     // Pinned so the site and dashboard never fight over a port, and so the

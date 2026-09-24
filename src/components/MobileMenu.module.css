@@ -1,0 +1,276 @@
+/* Phone navigation drawer — see MobileMenu.tsx. Sits above the chat launcher
+   (70), its panel (71) and the WhatsApp button (60). */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, .55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+}
+.backdropOpen { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  inset-inline-end: 0;
+  z-index: 81;
+  width: min(380px, 88vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-inline-start: 1px solid var(--border);
+  box-shadow: -24px 0 60px -30px rgba(0, 0, 0, .7);
+  /* Off-canvas on the inline-end side: right in LTR, left in Arabic. */
+  transform: translateX(104%);
+  visibility: hidden;
+  transition: transform .32s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .32s;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+:global(html[dir="rtl"]) .drawer { transform: translateX(-104%); }
+.drawerOpen,
+:global(html[dir="rtl"]) .drawerOpen {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform .32s cubic-bezier(.22, 1, .36, 1), visibility 0s;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); min-width: 0; }
+.logo { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+.brandTitle {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.close {
+  width: var(--control);
+  height: var(--control);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-control);
+  border: 1px solid var(--border);
+  background: var(--hover);
+  color: var(--text);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 10px 16px;
+}
+
+.tree, .leaves { list-style: none; margin: 0; padding: 0; }
+.branch + .branch { margin-top: 2px; }
+
+.row {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--r-control);
+  transition: background .15s;
+}
+.row:hover { background: var(--hover); }
+.rowActive { background: var(--hover); }
+.rowActive .rowLink { color: var(--text); }
+.rowActive .rowLink::before { opacity: 1; }
+
+.rowLink {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 14px;
+  color: var(--text2);
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: 600;
+}
+/* A short gradient tick marks the section you are in. */
+.rowLink::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--brand-gradient);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: var(--text3);
+  background: var(--hover);
+  border: 1px solid var(--border);
+}
+
+.toggle {
+  width: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  border-radius: var(--r-control);
+}
+.toggle:hover { color: var(--text); }
+.toggle:focus-visible,
+.rowLink:focus-visible,
+.leaf:focus-visible { outline: 2px solid var(--brand-orange); outline-offset: -2px; border-radius: var(--r-control); }
+.chevron { transition: transform .22s ease; }
+.chevronOpen { transform: rotate(180deg); color: var(--brand-orange); }
+
+/* Collapsible body: animating grid rows from 0fr to 1fr gives a height
+   transition without measuring the list. */
+.leavesWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .26s ease;
+}
+.leavesWrapOpen { grid-template-rows: 1fr; }
+.leavesWrap > .leaves { overflow: hidden; min-height: 0; }
+
+.leaves {
+  margin-inline-start: 22px;
+  border-inline-start: 1px solid var(--bstrong);
+}
+.leavesWrapOpen > .leaves { padding: 4px 0 8px; }
+
+.leaf {
+  position: relative;
+  display: block;
+  padding-block: 11px;
+  padding-inline-start: 18px;
+  padding-inline-end: 14px;
+  color: var(--text2);
+  font-size: var(--fs-ui);
+  line-height: 1.35;
+  border-radius: var(--r-control);
+  margin-inline-start: 6px;
+}
+/* The branch line joins each item, so the list reads as a tree. */
+.leaf::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -6px;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: var(--bstrong);
+}
+.leaf:hover { background: var(--hover); color: var(--text); }
+.leafActive { color: var(--text); font-weight: 600; background: rgba(255, 106, 0, .1); }
+.leafAll { color: var(--brand-orange); font-weight: 600; }
+.leafAll:hover { color: var(--brand-orange); }
+
+.footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+}
+.group { display: flex; flex-direction: column; gap: 8px; }
+.groupLabel {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.langs { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 6px; }
+.langChip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  border-radius: var(--r-control);
+  border: 1px solid var(--border);
+  background: var(--hover);
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 600;
+}
+.langChipOn {
+  color: var(--text);
+  border-color: var(--brand-orange);
+  background: rgba(255, 106, 0, .12);
+}
+
+.themeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--r-control);
+  border: 1px solid var(--border);
+  background: var(--hover);
+  color: var(--text);
+}
+.themeValue { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-ui); font-weight: 600; }
+
+.ctas { display: flex; gap: 8px; }
+.cta {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  border-radius: var(--r-control);
+  background: var(--brand-gradient);
+  color: #fff;
+  font-weight: 600;
+  font-size: var(--fs-body);
+}
+.cta:hover { color: #fff; }
+.wa {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-control);
+  background: #25d366;
+  color: #fff;
+}
+.wa:hover { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer, .drawerOpen, .backdrop, .leavesWrap, .chevron { transition: none; }
+}

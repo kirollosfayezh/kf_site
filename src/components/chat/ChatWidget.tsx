@@ -297,17 +297,17 @@ export function ChatWidget() {
               <div className={styles.log} ref={logRef}>
                 <div className={`${styles.row} ${styles.rowThem}`}>
                   <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
-                  <div className={styles.bub}>{GREETING}</div>
+                  <div className={styles.bub}>{t(GREETING)}</div>
                 </div>
               </div>
               <div className={styles.quick}>
                 {QUICK.map((q) => (
-                  <button key={q} type="button" onClick={() => handleQuick(q)} disabled={starting}>
-                    {q}
+                  <button key={q} type="button" onClick={() => handleQuick(t(q))} disabled={starting}>
+                    {t(q)}
                   </button>
                 ))}
               </div>
-              {error && <p className={styles.errorNote}>{error}</p>}
+              {error && <p className={styles.errorNote}>{t(error)}</p>}
               <form
                 className={styles.form}
                 onSubmit={(e) => {
@@ -317,16 +317,16 @@ export function ChatWidget() {
               >
                 <label className={styles.fld}>
                   <span>{t("Your name")}</span>
-                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Optional" />
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Optional")} />
                 </label>
                 <label className={styles.fld}>
                   <span>{t("Email or WhatsApp")}</span>
-                  <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder="Optional" />
+                  <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder={t("Optional")} />
                 </label>
                 <button className={styles.go} type="submit" disabled={starting}>
-                  {starting ? "Connecting…" : "Start chat"}
+                  {starting ? t("Connecting…") : t("Start chat")}
                 </button>
-                <p className={styles.note}>We reply here directly. Your details are only used to follow up.</p>
+                <p className={styles.note}>{t("We reply here directly. Your details are only used to follow up.")}</p>
               </form>
             </>
           ) : (
@@ -335,7 +335,7 @@ export function ChatWidget() {
                 {/* The greeting is presentational only — it is never written to the thread. */}
                 <div className={`${styles.row} ${styles.rowThem}`}>
                   <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
-                  <div className={styles.bub}>{GREETING}</div>
+                  <div className={styles.bub}>{t(GREETING)}</div>
                 </div>
                 {messages.map((m) => (
                   <div key={m.id} className={`${styles.row} ${m.from === "visitor" ? styles.rowMe : styles.rowThem}`}>
@@ -354,13 +354,13 @@ export function ChatWidget() {
                   </div>
                 )}
               </div>
-              {error && <p className={styles.errorNote}>{error}</p>}
+              {error && <p className={styles.errorNote}>{t(error)}</p>}
               <div className={styles.form}>
                 <div className={styles.comp}>
                   <textarea
                     rows={1}
                     value={draft}
-                    placeholder="Type a message…"
+                    placeholder={t("Type a message…")}
                     onChange={(e) => handleDraftChange(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {

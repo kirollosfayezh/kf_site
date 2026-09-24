@@ -27,7 +27,7 @@ import Lenis from "lenis";
  */
 export function useSmoothScroll() {
   const lenisRef = useRef<Lenis | null>(null);
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -60,12 +60,41 @@ export function useSmoothScroll() {
   // Scroll to top on navigation. With Lenis active, `window.scrollTo` is not
   // enough: Lenis keeps its own animated position and would scroll straight
   // back, so the instance has to be told to reset too.
+  //
+  // A `#slug` in the URL (the mobile menu deep-links to one service or
+  // industry) scrolls to that card instead. The card may not exist yet — the
+  // list renders from the CMS a round trip later — so it is looked for over a
+  // short window rather than once.
   useEffect(() => {
     const lenis = lenisRef.current;
-    if (lenis) {
-      lenis.scrollTo(0, { immediate: true, force: true });
-    } else {
-      window.scrollTo(0, 0);
+    const toTop = () => {
+      if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+      else window.scrollTo(0, 0);
+    };
+
+    const id = decodeURIComponent(hash.replace(/^#/, ""));
+    if (!id) {
+      toTop();
+      return;
     }
-  }, [pathname]);
+
+    toTop();
+    let raf = 0;
+    const deadline = performance.now() + 2500;
+    const seek = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+        if (lenis) lenis.scrollTo(top, { force: true });
+        else window.scrollTo({ top, behavior: "smooth" });
+        return;
+      }
+      if (performance.now() < deadline) raf = requestAnimationFrame(seek);
+    };
+    raf = requestAnimationFrame(seek);
+    return () => cancelAnimationFrame(raf);
+  }, [pathname, hash]);
 }
+
+/** The fixed header's height plus a little air, so a target is not hidden under it. */
+const HEADER_OFFSET = 88;

@@ -173,35 +173,23 @@
 }
 .cta:hover { color: #fff; }
 
-.mobileMenu {
-  position: fixed;
-  inset: 0;
-  /* Above the chat launcher (70), its panel (71) and the WhatsApp button (60),
-     which otherwise floated on top of the open menu and over its CTA. */
-  z-index: 80;
-  background: var(--bg);
-  transition: opacity .3s, transform .3s;
-}
-.mobileMenuOpen { opacity: 1; transform: translateY(0); pointer-events: auto; }
-.mobileMenuClosed { opacity: 0; transform: translateY(-12px); pointer-events: none; }
-.mobileTop { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; }
-.mobileTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body); color: var(--text); }
-.mobileNav { display: flex; flex-direction: column; padding: 8px 24px 32px; gap: 2px; }
-.mobileLink { color: var(--text); font-family: var(--font-display); font-size: var(--fs-title); font-weight: 500; padding: 14px 0; border-bottom: 1px solid var(--border); }
-.mobileCta {
-  margin-top: 20px;
-  flex-shrink: 0;
-  display: inline-flex;
+/* Phone menu trigger: the current language's flag beside two bars, in one
+   pill. Showing the flag here is what lets the language control leave the app
+   bar without the visitor losing sight of which language they are reading. */
+.menuBtn {
+  height: var(--control);
+  padding: 0 12px;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--brand-gradient);
-  color: #fff;
-  font-weight: 600;
-  font-size: var(--fs-lead);
-  padding: 16px;
-  border-radius: var(--r-control);
+  gap: 10px;
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
 }
+.menuBtn[aria-expanded="true"] { background: var(--bstrong); }
+.menuBars { display: flex; flex-direction: column; gap: 5px; width: 18px; }
+.menuBars span { display: block; height: 2px; border-radius: 2px; background: currentColor; }
+.menuBars span:last-child { width: 12px; margin-inline-start: auto; }
 
 /* ---- Laptop widths -------------------------------------------------------
    Between a phone and a wide desktop the tagline competed with seven nav links
@@ -226,9 +214,6 @@
   /* Height stays var(--control): a phone is where a 44px target matters
      most, and this block used to shrink these two to 38. */
   .langBtn { padding: 0 9px; gap: 6px; }
-  .mobileTop { padding: 16px; }
-  .mobileNav { padding: 4px 16px 28px; }
-  .mobileLink { font-size: var(--fs-section); padding: 13px 0; }
 }
 
 @media (max-width: 400px) {
@@ -240,9 +225,5 @@
   .langBtn { padding: 0 9px; }
 }
 
-/* The mobile sheet scrolls rather than pushing links off-screen on short phones. */
-.mobileMenu { overflow-y: auto; overscroll-behavior: contain; }
-
-/* Arrow glyphs in the nav CTAs point the other way in Arabic. */
-:global(html[dir="rtl"]) .cta span,
-:global(html[dir="rtl"]) .mobileCta span { display: inline-block; transform: scaleX(-1); }
+/* Arrow glyphs in the nav CTA point the other way in Arabic. */
+:global(html[dir="rtl"]) .cta span { display: inline-block; transform: scaleX(-1); }

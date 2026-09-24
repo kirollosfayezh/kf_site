@@ -57,7 +57,7 @@ export function Services() {
       <section className={s.section} style={{ paddingTop: 70, paddingBottom: 40 }}>
         <BalancedGrid preset="detail" style={{ marginTop: 0 }}>
           {items.map((item, i) => (
-            <Reveal key={item.key} as="article" className={s.svcCard}>
+            <Reveal key={item.key} as="article" id={item.slug} className={s.svcCard}>
               <div className={s.svcMedia}>
                 {item.media ? (
                   <Img

@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LANG_META, useI18n } from "../lib/i18n";
 import { localePath } from "../lib/seo";
 import { FlagIcon } from "./FlagIcon";
+import { MobileMenu } from "./MobileMenu";
 import { useTheme } from "../lib/theme";
 import styles from "./Nav.module.css";
 
@@ -79,6 +80,7 @@ export function Nav() {
     };
   }, [langOpen]);
 
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
   const current = LANG_META[lang];
 
   return (
@@ -93,7 +95,7 @@ export function Nav() {
       />
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ""}`}>
         <div className={styles.inner}>
-          <Link to="/" className={styles.brand} aria-label="KF Tech Solutions home">
+          <Link to="/" className={styles.brand} aria-label={t("KF Tech Solutions home")}>
             {/* The original export's mark: a gradient code-window glyph, not
                 the letters "KF". Eager + fixed size — it is above the fold. */}
             <img src="/logo-icon.png" alt="" width={40} height={40} className={styles.logo} decoding="async" />
@@ -103,7 +105,7 @@ export function Nav() {
             </span>
           </Link>
 
-          <nav aria-label="Primary" className={`${styles.navLinks} kf-desktop-nav`}>
+          <nav aria-label={t("Primary")} className={`${styles.navLinks} kf-desktop-nav`}>
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
@@ -116,7 +118,9 @@ export function Nav() {
           </nav>
 
           <div className={styles.actions}>
-            <div className={styles.langWrap} ref={langRef}>
+            {/* On phones the language and theme controls move into the drawer, so
+                the app bar is just the logo and the menu button. */}
+            <div className={`${styles.langWrap} kf-desktop-nav`} ref={langRef}>
               <button
                 type="button"
                 className={styles.langBtn}
@@ -188,7 +192,7 @@ export function Nav() {
               )}
             </div>
 
-            <button type="button" className={styles.iconBtn} aria-label={t("Toggle light and dark theme")} onClick={toggleTheme}>
+            <button type="button" className={`${styles.iconBtn} kf-desktop-nav`} aria-label={t("Toggle light and dark theme")} onClick={toggleTheme}>
               {theme === "dark" ? (
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="4" />
@@ -210,36 +214,19 @@ export function Nav() {
               aria-label={t("Open menu")}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
-              className={`${styles.iconBtn} kf-mobile-btn`}
+              className={`${styles.menuBtn} kf-mobile-btn`}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M3 6h18M3 12h18M3 18h18" />
-              </svg>
+              <FlagIcon lang={lang} size={18} />
+              <span className={styles.menuBars} aria-hidden="true">
+                <span />
+                <span />
+              </span>
             </button>
           </div>
         </div>
       </header>
 
-      <div role="dialog" aria-label={t("Menu")} className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : styles.mobileMenuClosed}`}>
-        <div className={styles.mobileTop}>
-          <span className={styles.mobileTitle}>{t("Menu")}</span>
-          <button type="button" aria-label={t("Close menu")} className={styles.iconBtn} onClick={() => setMenuOpen(false)}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </div>
-        <nav aria-label="Mobile" className={styles.mobileNav}>
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.href} to={item.href} className={styles.mobileLink} onClick={() => setMenuOpen(false)}>
-              {t(item.label)}
-            </Link>
-          ))}
-          <Link to="/contact" data-track="nav.lets-build-mobile" className={styles.mobileCta} onClick={() => setMenuOpen(false)}>
-            {t("Let's Build")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
-          </Link>
-        </nav>
-      </div>
+      <MobileMenu open={menuOpen} onClose={closeMenu} />
     </>
   );
 }

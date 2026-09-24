@@ -10,6 +10,8 @@ import s from "../styles/sections.module.css";
 
 interface Row {
   key: string;
+  /** Anchor id, so the mobile menu can deep-link to one industry. */
+  slug: string;
   tag?: string;
   title: string;
   desc: string;
@@ -27,20 +29,22 @@ export function Solutions() {
     solutions.data && solutions.data.length > 0
       ? solutions.data.map((item) => ({
           key: item.id,
+          slug: item.slug || item.id,
           tag: metaString(item.meta, "tag"),
           title: pick(item.title, lang),
           desc: pick(item.summary ?? item.body, lang),
           img: item.media?.[0],
-          alt: metaString(item.meta, "alt") ?? pick(item.title, lang),
+          alt: pickPlain(metaString(item.meta, "alt"), lang) || pick(item.title, lang),
           points: metaPoints(item.meta),
         }))
       : FALLBACK_SOLUTIONS.map((f) => ({
           key: f.key,
+          slug: f.slug ?? f.key,
           tag: f.solutionTag ?? f.tag,
           title: t(f.title),
           desc: t(f.longDesc ?? f.desc),
           img: f.img,
-          alt: f.alt ?? f.title,
+          alt: t(f.alt ?? f.title),
           points: f.points ?? [],
         }));
 
@@ -66,7 +70,7 @@ export function Solutions() {
       <section className={s.solutionList}>
         {
           items.map((item, i) => (
-            <Reveal key={item.key} as="article" className={s.solutionRow}>
+            <Reveal key={item.key} as="article" id={item.slug} className={s.solutionRow}>
               {item.img && (
                 <div className={s.solutionBanner}>
                   <Img

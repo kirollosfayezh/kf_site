@@ -53,7 +53,7 @@ export function Legal() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={s.pageHeroInner} style={{ maxWidth: 780 }}>
           <Reveal>
-            <nav aria-label="Breadcrumb" className={s.breadcrumb}>
+            <nav aria-label={t("Breadcrumb")} className={s.breadcrumb}>
               <Link to="/" style={{ color: "var(--text3)" }}>{t("Home")}</Link> / {t("Legal")}
             </nav>
             <h1 className={s.pageTitle}>{pick(doc.title, lang)}</h1>
