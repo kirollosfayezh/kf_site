@@ -19,6 +19,14 @@
     {
       "source": "/projects/(.*)",
       "destination": "/article-shell.html"
+    },
+    {
+      "source": "/(ar|de|fr)/q/(.*)",
+      "destination": "/article-shell.html"
+    },
+    {
+      "source": "/q/(.*)",
+      "destination": "/article-shell.html"
     }
   ],
   "headers": [

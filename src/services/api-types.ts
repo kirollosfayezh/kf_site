@@ -24,6 +24,8 @@ export interface LeadPayload {
   projectType?: string;
   budget?: string;
   message: string;
+  /** This browser's id, so the lead is linked to what the person browsed. */
+  visitorId?: string;
 }
 
 export interface Lead extends LeadPayload {

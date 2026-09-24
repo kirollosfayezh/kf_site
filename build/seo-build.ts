@@ -173,7 +173,8 @@ export async function prerenderPages(
   legal: ArticleLike[] = [],
 ): Promise<PrerenderResult> {
   const shell = stripStaticHead(await readFile(join(distDir, "index.html"), "utf8"));
-  const prerenderable = Object.values(pages).filter((p) => p.path !== "/404");
+  // `/q` is the client quote page: private links, served by the SPA shell.
+  const prerenderable = Object.values(pages).filter((p) => p.path !== "/404" && p.path !== "/q");
 
   // Every route, in every language, as its own file: `/services` and
   // `/de/services` are separate documents with their own canonical, hreflang set

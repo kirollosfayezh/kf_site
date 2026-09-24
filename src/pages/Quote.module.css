@@ -1,0 +1,92 @@
+.page { padding: 120px 16px 80px; max-width: 900px; margin: 0 auto; }
+
+/* The document itself: paper-like in both themes, so what the client sees is
+   what prints. */
+.doc {
+  background: #fff;
+  color: #16161c;
+  border-radius: var(--r-card);
+  padding: clamp(22px, 5vw, 52px);
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, .6);
+  border: 1px solid var(--border);
+}
+.skeleton { height: 420px; border-radius: 12px; background: linear-gradient(90deg, #f1f1f4, #e7e7ec, #f1f1f4); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; padding-bottom: 22px; border-bottom: 2px solid #16161c; }
+.brand { display: flex; gap: 14px; align-items: flex-start; }
+.brand img { border-radius: 10px; flex-shrink: 0; }
+.company { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.muted { color: #6b6b78; font-size: 13px; line-height: 1.55; }
+.meta { text-align: end; }
+.kind { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 700; color: #ff6a00; }
+.number { font-family: var(--font-mono); font-size: 20px; font-weight: 700; margin: 2px 0 4px; }
+
+.title { font-family: var(--font-display); font-size: clamp(22px, 3.4vw, 30px); font-weight: 700; margin: 26px 0 18px; line-height: 1.25; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th { text-align: start; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #6b6b78; padding: 10px 8px; border-bottom: 1px solid #dcdce3; }
+.table td { padding: 13px 8px; border-bottom: 1px solid #ececf1; vertical-align: top; line-height: 1.45; }
+.num { text-align: end !important; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.totals { margin: 18px 0 0 auto; width: min(100%, 340px); font-size: 14px; }
+.totals > div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 8px; }
+.totals dd { font-variant-numeric: tabular-nums; }
+.grand { margin-top: 6px; border-top: 2px solid #16161c; font-size: 18px; font-weight: 700; padding-top: 12px !important; }
+
+.notes { margin-top: 30px; }
+.notes h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: #6b6b78; margin-bottom: 6px; }
+.notes p { white-space: pre-wrap; line-height: 1.6; font-size: 14px; }
+.foot { margin-top: 34px; padding-top: 16px; border-top: 1px solid #ececf1; color: #6b6b78; font-size: 12px; line-height: 1.6; white-space: pre-wrap; }
+
+.banner { margin-top: 20px; padding: 12px 14px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
+.bannerOk { background: #e8f9ee; color: #146c34; }
+.bannerMuted { background: #f1f1f4; color: #4b4b57; }
+.bannerWarn { background: #fff4e5; color: #8a4b00; }
+.bannerWarn a { color: inherit; text-decoration: underline; }
+
+.actions { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.answer {
+  margin: 18px auto 0;
+  max-width: 520px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.answer h2 { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: 600; }
+.answer label { display: flex; flex-direction: column; gap: 7px; font-size: var(--fs-ui); color: var(--text2); }
+.answer input:not([type="checkbox"]), .answer textarea {
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 16px;
+}
+.answer .check { flex-direction: row; align-items: flex-start; gap: 10px; color: var(--text); }
+.check input { margin-top: 3px; width: 18px; height: 18px; accent-color: #ff6a00; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.error { color: var(--danger); font-size: var(--fs-ui); }
+
+.message { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 60px 0; }
+.message h1 { font-family: var(--font-display); font-size: var(--fs-section); }
+.message p { color: var(--text2); }
+
+@media (max-width: 560px) {
+  .page { padding-top: 96px; }
+  .meta { text-align: start; }
+  .table th:nth-child(2), .table td:nth-child(2) { display: none; }
+}
+
+/* Print / Save as PDF: only the document, full width, no shadows. */
+@media print {
+  :global(body *) { visibility: hidden !important; }
+  .doc, .doc * { visibility: visible !important; }
+  .doc { position: absolute; inset: 0; box-shadow: none; border: none; border-radius: 0; padding: 0; }
+  .page { padding: 0; }
+  .table th:nth-child(2), .table td:nth-child(2) { display: table-cell; }
+}

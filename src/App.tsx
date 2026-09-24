@@ -28,6 +28,8 @@ const Blog = lazy(() => import("./pages/Blog").then((m) => ({ default: m.Blog })
 const Article = lazy(() => import("./pages/Article").then((m) => ({ default: m.Article })));
 const Contact = lazy(() => import("./pages/Contact").then((m) => ({ default: m.Contact })));
 const Campaign = lazy(() => import("./pages/Campaign").then((m) => ({ default: m.Campaign })));
+const Book = lazy(() => import("./pages/Book").then((m) => ({ default: m.Book })));
+const Quote = lazy(() => import("./pages/Quote").then((m) => ({ default: m.Quote })));
 const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 
 /**
@@ -174,6 +176,23 @@ export default function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <Campaign />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/book"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <Book />
+                </Suspense>
+              }
+            />
+            {/* A client's quote, by its private link. */}
+            <Route
+              path="/q/:token"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <Quote />
                 </Suspense>
               }
             />

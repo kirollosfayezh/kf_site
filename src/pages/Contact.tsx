@@ -112,6 +112,18 @@ export function Contact() {
                   <span className={c.contactValue}>+20 150 009 9671</span>
                 </span>
               </a>
+              <Link to="/book" data-track="contact.book-call" className={c.contactCard}>
+                <span className={c.contactIcon} style={{ background: "rgba(155,93,229,.14)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9B5DE5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01" />
+                  </svg>
+                </span>
+                <span>
+                  <span className={c.contactLabel}>{t("Book a call")}</span>
+                  <span className={c.contactValue}>{t("Pick a time — we call you on WhatsApp")}</span>
+                </span>
+              </Link>
               <a href={`mailto:${EMAIL}`} className={c.contactCard}>
                 <span className={c.contactIcon} style={{ background: "rgba(255,106,0,.1)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

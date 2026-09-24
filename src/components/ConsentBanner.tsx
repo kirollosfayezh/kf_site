@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../lib/i18n";
-import { CONSENT_REOPEN_EVENT, needsConsent, setConsent } from "../lib/pixels";
+import { CONSENT_REOPEN_EVENT, needsConsent, readConsent, setConsent } from "../lib/pixels";
+import { trackConsent } from "../services/analytics";
 import type { SiteSettings } from "../services/api-types";
 import s from "./ConsentBanner.module.css";
 
@@ -65,6 +66,8 @@ export function ConsentBanner({ settings }: { settings: SiteSettings | null }) {
   if (!visible) return null;
 
   const decide = (value: "granted" | "denied") => {
+    // A first answer, or a change made later from the footer's "Cookie settings".
+    trackConsent(value, readConsent() ? "settings" : "banner");
     setConsent(value);
     setVisible(false);
   };

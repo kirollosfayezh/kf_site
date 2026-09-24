@@ -147,6 +147,21 @@ export const PAGES: Record<string, PageSeo> = {
     // with /contact for the same queries, but followed so its links still pass.
     noindex: true,
   },
+  book: {
+    path: "/book",
+    title: "Book a Free Call | KF Tech Solutions",
+    desc: "Pick a time and we'll call you on WhatsApp: a free 30-minute call about your software, website or automation project.",
+    keywords: "book a call software company, free consultation software egypt, software project call",
+    type: "website",
+  },
+  quote: {
+    // A client's private quote (`/q/<token>`): never indexed, never prerendered.
+    path: "/q",
+    title: "Your Quote — KF Tech Solutions",
+    desc: "Your project quote from KF Tech Solutions.",
+    type: "website",
+    noindex: true,
+  },
   notFound: {
     path: "/404",
     title: "Page not found — KF Tech Solutions",
@@ -161,7 +176,7 @@ export const INDEXABLE_PAGES = Object.values(PAGES).filter((p) => !p.noindex);
 
 /** The pages that are prerendered at build time (noindex ones included — the
  *  campaign page still needs correct OG tags when it's shared in an ad). */
-export const PRERENDER_PAGES = Object.values(PAGES).filter((p) => p.path !== "/404");
+export const PRERENDER_PAGES = Object.values(PAGES).filter((p) => p.path !== "/404" && p.path !== "/q");
 
 export function absolute(origin: string, pathOrUrl: string): string {
   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
@@ -457,6 +472,7 @@ export function faqSchema(items: { q: string; a: string }[]) {
 export function pageForPath(pathname: string): PageSeo | null {
   const clean = pathname.replace(/\/+$/, "") || "/";
   if (clean.startsWith("/blog/")) return null;
+  if (clean.startsWith("/q/")) return PAGES.quote;
   const match = Object.values(PAGES).find((p) => p.path === clean);
   return match ?? PAGES.notFound;
 }
@@ -800,5 +816,6 @@ export function pageForPathIn(
 ): PageSeo | null {
   const clean = pathname.replace(/\/+$/, "") || "/";
   if (clean.startsWith("/blog/")) return null;
+  if (clean.startsWith("/q/")) return pages.quote ?? PAGES.quote;
   return Object.values(pages).find((p) => p.path === clean) ?? pages.notFound ?? PAGES.notFound;
 }
