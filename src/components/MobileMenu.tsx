@@ -154,7 +154,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
           </button>
         </div>
 
-        <nav aria-label={t("Mobile")} className={styles.body}>
+        <nav aria-label={t("Mobile navigation")} className={styles.body}>
           <ul className={styles.tree} role="list">
             {tree.map((branch) => {
               const isOpen = !!branch.children && expanded.has(branch.id);
