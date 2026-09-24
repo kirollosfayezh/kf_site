@@ -73,6 +73,7 @@ export function Footer() {
               <Link to="/blog">{t("Insights")}</Link>
               <Link to="/about">{t("About")}</Link>
               <Link to="/contact">{t("Contact")}</Link>
+              <Link to="/book">{t("Book a call")}</Link>
             </div>
           </div>
 

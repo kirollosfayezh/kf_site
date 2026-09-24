@@ -1,7 +1,7 @@
 import { useMemo, type RefObject } from "react";
-import { countryOptions, dialCode, flagOf, type PhoneState } from "../../lib/phone";
+import { countryOptions, dialCode, flagOf, type PhoneState } from "../lib/phone";
 import type { CountryCode } from "libphonenumber-js/max";
-import styles from "./ChatWidget.module.css";
+import styles from "./PhoneField.module.css";
 
 const TYPE_LABEL: Record<string, string> = {
   MOBILE: "Mobile number",
@@ -18,6 +18,9 @@ const TYPE_LABEL: Record<string, string> = {
  * number itself the moment it starts with a country code — so most people just
  * type. The native `<select>` sits invisibly over the flag button: every phone
  * then shows its own searchable picker, and screen readers get a real control.
+ *
+ * Shared by the chat widget and the booking page; `size="lg"` matches the
+ * site's full-page forms.
  */
 export function PhoneField({
   id,
@@ -32,6 +35,7 @@ export function PhoneField({
   onCountryChange,
   onBlur,
   onEnter,
+  size = "sm",
 }: {
   id: string;
   value: string;
@@ -45,6 +49,7 @@ export function PhoneField({
   onCountryChange: (country: CountryCode) => void;
   onBlur?: () => void;
   onEnter?: () => void;
+  size?: "sm" | "lg";
 }) {
   const options = useMemo(() => countryOptions(lang), [lang]);
   const shown = state.country ?? country;
@@ -75,7 +80,7 @@ export function PhoneField({
   }
 
   return (
-    <div className={styles.fld}>
+    <div className={`${styles.fld} ${size === "lg" ? styles.lg : ""}`}>
       <label htmlFor={id}>
         <span>
           {t("Phone / WhatsApp")} <b className={styles.req} aria-hidden="true">*</b>

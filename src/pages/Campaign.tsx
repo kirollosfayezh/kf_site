@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
 import { pick } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
@@ -257,6 +258,9 @@ export function Campaign() {
               <a href="#quote" className="btn btn-primary">
                 {t("Get a free quote")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
               </a>
+              <Link to="/book" data-track="campaign.book-call" className="btn btn-outline">
+                {t("Book a call")}
+              </Link>
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
                 {t("WhatsApp us")}
               </a>

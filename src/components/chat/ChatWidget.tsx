@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
+import { Link } from "react-router-dom";
 import type { CountryCode } from "libphonenumber-js/max";
 import {
   connectChatSocket,
@@ -16,7 +17,7 @@ import { ApiError } from "../../services/http";
 import { useI18n } from "../../lib/i18n";
 import { guessCountry, readPhone, rememberCountry, switchCountry } from "../../lib/phone";
 import { ChatAvatar } from "./ChatAvatar";
-import { PhoneField } from "./PhoneField";
+import { PhoneField } from "../PhoneField";
 import styles from "./ChatWidget.module.css";
 
 const QUICK = ["I need a POS system", "Website or web app", "AI automation", "How much does it cost?"];
@@ -472,7 +473,12 @@ export function ChatWidget() {
                 <button className={styles.go} type="submit" disabled={starting}>
                   {starting ? t("Connecting…") : messages.length ? t("Continue chat") : t("Start chat")}
                 </button>
-                <p className={styles.note}>{t("We reply here directly. Your details are only used to follow up.")}</p>
+                <p className={styles.note}>
+                  {t("We reply here directly. Your details are only used to follow up.")}{" "}
+                  <Link to="/book" className={styles.noteLink} onClick={() => setOpen(false)}>
+                    {t("Prefer a call? Book one")}
+                  </Link>
+                </p>
               </form>
             </>
           ) : (
