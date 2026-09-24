@@ -25,6 +25,9 @@ export interface ChatThread {
   id: string;
   visitorId: string;
   visitorMeta?: { name?: string; contact?: string };
+  /** E.164, once the visitor has given it. Required before they can send. */
+  phone?: string;
+  phoneCountry?: string;
   userTyping?: boolean;
   lastMessageAt?: string;
   createdAt?: string;
@@ -52,6 +55,7 @@ function randomId(): string {
 let memoryVisitorId: string | null = null;
 
 export function getVisitorId(): string {
+  if (memoryVisitorId) return memoryVisitorId;
   try {
     const existing = localStorage.getItem(VISITOR_KEY);
     if (existing) return existing;
@@ -62,6 +66,49 @@ export function getVisitorId(): string {
     if (!memoryVisitorId) memoryVisitorId = randomId();
     return memoryVisitorId;
   }
+}
+
+/**
+ * Switches this browser to another thread — the one the server found for the
+ * visitor's phone number — so a reload keeps them in it.
+ */
+export function setVisitorId(id: string): void {
+  memoryVisitorId = id;
+  try {
+    localStorage.setItem(VISITOR_KEY, id);
+  } catch {
+    /* private mode — kept in memory for this visit */
+  }
+}
+
+/** This browser's thread, or null if it has none yet. */
+export function getThread(visitorId: string): Promise<ChatThread | null> {
+  return apiFetch<ChatThread | null>(`/chat/threads/${encodeURIComponent(visitorId)}`);
+}
+
+export interface ChatSession {
+  thread: ChatThread;
+  messages: ChatMessage[];
+  /** An earlier conversation was found under this number and reopened. */
+  resumed: boolean;
+  phone: { e164: string; country?: string; international: string };
+}
+
+/**
+ * The widget's phone step. The server validates the number, then either resumes
+ * the latest thread for it (possibly a different `visitorId` — adopt it) or
+ * starts one.
+ */
+export function startSession(input: {
+  visitorId: string;
+  phone: string;
+  country?: string;
+  name?: string;
+}): Promise<ChatSession> {
+  return apiFetch<ChatSession>("/chat/session", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 /** Creates the thread if needed, and attaches the visitor's name/contact when given. */

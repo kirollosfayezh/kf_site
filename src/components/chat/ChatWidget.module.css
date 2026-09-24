@@ -154,7 +154,8 @@
 .quick button:hover { border-color: rgba(255, 106, 0, .5); color: var(--text); }
 
 .form { border-top: 1px solid var(--border); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
-.fld span { display: block; font-size: var(--fs-label); font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+.fld > span,
+.fld > label > span { display: block; font-size: var(--fs-label); font-weight: 600; color: var(--text2); margin-bottom: 5px; }
 .fld input {
   width: 100%;
   padding: 11px 13px;
@@ -176,6 +177,70 @@
 }
 .go:hover { transform: translateY(-1px); }
 .note { font-size: var(--fs-label); color: var(--text3); text-align: center; line-height: 1.5; }
+.go:disabled { opacity: .6; transform: none; }
+
+/* ---- Phone field: country picker + number in one box ------------------- */
+.req { color: var(--brand-orange); font-weight: 700; }
+.phoneRow {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--bstrong);
+  border-radius: var(--r-control);
+  background: var(--field);
+  transition: border-color .2s, box-shadow .2s;
+  /* Numbers read left-to-right in every language, Arabic included. */
+  direction: ltr;
+}
+.phoneRow:focus-within { border-color: rgba(255, 106, 0, .6); box-shadow: 0 0 0 3px rgba(255, 106, 0, .14); }
+.phoneRowOk { border-color: color-mix(in srgb, var(--success) 55%, transparent); }
+.phoneRowBad { border-color: var(--danger); }
+.countryPick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px 0 11px;
+  border-inline-end: 1px solid var(--border);
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.countryFlag { font-size: 17px; line-height: 1; }
+.countryDial { font-size: var(--fs-ui); font-family: var(--font-mono); color: var(--text); }
+/* The real control: invisible, but covering the button, so a tap opens the
+   device's own country list. */
+.countryPick select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 16px;
+}
+.fld .phoneRow input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  /* 16px stops iOS Safari zooming the page on focus. */
+  font-size: 16px;
+  letter-spacing: .02em;
+  font-family: var(--font-mono);
+}
+.phoneHint { margin-top: 5px; font-size: var(--fs-label); color: var(--text3); line-height: 1.45; min-height: 1.45em; }
+.phoneOk { display: inline-flex; align-items: center; gap: 5px; color: var(--success); font-weight: 600; }
+.phoneBad { color: var(--danger); }
+.resumed {
+  align-self: center;
+  margin: 2px 0 6px;
+  padding: 6px 12px;
+  border-radius: var(--r-full);
+  font-size: var(--fs-label);
+  color: var(--text2);
+  background: var(--hover);
+  border: 1px solid var(--border);
+  text-align: center;
+}
 
 .comp { display: flex; align-items: flex-end; gap: 9px; }
 .comp textarea {
@@ -224,7 +289,7 @@
      launcher at 375x667 instead of being cut off at the panel edge. */
   .log { min-height: 84px; }
   .form { padding: 10px 12px; gap: 8px; }
-  .fld span { font-size: var(--fs-label); margin-bottom: 4px; }
+  .fld > span, .fld > label > span { font-size: var(--fs-label); margin-bottom: 4px; }
   .fld input { padding: 10px 12px; }
   .go { padding: 12px; }
   .note { font-size: var(--fs-label); }

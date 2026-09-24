@@ -1,16 +1,22 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
+import type { CountryCode } from "libphonenumber-js/max";
 import {
   connectChatSocket,
   getMessages,
+  getThread,
   getVisitorId,
-  openThread,
   sendMessage,
   setTyping,
+  setVisitorId,
+  startSession,
   type ChatMessage,
 } from "../../services/chat";
+import { ApiError } from "../../services/http";
 import { useI18n } from "../../lib/i18n";
+import { guessCountry, readPhone, rememberCountry, switchCountry } from "../../lib/phone";
 import { ChatAvatar } from "./ChatAvatar";
+import { PhoneField } from "./PhoneField";
 import styles from "./ChatWidget.module.css";
 
 const QUICK = ["I need a POS system", "Website or web app", "AI automation", "How much does it cost?"];
@@ -22,6 +28,25 @@ const GREETED_KEY = "kf-chat-greeted";
 /** How many agent messages this visitor has already read. */
 const SEEN_KEY = "kf-chat-seen";
 const AUTO_OPEN_DELAY = 4200;
+/** The E.164 number this browser last chatted with — prefills the field, and
+ *  lets a returning visitor skip the phone step before the server confirms it. */
+const PHONE_KEY = "kf-chat-phone";
+
+function readPhoneKey(): string {
+  try {
+    return localStorage.getItem(PHONE_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+function writePhoneKey(value: string) {
+  try {
+    if (value) localStorage.setItem(PHONE_KEY, value);
+    else localStorage.removeItem(PHONE_KEY);
+  } catch {
+    /* private mode */
+  }
+}
 
 function readNum(key: string): number {
   try {
@@ -54,15 +79,31 @@ function mergeMessage(list: ChatMessage[], incoming: ChatMessage): ChatMessage[]
 }
 
 export function ChatWidget() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
-  const [started, setStarted] = useState(false);
-  const [visitorId] = useState<string>(() => getVisitorId());
+  /**
+   * Whether this thread has a phone on file — the gate for sending. Seeded from
+   * this browser's memory so a returning visitor goes straight to the
+   * conversation, then confirmed by the server.
+   */
+  const [hasPhone, setHasPhone] = useState<boolean>(() => !!readPhoneKey());
+  /** Adopts the thread the server finds for the visitor's phone number. */
+  const [visitorId, setVisitorIdState] = useState<string>(() => getVisitorId());
+  const [phone, setPhone] = useState(() => readPhoneKey());
+  const [country, setCountry] = useState<CountryCode>(() => guessCountry(lang));
+  /** Left the field with something in it — only then may a complete-but-wrong number be flagged. */
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  /** Tried to start: from here any invalid number, or none, is flagged. */
+  const [attempted, setAttempted] = useState(false);
+  const [resumed, setResumed] = useState(false);
+  /** A quick reply tapped before the phone step, sent once the chat starts. */
+  const pending = useRef<string | null>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const phoneState = useMemo(() => readPhone(phone, country), [phone, country]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [agentTyping, setAgentTyping] = useState(false);
   const [unread, setUnread] = useState(0);
   const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
@@ -91,12 +132,23 @@ export function ChatWidget() {
   // returning visitor sees the whole conversation again.
   useEffect(() => {
     let cancelled = false;
+    // Whether the server has a phone for this thread. A thread from before
+    // phones were required keeps its history, but asks for one before the
+    // next message.
+    getThread(visitorId)
+      .then((thread) => {
+        if (cancelled) return;
+        setHasPhone(!!thread?.phone);
+        if (thread?.phone) writePhoneKey(thread.phone);
+      })
+      .catch(() => {
+        /* Backend unreachable — keep what this browser remembers. */
+      });
     getMessages(visitorId)
       .then((history) => {
         if (cancelled || !Array.isArray(history)) return;
         if (history.length > 0) {
           setMessages(history);
-          setStarted(true);
           const agentCount = history.filter((m) => m.from === "agent").length;
           if (agentCount > 0) setAgentJoined(true);
           // Unread survives the visit: an answer that arrived while the visitor
@@ -121,7 +173,6 @@ export function ChatWidget() {
         setMessages((cur) => mergeMessage(cur, message));
         if (message.from === "agent") {
           setAgentTyping(false);
-          setStarted(true);
           setAgentJoined(true);
           if (!openRef.current) setUnread((u) => u + 1);
         }
@@ -188,22 +239,67 @@ export function ChatWidget() {
   }, [open]);
 
   const push = useCallback(
-    async (text: string) => {
-      const message = await sendMessage(visitorId, text);
+    async (text: string, id: string = visitorId) => {
+      const message = await sendMessage(id, text);
       setMessages((cur) => mergeMessage(cur, message));
     },
     [visitorId],
   );
 
+  /** The server says this thread has no phone yet: back to the phone step. */
+  function needsPhone(err: unknown): boolean {
+    if (err instanceof ApiError && err.code === "PHONE_REQUIRED") {
+      writePhoneKey("");
+      setHasPhone(false);
+      window.setTimeout(() => phoneRef.current?.focus(), 0);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * The phone step. A valid number starts the chat — or, if that number has
+   * chatted before, reopens its last conversation, even from another device.
+   */
   async function begin(firstText?: string) {
-    setStarting(true);
+    if (firstText) pending.current = firstText;
+    setAttempted(true);
     setError(null);
+    if (!phoneState.valid || !phoneState.e164) {
+      phoneRef.current?.focus();
+      return;
+    }
+
+    setStarting(true);
     try {
-      await openThread(visitorId, { name, contact });
-      setStarted(true);
-      if (firstText) await push(firstText);
-    } catch {
-      setError("Couldn't connect to chat right now. Try WhatsApp instead, or refresh and try again.");
+      const session = await startSession({
+        visitorId,
+        phone: phoneState.e164,
+        country: phoneState.country,
+        name: name.trim() || undefined,
+      });
+      const id = session.thread.visitorId;
+      if (id !== visitorId) {
+        setVisitorId(id);
+        setVisitorIdState(id);
+      }
+      if (phoneState.country) rememberCountry(phoneState.country);
+      writePhoneKey(session.phone.e164);
+      setPhone(session.phone.international);
+      setMessages(session.messages);
+      setResumed(session.resumed && session.messages.length > 0);
+      if (session.messages.some((m) => m.from === "agent")) setAgentJoined(true);
+      setHasPhone(true);
+
+      const text = pending.current;
+      pending.current = null;
+      if (text) await push(text, id);
+    } catch (err) {
+      setError(
+        err instanceof ApiError && err.code === "INVALID_PHONE"
+          ? "Please enter a valid phone number, including the country code."
+          : "Couldn't connect to chat right now. Try WhatsApp instead, or refresh and try again.",
+      );
     } finally {
       setStarting(false);
     }
@@ -218,11 +314,12 @@ export function ChatWidget() {
   }
 
   async function handleQuick(text: string) {
-    if (started) {
+    if (hasPhone) {
       try {
         await push(text);
-      } catch {
-        setError("That message didn't send. Check your connection and try again.");
+      } catch (err) {
+        if (needsPhone(err)) pending.current = text;
+        else setError("That message didn't send. Check your connection and try again.");
       }
     } else {
       await begin(text);
@@ -239,9 +336,18 @@ export function ChatWidget() {
       window.clearTimeout(typingTimeout.current);
       typingSent.current = false;
       await setTyping(visitorId, false);
-    } catch {
+    } catch (err) {
       setDraft(text);
-      setError("That message didn't send. Check your connection and try again.");
+      if (!needsPhone(err)) setError("That message didn't send. Check your connection and try again.");
+    }
+  }
+
+  function handlePhoneChange(value: string) {
+    setPhone(value);
+    // A number typed with its country code picks its own country.
+    const next = readPhone(value, country);
+    if (next.country && next.country !== country && (value.trim().startsWith("+") || value.trim().startsWith("00") || next.valid)) {
+      setCountry(next.country);
     }
   }
 
@@ -292,68 +398,85 @@ export function ChatWidget() {
             </button>
           </header>
 
-          {!started ? (
+          <div className={styles.log} ref={logRef}>
+            {/* The greeting is presentational only — it is never written to the thread. */}
+            <div className={`${styles.row} ${styles.rowThem}`}>
+              <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
+              <div className={styles.bub}>{t(GREETING)}</div>
+            </div>
+            {resumed && <div className={styles.resumed}>{t("Welcome back — here's your previous conversation.")}</div>}
+            {messages.map((m) => (
+              <div key={m.id} className={`${styles.row} ${m.from === "visitor" ? styles.rowMe : styles.rowThem}`}>
+                {m.from !== "visitor" && (
+                  <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={26} className={styles.rowAvatar} />
+                )}
+                <div className={styles.bub}>{m.text}</div>
+                <span className={styles.ts}>{clock(m.ts)}</span>
+              </div>
+            ))}
+            {agentTyping && (
+              <div className={styles.typing}>
+                <i />
+                <i />
+                <i />
+              </div>
+            )}
+          </div>
+
+          {!hasPhone ? (
             <>
-              <div className={styles.log} ref={logRef}>
-                <div className={`${styles.row} ${styles.rowThem}`}>
-                  <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
-                  <div className={styles.bub}>{t(GREETING)}</div>
+              {messages.length === 0 && (
+                <div className={styles.quick}>
+                  {QUICK.map((q) => (
+                    <button key={q} type="button" onClick={() => handleQuick(t(q))} disabled={starting}>
+                      {t(q)}
+                    </button>
+                  ))}
                 </div>
-              </div>
-              <div className={styles.quick}>
-                {QUICK.map((q) => (
-                  <button key={q} type="button" onClick={() => handleQuick(t(q))} disabled={starting}>
-                    {t(q)}
-                  </button>
-                ))}
-              </div>
+              )}
               {error && <p className={styles.errorNote}>{t(error)}</p>}
               <form
                 className={styles.form}
+                noValidate
                 onSubmit={(e) => {
                   e.preventDefault();
                   begin();
                 }}
               >
+                <PhoneField
+                  id="kf-chat-phone"
+                  value={phone}
+                  country={country}
+                  state={phoneState}
+                  showError={attempted || (phoneTouched && phoneState.complete)}
+                  lang={lang}
+                  t={t}
+                  inputRef={phoneRef}
+                  onChange={handlePhoneChange}
+                  onCountryChange={(c) => {
+                    setCountry(c);
+                    setPhone((cur) => switchCountry(cur, c));
+                    phoneRef.current?.focus();
+                  }}
+                  onBlur={() => {
+                    if (phone.trim()) setPhoneTouched(true);
+                    // Tidy the number into its country's format once it is complete.
+                    if (phoneState.valid) setPhone(phoneState.display);
+                  }}
+                  onEnter={() => begin()}
+                />
                 <label className={styles.fld}>
                   <span>{t("Your name")}</span>
-                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Optional")} />
-                </label>
-                <label className={styles.fld}>
-                  <span>{t("Email or WhatsApp")}</span>
-                  <input value={contact} onChange={(e) => setContact(e.target.value)} placeholder={t("Optional")} />
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Optional")} autoComplete="name" />
                 </label>
                 <button className={styles.go} type="submit" disabled={starting}>
-                  {starting ? t("Connecting…") : t("Start chat")}
+                  {starting ? t("Connecting…") : messages.length ? t("Continue chat") : t("Start chat")}
                 </button>
                 <p className={styles.note}>{t("We reply here directly. Your details are only used to follow up.")}</p>
               </form>
             </>
           ) : (
             <>
-              <div className={styles.log} ref={logRef}>
-                {/* The greeting is presentational only — it is never written to the thread. */}
-                <div className={`${styles.row} ${styles.rowThem}`}>
-                  <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
-                  <div className={styles.bub}>{t(GREETING)}</div>
-                </div>
-                {messages.map((m) => (
-                  <div key={m.id} className={`${styles.row} ${m.from === "visitor" ? styles.rowMe : styles.rowThem}`}>
-                    {m.from !== "visitor" && (
-                      <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={26} className={styles.rowAvatar} />
-                    )}
-                    <div className={styles.bub}>{m.text}</div>
-                    <span className={styles.ts}>{clock(m.ts)}</span>
-                  </div>
-                ))}
-                {agentTyping && (
-                  <div className={styles.typing}>
-                    <i />
-                    <i />
-                    <i />
-                  </div>
-                )}
-              </div>
               {error && <p className={styles.errorNote}>{t(error)}</p>}
               <div className={styles.form}>
                 <div className={styles.comp}>
