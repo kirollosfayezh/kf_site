@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { isDictLoaded, loadDict, translate } from "./dict";
+import { isDictLoaded, loadDict, setOverrides, translate } from "./dict";
+import { getTranslationOverrides } from "../services/content";
 import { LANGS, LANG_META, dirOf, isLang, type Lang } from "./langs";
 
 export { LANGS, LANG_META, dirOf, isLang };
@@ -7,6 +8,31 @@ export type { Lang };
 
 
 const STORAGE_KEY = "kf-lang";
+const OVERRIDES_KEY = "kf-i18n-overrides:";
+
+/**
+ * The last overrides this browser saw for a language. Applied before the fetch
+ * so a returning visitor never sees the shipped wording flash first; the fetch
+ * then replaces them with whatever the dashboard holds now.
+ */
+function readStoredOverrides(lang: Lang): Record<string, string> | null {
+  try {
+    const raw = localStorage.getItem(OVERRIDES_KEY + lang);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, string>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeOverrides(lang: Lang, data: Record<string, string>) {
+  try {
+    if (Object.keys(data).length) localStorage.setItem(OVERRIDES_KEY + lang, JSON.stringify(data));
+    else localStorage.removeItem(OVERRIDES_KEY + lang);
+  } catch {
+    /* private mode — overrides still apply, they are just refetched */
+  }
+}
 
 interface I18nContextValue {
   lang: Lang;
@@ -152,10 +178,39 @@ export function I18nProvider({
     };
   }, [lang]);
 
+  /**
+   * Dashboard overrides for the active language. `overridesVersion` is, like
+   * `dictReady`, only a render trigger — the values live in the dict module.
+   * A failed fetch keeps whatever was applied: the shipped dictionary is a
+   * correct fallback, never a blank.
+   */
+  const [overridesVersion, setOverridesVersion] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    const stored = readStoredOverrides(lang);
+    if (stored) {
+      setOverrides(lang, stored);
+      setOverridesVersion((v) => v + 1);
+    }
+    getTranslationOverrides(lang)
+      .then((data) => {
+        if (cancelled || !data || typeof data !== "object") return;
+        setOverrides(lang, data);
+        storeOverrides(lang, data);
+        setOverridesVersion((v) => v + 1);
+      })
+      .catch(() => {
+        /* keep the shipped (or last known) copy */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
   const t = useCallback(
     (key: string) => translate(key, lang),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [lang, dictReady],
+    [lang, dictReady, overridesVersion],
   );
 
   /** A stored preference for a language that has since been turned off must not

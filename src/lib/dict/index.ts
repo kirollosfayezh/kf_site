@@ -27,9 +27,34 @@ const LOADERS: Record<Exclude<Lang, "en">, () => Promise<{ default: Record<strin
 const cache = new Map<Lang, Record<string, string>>([["en", {}]]);
 const inFlight = new Map<Lang, Promise<Record<string, string>>>();
 
-/** What is already loaded for this language. Synchronous, for render. */
+/**
+ * Dashboard overrides, one flat map per language, laid over the shipped files.
+ *
+ * Kept apart from `cache` so a late-arriving dictionary chunk cannot wipe an
+ * override that landed first, and so an override can exist for English too
+ * (reworded copy) without English having to load a dictionary.
+ */
+const overrides = new Map<Lang, Record<string, string>>();
+const merged = new Map<Lang, Record<string, string>>();
+
+/** Replaces this language's dashboard overrides. */
+export function setOverrides(lang: Lang, data: Record<string, string>): void {
+  overrides.set(lang, data);
+  merged.delete(lang);
+}
+
+/** What is already loaded for this language, overrides included. Synchronous, for render. */
 export function dictFor(lang: Lang): Record<string, string> {
-  return cache.get(lang) ?? {};
+  const base = cache.get(lang) ?? {};
+  const over = overrides.get(lang);
+  if (!over || Object.keys(over).length === 0) return base;
+  // Rebuilt only when either side changes: both setters clear this entry.
+  let hit = merged.get(lang);
+  if (!hit) {
+    hit = { ...base, ...over };
+    merged.set(lang, hit);
+  }
+  return hit;
 }
 
 export function isDictLoaded(lang: Lang): boolean {
@@ -45,6 +70,7 @@ export function isDictLoaded(lang: Lang): boolean {
  */
 export function primeDict(lang: Lang, data: Record<string, string>): void {
   cache.set(lang, data);
+  merged.delete(lang);
 }
 
 /** Loads a language's dictionary once, sharing any request already in flight. */
@@ -62,6 +88,7 @@ export function loadDict(lang: Lang): Promise<Record<string, string>> {
     .then((m) => {
       const data = m.default;
       cache.set(lang, data);
+      merged.delete(lang);
       inFlight.delete(lang);
       return data;
     })
@@ -98,6 +125,9 @@ const EN_DISPLAY: Record<string, string> = {
  * its display override when a component needs markup the key cannot carry.
  */
 export function translate(key: string, lang: Lang): string {
+  // A dashboard override wins over everything, in any language.
+  const over = overrides.get(lang)?.[key];
+  if (over?.trim()) return over;
   if (lang === "en") return EN_DISPLAY[key] ?? key;
   return cache.get(lang)?.[key]?.trim() || key;
 }

@@ -40,3 +40,11 @@ export function cachedContentItem(collection: ContentCollection, id: string): Co
 export function getSeoOverrides(): Promise<SeoOverride[]> {
   return apiFetch<SeoOverride[]>("/seo");
 }
+
+/**
+ * Interface-copy overrides edited on the dashboard's Translations screen, for
+ * one language, as a flat `English key -> text` map.
+ */
+export function getTranslationOverrides(lang: string): Promise<Record<string, string>> {
+  return apiFetch<Record<string, string>>(`/translations/${lang}`);
+}

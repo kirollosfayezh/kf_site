@@ -96,7 +96,7 @@ export function ProjectCaseStudy() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={s.pageHeroInner} style={{ maxWidth: 820 }}>
           <Reveal>
-            <nav aria-label="Breadcrumb" className={s.breadcrumb}>
+            <nav aria-label={t("Breadcrumb")} className={s.breadcrumb}>
               <Link to="/" style={{ color: "var(--text3)" }}>
                 {t("Home")}
               </Link>{" "}

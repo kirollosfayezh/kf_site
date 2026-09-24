@@ -94,7 +94,7 @@ export function Contact() {
         <div className={s.pageHeroGlow} aria-hidden="true" />
         <div className={`${s.pageHeroInner} ${c.grid}`}>
           <Reveal>
-            <nav aria-label="Breadcrumb" className={s.breadcrumb}>
+            <nav aria-label={t("Breadcrumb")} className={s.breadcrumb}>
               <Link to="/" style={{ color: "var(--text3)" }}>{t("Home")}</Link> / <span style={{ color: "var(--brand-orange)" }}>{t("Contact")}</span>
             </nav>
             <h1 className={s.pageTitle}>{t("Tell us about your project.")}</h1>
@@ -173,7 +173,7 @@ export function Contact() {
                       type="text"
                       value={form.company}
                       onChange={(e) => onField("company", e.target.value)}
-                      placeholder="Optional"
+                      placeholder={t("Optional")}
                       className={c.input}
                     />
                   </label>
@@ -229,7 +229,7 @@ export function Contact() {
                     value={form.message}
                     onChange={(e) => onField("message", e.target.value)}
                     aria-invalid={!!errors.message}
-                    placeholder="What are you trying to build?"
+                    placeholder={t("What are you trying to build?")}
                     className={`${c.input} ${c.textarea} ${errors.message ? c.inputInvalid : ""}`}
                   />
                   {errors.message && <span className={c.errorText}>{t("Tell us a little about your project.")}</span>}
@@ -238,7 +238,7 @@ export function Contact() {
                 <button type="submit" disabled={submitting} data-track="contact.submit" className={`btn btn-primary ${c.submitBtn}`}>
                   {submitting ? t("Sending…") : t("Send Project Request")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                 </button>
-                {submitError && <p className={c.formError}>{submitError}</p>}
+                {submitError && <p className={c.formError}>{t(submitError)}</p>}
                 <p className={c.formNote}>{t("We'll never share your details. Typical reply within one business day.")}</p>
               </>
             )}
