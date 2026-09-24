@@ -34,8 +34,16 @@
   .scrim, .panel { animation: none; }
 }
 
-.media { position: relative; min-height: 190px; background: var(--panel2); }
-.media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* The photo's box is reserved before the photo arrives: 16:9 on a phone, and
+   the full height of the copy beside it on desktop. It used to take its
+   height from the loaded image (`height: 100%` of an auto-height box), so the
+   title jumped ~100px when the photo landed — a layout shift inside the one
+   element the visitor was reading. */
+.media { position: relative; aspect-ratio: 16 / 9; background: var(--panel2); }
+.media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (min-width: 720px) {
+  .media { aspect-ratio: auto; min-height: 320px; }
+}
 /* The badge sits over the photo, so it carries its own contrast rather than
    relying on whatever the image happens to be. */
 .badge {

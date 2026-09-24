@@ -10,6 +10,7 @@ import {
   writeLlmsTxt,
   writeRobots,
   writeSitemap,
+  checkArabicFont,
 } from './build/seo-build.ts'
 
 /**
@@ -69,6 +70,9 @@ function seoPrerender(origin: string, apiBase: string | undefined): Plugin {
         projects: projectCount,
         legal: legalCount,
       } = await prerenderPages(dist, origin, articles, pages, projects, legal)
+
+      const fontDrift = await checkArabicFont(dist)
+      if (fontDrift) this.warn(fontDrift)
 
       if (!origin) {
         this.info(

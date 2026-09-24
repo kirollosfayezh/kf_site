@@ -67,7 +67,7 @@ export function ProjectCaseStudy() {
       <div className={s.state} style={{ paddingTop: 160 }}>
         <p>{t("We couldn't load this project. It may have been unpublished, or the connection dropped.")}</p>
         <Link to="/projects" style={{ color: "var(--brand-orange)", display: "inline-block", marginTop: 14 }}>
-          &larr; {t("Our Work")}
+          <span className="kf-arrow" aria-hidden="true">&larr;</span> {t("Our Work")}
         </Link>
       </div>
     );
@@ -194,8 +194,8 @@ export function ProjectCaseStudy() {
       {/* The rest of the gallery, so a case study is an entry point to the work
           rather than a dead end. */}
       <section className={s.sectionNarrow} style={{ paddingTop: 0 }}>
-        <Link to="/projects" style={{ color: "var(--brand-orange)", fontWeight: 600 }}>
-          &larr; {t("See more work")}
+        <Link to="/projects" className={s.textLink}>
+          <span className="kf-arrow" aria-hidden="true">&larr;</span> {t("See more work")}
         </Link>
       </section>
 
@@ -208,7 +208,7 @@ export function ProjectCaseStudy() {
           </p>
           <div className={s.finalCtaActions}>
             <Link to="/contact" className="btn btn-primary">
-              {t("Start Your Project")} <span aria-hidden="true">&rarr;</span>
+              {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
             <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               {t("WhatsApp us")}

@@ -112,26 +112,11 @@ export function Footer() {
         href={WA_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={t("Chat on WhatsApp")} data-track="footer.whatsapp"
-        style={{
-          position: "fixed",
-          insetInlineEnd: 22,
-          // Lifts clear of the cookie bar while it is on screen. The variable is
-          // unset otherwise, so this is plain 22px the rest of the time.
-          bottom: "calc(22px + var(--kf-consent-h, 0px))",
-          zIndex: 60,
-          width: 58,
-          height: 58,
-          borderRadius: "50%",
-          background: "#25D366",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 10px 30px -6px rgba(37,211,102,.6)",
-          animation: "kfFloat 4s ease-in-out infinite",
-        }}
+        aria-label={t("Chat on WhatsApp")}
+        data-track="footer.whatsapp"
+        className={styles.waFab}
       >
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
           <path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.5.4.1.2.1.9-.1 1.5z" />
         </svg>
       </a>

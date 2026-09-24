@@ -4,6 +4,7 @@ import { pick, metaPoints, pickPlain } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SERVICES } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
+import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
 import { CheckIcon } from "../components/CheckIcon";
 import { ServiceIcon } from "../components/ServiceIcon";
@@ -54,7 +55,7 @@ export function Services() {
       </section>
 
       <section className={s.section} style={{ paddingTop: 70, paddingBottom: 40 }}>
-        <div className={s.svcGrid}>
+        <BalancedGrid preset="detail" style={{ marginTop: 0 }}>
           {items.map((item, i) => (
             <Reveal key={item.key} as="article" className={s.svcCard}>
               <div className={s.svcMedia}>
@@ -91,7 +92,7 @@ export function Services() {
               </div>
             </Reveal>
           ))}
-        </div>
+        </BalancedGrid>
       </section>
 
       <section className={s.finalCta}>
@@ -103,7 +104,7 @@ export function Services() {
           </p>
           <div className={s.finalCtaActions}>
             <Link to="/contact" className="btn btn-primary">
-              {t("Start Your Project")} <span aria-hidden="true">&rarr;</span>
+              {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
             <Link to="/solutions" className="btn btn-outline">
               {t("See solutions by industry")}

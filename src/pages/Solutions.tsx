@@ -109,7 +109,7 @@ export function Solutions() {
           </p>
           <div className={s.finalCtaActions}>
             <Link to="/contact" className="btn btn-primary">
-              {t("Start Your Project")} <span aria-hidden="true">&rarr;</span>
+              {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
             <Link to="/projects" className="btn btn-outline">
               {t("See our work")}

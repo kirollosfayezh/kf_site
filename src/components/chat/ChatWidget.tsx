@@ -265,6 +265,7 @@ export function ChatWidget() {
         className={styles.fab}
         data-track="chat.launcher"
         aria-label={open ? t("Close chat") : t("Chat with us")}
+        aria-expanded={open}
         onClick={toggle}
       >
         <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={38} className={styles.fabAvatar} />
@@ -272,7 +273,7 @@ export function ChatWidget() {
       </button>
 
       {open && (
-        <section className={styles.panel} role="dialog" aria-label="Chat with KF Tech Solutions">
+        <section className={styles.panel} role="dialog" aria-label={t("Chat with KF Tech Solutions")}>
           <header className={styles.hd}>
             <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={40} className={styles.hdAvatar} />
             <div style={{ flex: 1, minWidth: 0 }}>

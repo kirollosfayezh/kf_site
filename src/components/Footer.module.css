@@ -75,13 +75,29 @@
 .bottomText { font-size: var(--fs-ui); color: var(--text3); }
 .bottomMono { font-size: var(--fs-ui); color: var(--text3); font-family: var(--font-mono); }
 
+/* WhatsApp launcher: the bottom of the launcher stack (tokens in index.css).
+   It used to bob 14px on an infinite loop — motion a visitor can't pause
+   (WCAG 2.2.2), set inline where the reduced-motion rule couldn't reach it. */
 .waFab {
   position: fixed;
-  inset-inline-end: 92px;
-  bottom: 22px;
+  inset-inline-end: var(--fab-edge);
+  /* Lifts clear of the cookie bar while it is on screen. */
+  bottom: calc(var(--fab-edge) + var(--kf-consent-h, 0px));
   z-index: 60;
-  width: 0;
-  height: 0;
+  width: var(--fab);
+  height: var(--fab);
+  border-radius: 50%;
+  background: #25D366;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 30px -6px rgba(37, 211, 102, .6);
+  transition: transform .25s cubic-bezier(.22, 1, .36, 1);
+}
+.waFab:hover { transform: scale(1.07); }
+.waFab svg { width: 52%; height: 52%; }
+@media (prefers-reduced-motion: reduce) {
+  .waFab { transition: none; }
+  .waFab:hover { transform: none; }
 }
 
 @media (max-width: 640px) {

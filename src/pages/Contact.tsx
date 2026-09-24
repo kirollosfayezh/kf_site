@@ -236,7 +236,7 @@ export function Contact() {
                 </label>
 
                 <button type="submit" disabled={submitting} data-track="contact.submit" className={`btn btn-primary ${c.submitBtn}`}>
-                  {submitting ? "Sending…" : t("Send Project Request")} <span>&rarr;</span>
+                  {submitting ? t("Sending…") : t("Send Project Request")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                 </button>
                 {submitError && <p className={c.formError}>{submitError}</p>}
                 <p className={c.formNote}>{t("We'll never share your details. Typical reply within one business day.")}</p>

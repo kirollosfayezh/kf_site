@@ -6,7 +6,7 @@
  * and article helper the runtime uses — a crawler that never runs JavaScript
  * and a browser that does must not disagree about what a page claims to be.
  */
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
   PAGES,
@@ -54,6 +54,25 @@ function stripStaticHead(html: string): string {
  * and `$&` means the match — `priceRange: "$$"` silently shipped as `"$"`, and
  * any `$&`/`$1` in a title or description would be corrupted the same way.
  */
+/**
+ * The Arabic webfont, preloaded on Arabic pages only. It is declared in
+ * src/index.css; without the preload it was discovered after the text had
+ * painted and the swap shifted the page (CLS 0.25 at 375px). Must match the
+ * `src:` of the Alexandria @font-face there — checkArabicFont() warns if not.
+ */
+export const ARABIC_FONT_URL = "https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeaijdA5E64BdCIg.woff2";
+const ARABIC_FONT_PRELOAD = `<link rel="preload" href="${ARABIC_FONT_URL}" as="font" type="font/woff2" crossorigin />`;
+
+/** Warn when the preload and the stylesheet name different files: the preload
+ *  would then fetch a font nothing uses, and Arabic would swap late again. */
+export async function checkArabicFont(distDir: string): Promise<string | null> {
+  const dir = join(distDir, "assets");
+  for (const name of await readdir(dir)) {
+    if (name.endsWith(".css") && (await readFile(join(dir, name), "utf8")).includes(ARABIC_FONT_URL)) return null;
+  }
+  return `the Arabic font preload (${ARABIC_FONT_URL}) matches no @font-face in the built CSS — update ARABIC_FONT_URL in build/seo-build.ts to the src in src/index.css`;
+}
+
 function injectHead(shell: string, head: string): string {
   return shell.replace("</head>", () => `  ${head}\n  </head>`);
 }
@@ -122,7 +141,8 @@ async function writePage(
   file: string,
   lang: Lang = "en",
 ) {
-  const html = injectHead(shell, tagsToHtml(seoTags(page, lang, origin)))
+  const head = tagsToHtml(seoTags(page, lang, origin)) + (lang === "ar" ? `\n  ${ARABIC_FONT_PRELOAD}` : "");
+  const html = injectHead(shell, head)
     // The shell is built with lang="en"; each localised file has to declare its
     // own language and direction, or a crawler reads Arabic markup as English
     // and a reader gets LTR text before hydration corrects it.

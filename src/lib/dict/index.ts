@@ -76,10 +76,28 @@ export function loadDict(lang: Lang): Promise<Record<string, string>> {
 }
 
 /**
- * Translates one key. `en` short-circuits: the key is the English copy, so
- * there is nothing to look up and nothing to load.
+ * The rare keys whose English *display* differs from the key itself.
+ *
+ * Only markup lives here — `\n` line breaks and `*word*` gradient marks — for
+ * strings a component splits into styled parts. Everything else in English is
+ * the key verbatim, which is why English still loads no dictionary file.
+ *
+ * The hero headline is the reason this exists. When the dictionary was split
+ * per language, English began returning the bare key, which has no markup. The
+ * headline renderer dims the *last* line, and a string with no `\n` has only
+ * one line — so the whole headline, the most visible thing on the site, went
+ * 42% grey with no gradient on "run". This restores the design export's three
+ * lines exactly: "Software" / "built to *run* on," / "not to demo well."
+ */
+const EN_DISPLAY: Record<string, string> = {
+  "Software built to run on, not to demo well.": "Software\nbuilt to *run* on,\nnot to demo well.",
+};
+
+/**
+ * Translates one key. English returns the key — it *is* the English copy — or
+ * its display override when a component needs markup the key cannot carry.
  */
 export function translate(key: string, lang: Lang): string {
-  if (lang === "en") return key;
+  if (lang === "en") return EN_DISPLAY[key] ?? key;
   return cache.get(lang)?.[key]?.trim() || key;
 }

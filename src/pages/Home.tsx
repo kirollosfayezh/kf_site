@@ -5,6 +5,7 @@ import { pick, pickPlain, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_FAQS, FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
+import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
 import { HeroStage } from "../components/HeroStage";
 import { WA_LINK } from "../components/Footer";
@@ -64,6 +65,40 @@ const KIND_COLOR: Record<AiStep["kind"], string> = {
   LOG: "var(--info)",
   ALERT: "var(--danger)",
 };
+
+/** Tinted chip for a step kind. `color-mix`, because the colours are `var()`
+ *  tokens now: appending a hex alpha (`var(--warning)1f`) is invalid CSS, so
+ *  the chip's fill and border were silently dropped. 12% / 30% are the
+ *  0x1f / 0x4d alphas the literals used to carry. */
+function kindChip(color: string): React.CSSProperties {
+  return {
+    color,
+    background: `color-mix(in srgb, ${color} 12%, transparent)`,
+    border: `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
+  };
+}
+
+/**
+ * One mark per workflow. These boxes held a literal `&bull;` — a single dot in
+ * a square — so all five read as empty placeholders and gave no clue which
+ * workflow was which. Inline stroke SVG, like every other icon on the site.
+ */
+const RECIPE_ICON: Record<string, React.ReactNode> = {
+  inbox: <path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />,
+  stock: <><path d="M21 8 12 3 3 8v8l9 5 9-5V8z" /><path d="m3 8 9 5 9-5M12 13v8" /></>,
+  quote: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M9 13h6M9 17h4" /></>,
+  report: <><path d="M3 3v18h18" /><path d="m7 15 4-4 3 3 5-6" /></>,
+  support: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+};
+
+function RecipeIcon({ name }: { name: string }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      {RECIPE_ICON[name] ?? <circle cx="12" cy="12" r="3" />}
+    </svg>
+  );
+}
 
 const AI_RECIPES: AiRecipe[] = [
   {
@@ -212,7 +247,7 @@ export function Home() {
             </p>
             <div className={`up ${h.heroActions}`}>
               <Link to="/contact" data-track="hero.start-project" className="btn btn-primary">
-                {t("Start a project")} <span aria-hidden="true">&rarr;</span>
+                {t("Start a project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
               </Link>
               <Link to="/projects" data-track="hero.see-the-work" className={h.heroOutline}>
                 {t("See the work")}
@@ -238,7 +273,7 @@ export function Home() {
 
       {/* TRUST STRIP */}
       <section className={s.sectionAlt}>
-        <div className="container" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))" }}>
+        <div className={`container ${h.valueStrip}`}>
           {VALUES.map((v) => (
             <Reveal key={v.title} className={s.valueCard}>
               <div className={`${s.valueTitle} gradient-text`}>{t(v.title)}</div>
@@ -256,10 +291,10 @@ export function Home() {
             <h2 className={s.h2}>{t("Everything you need to build digital.")}</h2>
           </div>
           <Link to="/services" className={s.viewAll}>
-            {t("View all services")} &rarr;
+            {t("View all services")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
           </Link>
         </Reveal>
-        <div className={s.grid}>
+        <BalancedGrid preset="cards">
           {(services.data && services.data.length > 0
             ? services.data.slice(0, 8).map((item) => ({
                 key: item.id,
@@ -282,7 +317,7 @@ export function Home() {
               </Reveal>
             </Link>
           ))}
-        </div>
+        </BalancedGrid>
       </section>
 
       {/* AI AUTOMATION */}
@@ -314,7 +349,9 @@ export function Home() {
                     aria-pressed={on}
                     className={`${h.aiRecipe} ${on ? h.aiRecipeOn : ""}`}
                   >
-                    <span className={`${h.aiRecipeIcon} ${on ? h.aiRecipeIconOn : ""}`}>&bull;</span>
+                    <span className={`${h.aiRecipeIcon} ${on ? h.aiRecipeIconOn : ""}`}>
+                      <RecipeIcon name={r.key} />
+                    </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span className={h.aiRecipeTitle}>{t(r.title)}</span>
                       <div className={h.aiRecipeTag}>{t(r.tag)}</div>
@@ -331,7 +368,7 @@ export function Home() {
                   <div key={step.title} className={h.aiStep}>
                     {i !== activeRecipe.steps.length - 1 && <span className={h.aiStepRail} />}
                     <span className={h.aiStepDot} />
-                    <span className={h.aiStepBadge} style={{ background: KIND_COLOR[step.kind] + "1f", color: KIND_COLOR[step.kind], border: `1px solid ${KIND_COLOR[step.kind]}4d` }}>
+                    <span className={h.aiStepBadge} style={kindChip(KIND_COLOR[step.kind])}>
                       {t(step.kind)}
                     </span>
                     <div className={h.aiStepTitle}>{t(step.title)}</div>
@@ -361,10 +398,10 @@ export function Home() {
               <h2 className={s.h2}>{t("Technology built around your business.")}</h2>
             </div>
             <Link to="/solutions" className={s.viewAll} style={{ color: "var(--brand-pink)" }}>
-              {t("View all solutions")} &rarr;
+              {t("View all solutions")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
           </Reveal>
-          <div className={s.grid2}>
+          <BalancedGrid preset="cards">
             {(solutions.data && solutions.data.length > 0
               ? solutions.data.map((item) => ({
                   key: item.id,
@@ -379,7 +416,12 @@ export function Home() {
                 <Reveal>
                   <div className={s.cardMedia}>
                     {item.media ? <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
-                    {item.tag && <div className={s.cardTag} style={{ position: "absolute", insetInlineStart: 16, bottom: 12, top: "auto", background: "none", border: "none", padding: 0 }}>{pickPlain(item.tag, lang)}</div>}
+                    {item.tag && (
+                      <>
+                        <div className={s.cardCaptionScrim} aria-hidden="true" />
+                        <div className={s.cardCaption}>{pickPlain(item.tag, lang)}</div>
+                      </>
+                    )}
                   </div>
                   <div className={s.cardBody}>
                     <h3 className={s.cardTitle} style={{ fontSize: "var(--fs-section)" }}>{item.title}</h3>
@@ -388,7 +430,7 @@ export function Home() {
                 </Reveal>
               </Link>
             ))}
-          </div>
+          </BalancedGrid>
         </div>
       </section>
 
@@ -400,10 +442,10 @@ export function Home() {
             <h2 className={s.h2}>{t("From ideas to real products.")}</h2>
           </div>
           <Link to="/projects" className={s.viewAll}>
-            {t("View all projects")} &rarr;
+            {t("View all projects")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
           </Link>
         </Reveal>
-        <div className={s.grid3}>
+        <BalancedGrid preset="wide">
           {(projects.data && projects.data.length > 0
             ? projects.data.slice(0, 4).map((item) => ({
                 key: item.id,
@@ -430,13 +472,13 @@ export function Home() {
                 {/* Straight to the case study when the project has one; the
                     static fallbacks have no page, so they keep pointing at the
                     gallery rather than at a URL that would 404. */}
-                <Link to={item.slug ? `/projects/${item.slug}` : "/projects"} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 16, fontSize: "var(--fs-ui)", fontWeight: 600, color: "var(--brand-orange)" }}>
-                  {t("View project")} <span>&rarr;</span>
+                <Link to={item.slug ? `/projects/${item.slug}` : "/projects"} className={s.textLink} style={{ marginTop: 16 }}>
+                  {t("View project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                 </Link>
               </div>
             </Reveal>
           ))}
-        </div>
+        </BalancedGrid>
       </section>
 
       {/* PROCESS */}
@@ -446,7 +488,7 @@ export function Home() {
             <span className={s.eyebrowPink}>{t("// PROCESS")}</span>
             <h2 className={s.h2}>{t("From idea to launch.")}</h2>
           </Reveal>
-          <div className={s.gridSteps}>
+          <BalancedGrid preset="steps">
             {STEPS.map((st) => (
               <Reveal key={st.n}>
                 <div className={s.stepBar} />
@@ -455,7 +497,7 @@ export function Home() {
                 <p className={s.stepDesc}>{t(st.desc)}</p>
               </Reveal>
             ))}
-          </div>
+          </BalancedGrid>
         </div>
       </section>
 
@@ -465,7 +507,7 @@ export function Home() {
           <span className={s.eyebrow}>{t("// WHY KF TECH")}</span>
           <h2 className={s.h2sm}>{t("A partner, not just a developer.")}</h2>
         </Reveal>
-        <div className={s.grid2}>
+        <BalancedGrid preset="cards">
           {WHY.map((w) => (
             <Reveal key={w.title} className={s.whyCard}>
               <span className={s.whyIcon}>
@@ -479,7 +521,7 @@ export function Home() {
               </div>
             </Reveal>
           ))}
-        </div>
+        </BalancedGrid>
       </section>
 
       {/* ABOUT TEASER */}
@@ -507,7 +549,7 @@ export function Home() {
             </p>
             <div style={{ display: "flex", gap: 14, marginTop: 28, flexWrap: "wrap" }}>
               <Link to="/about" className="btn btn-primary">
-                {t("More about us")} <span>&rarr;</span>
+                {t("More about us")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
               </Link>
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
                 {t("Chat on WhatsApp")}
@@ -563,7 +605,7 @@ export function Home() {
           <p className={s.finalCtaLede}>{t("Tell us what you're trying to build and we'll help turn the idea into a real, working product.")}</p>
           <div className={s.finalCtaActions}>
             <Link to="/contact" className="btn btn-primary">
-              {t("Start Your Project")} <span>&rarr;</span>
+              {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
             <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               {t("WhatsApp Us")}
