@@ -1,0 +1,28 @@
+/* Card rows that come out full, or with the remainder centred — never a lone
+   card stranded at the start of the last row. BalancedGrid.tsx chooses the
+   column count for each breakpoint from the number of items and passes it in
+   as --c-xl / --c-lg / --c-md. They're inline on the element from its first
+   render, so there is no provisional layout for it to shift from — unlike a
+   ResizeObserver that measures and then corrects. */
+.grid {
+  --c: var(--c-xl);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap);
+  margin-top: 44px;
+}
+
+/* Grow by up to 1px so full rows close exactly despite sub-pixel rounding,
+   but no further, so a short last row keeps the same card width and centres
+   instead of stretching. */
+.grid > * {
+  --w: calc((100% - (var(--c) - 1) * var(--gap)) / var(--c));
+  flex: 1 1 calc(var(--w) - 1px);
+  max-width: var(--w);
+  min-width: 0;
+}
+
+@media (max-width: 1179px) { .grid { --c: var(--c-lg); } }
+@media (max-width: 959px)  { .grid { --c: var(--c-md); } }
+@media (max-width: 639px)  { .grid { --c: 1; } }

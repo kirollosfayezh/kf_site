@@ -3,6 +3,7 @@ import { useI18n } from "../lib/i18n";
 import { pick } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
+import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
 import { WA_LINK } from "../components/Footer";
 import { submitLead } from "../services/leads";
@@ -16,9 +17,9 @@ const U = "?w=900&q=80&auto=format&fit=crop";
 
 const OFFERS = [
   { title: "POS & retail systems", desc: "Orders, stock, staff and reporting in one connected system built for your floor.", from: "FROM 3 WEEKS", img: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d" + U, alt: "Payment terminal on a counter" },
-  { title: "Websites & web apps", desc: "Fast, responsive platforms that turn traffic into enquiries.", from: "FROM 2 WEEKS", img: "https://images.unsplash.com/photo-1542831371-29b0f74f9713" + U, alt: "Developer workspace with code" },
+  { title: "Websites & web apps", desc: "Fast, responsive platforms that turn traffic into enquiries.", from: "FROM 2 WEEKS", img: "https://images.unsplash.com/photo-1542744094-3a31f272c490" + U, alt: "Developer building web interface components" },
   { title: "Business dashboards", desc: "One screen that shows what is actually happening across the business.", from: "FROM 3 WEEKS", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71" + U, alt: "Analytics dashboard on a monitor" },
-  { title: "Automation & integrations", desc: "Connect the tools you already use and remove the manual steps between them.", from: "FROM 1 WEEK", img: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6" + U, alt: "Code on a dark screen" },
+  { title: "Automation & integrations", desc: "Connect the tools you already use and remove the manual steps between them.", from: "FROM 1 WEEK", img: "https://images.unsplash.com/photo-1647427060118-4911c9821b82" + U, alt: "Robotic arms on an automated production line" },
 ];
 
 const STEPS = [
@@ -153,7 +154,7 @@ export function Campaign() {
                 </div>
                 {err && <div className={c.formError}>{err}</div>}
                 <button type="submit" disabled={sending} data-track="campaign.submit" className={`btn btn-primary ${c.submitBtn}`}>
-                  {sending ? "Sending…" : t("Send my request")}
+                  {sending ? t("Sending…") : t("Send my request")}
                 </button>
                 <div className={c.formNote}>{t("No spam. Your details are only used to reply to this enquiry.")}</div>
               </>
@@ -166,7 +167,7 @@ export function Campaign() {
         <Reveal className={s.headCenter}>
           <h2 className={s.h2sm}>{t("What we build most")}</h2>
         </Reveal>
-        <div className={s.grid3}>
+        <BalancedGrid preset="cards">
           {(offers.data && offers.data.length > 0
             ? offers.data.slice(0, 4).map((o, i) => ({
                 key: o.id,
@@ -190,7 +191,7 @@ export function Campaign() {
               </div>
             </Reveal>
           ))}
-        </div>
+        </BalancedGrid>
       </section>
 
       <section className={s.sectionAlt}>
@@ -198,7 +199,7 @@ export function Campaign() {
           <Reveal className={s.headCenter}>
             <h2 className={s.h2sm}>{t("How it works")}</h2>
           </Reveal>
-          <div className={s.gridSteps}>
+          <BalancedGrid preset="steps">
             {STEPS.map((st) => (
               <Reveal key={st.n}>
                 <div className={s.stepBar} />
@@ -207,7 +208,7 @@ export function Campaign() {
                 <p className={s.stepDesc}>{t(st.desc)}</p>
               </Reveal>
             ))}
-          </div>
+          </BalancedGrid>
         </div>
       </section>
 
@@ -254,7 +255,7 @@ export function Campaign() {
             </p>
             <div className={s.ctaPanelActions}>
               <a href="#quote" className="btn btn-primary">
-                {t("Get a free quote")} <span aria-hidden="true">&rarr;</span>
+                {t("Get a free quote")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
               </a>
               <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
                 {t("WhatsApp us")}

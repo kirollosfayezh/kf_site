@@ -37,9 +37,11 @@ export function Legal() {
   if (error || !doc) {
     return (
       <div className={s.state} style={{ paddingTop: 160 }}>
+        {/* A heading, so a screen reader landing here hears what happened. */}
+        <h1 className={s.stateTitle}>{t("This page isn't available")}</h1>
         <p>{t("We couldn't load this page. It may have been unpublished, or the connection dropped.")}</p>
-        <Link to="/" style={{ color: "var(--brand-orange)", display: "inline-block", marginTop: 14 }}>
-          &larr; {t("Home")}
+        <Link to="/" className={s.textLink} style={{ marginTop: 14 }}>
+          <span className="kf-arrow" aria-hidden="true">&larr;</span> {t("Home")}
         </Link>
       </div>
     );

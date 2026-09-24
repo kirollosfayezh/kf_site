@@ -3,6 +3,7 @@ import { useI18n } from "../lib/i18n";
 import { pick, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
+import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
 import { WA_LINK } from "../components/Footer";
 import s from "../styles/sections.module.css";
@@ -94,7 +95,7 @@ export function About() {
             <span className={s.eyebrow}>{t("// WHY KF TECH")}</span>
             <h2 className={s.h2sm}>{t("A partner, not just a developer.")}</h2>
           </Reveal>
-          <div className={s.grid2}>
+          <BalancedGrid preset="cards">
             {whyItems.map((w) => (
               <Reveal key={w.key} className={s.whyCard}>
                 <span className={s.whyIcon}>
@@ -108,7 +109,7 @@ export function About() {
                 </div>
               </Reveal>
             ))}
-          </div>
+          </BalancedGrid>
         </div>
       </section>
 
@@ -117,7 +118,7 @@ export function About() {
           <span className={s.eyebrowPink}>{t("// PROCESS")}</span>
           <h2 className={s.h2sm}>{t("From idea to launch.")}</h2>
         </Reveal>
-        <div className={s.gridSteps}>
+        <BalancedGrid preset="steps">
           {stepItems.map((st) => (
             <Reveal key={st.key}>
               <div className={s.stepBar} />
@@ -126,7 +127,7 @@ export function About() {
               <p className={s.stepDesc}>{st.desc}</p>
             </Reveal>
           ))}
-        </div>
+        </BalancedGrid>
       </section>
 
       <section className={s.finalCta}>
@@ -135,7 +136,7 @@ export function About() {
           <h2 className={s.finalCtaTitle}>{t("Let's build something real.")}</h2>
           <div className={s.finalCtaActions}>
             <Link to="/contact" className="btn btn-primary">
-              {t("Start a project")} <span>&rarr;</span>
+              {t("Start a project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
             <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               {t("WhatsApp us")}

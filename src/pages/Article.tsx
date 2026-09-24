@@ -78,7 +78,7 @@ export function Article() {
       <div className={s.state} style={{ paddingTop: 160 }}>
         <p>{t("We couldn't load this article. It may have been unpublished, or the connection dropped.")}</p>
         <Link to="/blog" style={{ color: "var(--brand-orange)", display: "inline-block", marginTop: 14 }}>
-          &larr; {t("Insights")}
+          <span className="kf-arrow" aria-hidden="true">&larr;</span> {t("Insights")}
         </Link>
       </div>
     );
@@ -181,7 +181,7 @@ export function Article() {
               {t("We build POS and business systems around how you actually work.")}
             </p>
             <Link to="/contact" className="btn btn-primary">
-              {t("Get a quote")} <span aria-hidden="true">&rarr;</span>
+              {t("Get a quote")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
           </aside>
 

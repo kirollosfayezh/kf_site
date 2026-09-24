@@ -3,6 +3,29 @@
 /* Lenis' own stylesheet — required for the wheel-driven scroll to behave. */
 @import 'lenis/dist/lenis.css';
 
+/*
+ * Arabic face. None of the Latin families has Arabic glyphs, so Arabic text
+ * fell through to whatever the device had — in the mono labels, a monospaced
+ * Arabic fallback that pulls the joined letters apart. Alexandria (a geometric
+ * Arabic by Egyptian designer Mohamed Gaber, OFL) is the companion to Space
+ * Grotesk.
+ *
+ * Declared here rather than in the Google Fonts link so it is known at first
+ * paint, and preloaded on Arabic pages only (ARABIC_FONT_URL in
+ * build/seo-build.ts — keep the two URLs identical; the build warns if they
+ * drift). The unicode-range is Google's Arabic subset, so a page with no
+ * Arabic on screen never downloads it. To refresh the URL, read it from
+ * https://fonts.googleapis.com/css2?family=Alexandria:wght@400..700
+ */
+@font-face {
+  font-family: 'Alexandria';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeaijdA5E64BdCIg.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EEFF;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; }
@@ -35,10 +58,14 @@ html.lenis-smooth { scroll-behavior: auto; }
   --success: #4ADE80;
   --warning: #FF9A4D;
   --info: #7B9BFF;
+  /* Keyboard focus ring: 6.9:1 on --bg. */
+  --focus: #FF6A00;
 
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'Instrument Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Alexandria second in every stack: the Latin faces win for Latin text,
+     and Arabic glyphs — which none of them have — fall through to it. */
+  --font-display: 'Space Grotesk', 'Alexandria', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', 'Alexandria', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Alexandria', monospace;
 
   /* ---------------------------------------------------------------- type --
    *
@@ -90,6 +117,25 @@ html.lenis-smooth { scroll-behavior: auto; }
    * sat under 40. */
   --control: 44px;
   --control-sm: 36px;
+
+  /* ------------------------------------------------- floating launchers --
+   * WhatsApp (bottom) and chat (above it) are one stack, and the chat panel
+   * opens above both. All three positions derive from these, so the stack
+   * can't drift apart or open its panel behind the nav. */
+  --fab: 58px;
+  --fab-edge: 22px;
+  --fab-gap: 12px;
+  --fab-panel-bottom: calc(var(--fab-edge) + 2 * var(--fab) + 2 * var(--fab-gap));
+}
+
+/* Phones: two 58px circles took a 58x128 column — 17% of a 375px screen —
+   off the right edge of every card they passed over. */
+@media (max-width: 640px) {
+  :root {
+    --fab: 50px;
+    --fab-edge: 14px;
+    --fab-gap: 10px;
+  }
 }
 
 :root[data-kf-theme="light"] {
@@ -106,6 +152,8 @@ html.lenis-smooth { scroll-behavior: auto; }
   --grid: rgba(0, 0, 0, .04);
   --navbg: rgba(255, 255, 255, .82);
   --field: #fff;
+  /* Brand orange is 2.9:1 on white — under the 3:1 a focus indicator needs. */
+  --focus: #C24E00;
 }
 
 body {
@@ -126,6 +174,14 @@ a:hover { color: var(--brand-pink); }
 input, textarea, select, button { font-family: inherit; }
 input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-orange) !important; }
 button { cursor: pointer; }
+/* One focus ring for everything a keyboard can reach. There was none: every
+   control showed the browser's default blue, and only the language menu had
+   its own. `:where()` keeps it at zero specificity, so any component that
+   draws its own indicator still wins. Inputs keep their orange border. */
+:where(a, button, summary, [role="button"], [role="tab"], [role="switch"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
 
 img { max-width: 100%; display: block; }
 
@@ -163,6 +219,9 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
   transition: transform .25s, background .25s, color .2s;
   font-size: var(--fs-body);
+  /* Not `normal`: that follows the font's metrics, so every button changed
+     height by a pixel when the webfont replaced the fallback. */
+  line-height: 1.25;
   padding: 14px 24px;
 }
 .btn-primary {
@@ -246,6 +305,24 @@ img { max-width: 100%; display: block; }
   .kf-page-fallback-bar { animation: none; }
 }
 
+.skip-link {
+  position: fixed;
+  top: 10px;
+  inset-inline-start: 10px;
+  z-index: 200;
+  padding: 12px 18px;
+  border-radius: var(--r-control);
+  background: var(--brand-gradient);
+  color: #fff;
+  font-weight: 600;
+  font-size: var(--fs-ui);
+  transform: translateY(-200%);
+  transition: transform .2s;
+}
+.skip-link:focus { transform: none; color: #fff; }
+/* Focused programmatically by the skip link; it isn't a control. */
+#main:focus { outline: none; }
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -277,13 +354,30 @@ img { max-width: 100%; display: block; }
  */
 html[dir="rtl"] * { letter-spacing: normal; }
 
+/* Arabic leading. Arabic letters rise above the Latin cap height (alef, lam)
+ * and fall below the baseline (ي، ج، ع), with dots above and below both, so
+ * the .86–1.06 the Latin display sizes use made consecutive lines collide.
+ * `:is()` keeps this at 0-1-2, above the module classes that set it. */
+html[lang="ar"] :is(h1, h2) { line-height: 1.3; }
+html[lang="ar"] :is(h3, h4) { line-height: 1.45; }
+
+/* Mono labels in Arabic. JetBrains Mono has no Arabic, and even with the
+ * glyphs falling through to Alexandria its wide monospaced space still opened
+ * a gap between every word. Arabic pages set them on the body stack instead;
+ * the Latin-only mono (.mono-tag, .ts-mono — codes, versions) keeps its face. */
+html[lang="ar"] { --font-mono: var(--font-body); }
+html[lang="ar"] .mono-tag,
+html[lang="ar"] .ts-mono { font-family: 'JetBrains Mono', monospace; }
+
 /* The mono tags are forced to LTR just below because their content is Latin —
    "// PROJECTS", version numbers — so their tracking is put back. */
 html[dir="rtl"] .mono-tag,
 html[dir="rtl"] .ts-mono { direction: ltr; unicode-bidi: embed; letter-spacing: 0.06em; }
-/* Arrow glyphs in CTA labels point the other way in Arabic. */
-html[dir="rtl"] .btn span[aria-hidden="true"],
-html[dir="rtl"] .btn > span:last-child { transform: scaleX(-1); display: inline-block; }
+/* Arrow glyphs point the other way in Arabic. → and ← have no mirrored form
+   in bidi, so in RTL text "View all →" put the arrow at the left end still
+   pointing right — back into the words. This used to cover only arrows inside
+   .btn; every arrow is now a .kf-arrow span, so text links flip too. */
+html[dir="rtl"] .kf-arrow { transform: scaleX(-1); display: inline-block; }
 
 /* ------------------------------------------------------------------ prose */
 

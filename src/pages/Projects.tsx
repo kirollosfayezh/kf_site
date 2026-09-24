@@ -4,6 +4,7 @@ import { pick, metaString, metaPoints, pickPlain } from "../lib/content-helpers"
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_PROJECTS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
+import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
 import { WA_LINK } from "../components/Footer";
 import s from "../styles/sections.module.css";
@@ -64,7 +65,7 @@ export function Projects() {
       </section>
 
       <section className={s.section} style={{ paddingTop: 70, paddingBottom: 40 }}>
-        <div className={s.grid3} style={{ marginTop: 0 }}>
+        <BalancedGrid preset="wide" style={{ marginTop: 0 }}>
           {items.map((item, i) => (
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
@@ -92,14 +93,14 @@ export function Projects() {
                       behind them, and a "View" that 404s is worse than none. */}
                   {item.slug ? (
                     <Link to={`/projects/${item.slug}`} className={s.projView}>
-                      {t("View")} <span aria-hidden="true">&rarr;</span>
+                      {t("View")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                     </Link>
                   ) : null}
                 </div>
               </div>
             </Reveal>
           ))}
-        </div>
+        </BalancedGrid>
       </section>
 
       {/* FEATURED CASE STUDY — static in the original export, restored here. */}
@@ -133,7 +134,7 @@ export function Projects() {
           <p className={s.finalCtaLede}>{t("Tell us what you're building and we'll turn it into a real, working product.")}</p>
           <div className={s.finalCtaActions}>
             <Link to="/contact" className="btn btn-primary">
-              {t("Start Your Project")} <span aria-hidden="true">&rarr;</span>
+              {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
             <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               {t("WhatsApp us")}

@@ -159,6 +159,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  /* It wrapped to "Let's / Build" at laptop widths — a two-line pill reads as
+     broken. One line, and the full control height so it matches its siblings. */
+  white-space: nowrap;
+  min-height: var(--control);
   background: var(--brand-gradient);
   color: #fff;
   font-weight: 600;
@@ -197,6 +201,15 @@
   font-size: var(--fs-lead);
   padding: 16px;
   border-radius: var(--r-control);
+}
+
+/* ---- Laptop widths -------------------------------------------------------
+   Between a phone and a wide desktop the tagline competed with seven nav links
+   for the same row and wrapped to three cramped lines. The links are the
+   navigation; the tagline is decoration — so it goes first. */
+@media (max-width: 1240px) {
+  .brandSub { display: none; }
+  .brandTitle { white-space: nowrap; }
 }
 
 /* ---- Small screens -------------------------------------------------------

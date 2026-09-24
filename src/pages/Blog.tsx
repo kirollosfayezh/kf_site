@@ -161,7 +161,7 @@ export function Blog() {
                     <h2 className={s.cardTitle} style={{ marginTop: 10 }}>{pick(post.title, lang)}</h2>
                     <p className={s.cardDesc}>{pick(post.summary, lang)}</p>
                     <span className={s.cardRead}>
-                      {t("Read article")} <span aria-hidden="true">&rarr;</span>
+                      {t("Read article")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                     </span>
                   </div>
                 </Reveal>
@@ -182,7 +182,7 @@ export function Blog() {
             </p>
             <div className={s.ctaPanelActions}>
               <Link to="/contact" className="btn btn-primary">
-                {t("Start a conversation")} <span aria-hidden="true">&rarr;</span>
+                {t("Start a conversation")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
               </Link>
               <Link to="/services" className="btn btn-outline">
                 {t("See what we build")}

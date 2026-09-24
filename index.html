@@ -31,6 +31,12 @@
       measured at 28s on a bad connection, which reads as the whole site being
       frozen. With this, text paints immediately in the fallback face and swaps
       when the webfont arrives (the URL already carries display=swap).
+
+      The Arabic face (Alexandria) is NOT in this request: it's declared in
+      index.css and preloaded on Arabic pages by build/seo-build.ts. Loaded
+      from here it arrived after this non-blocking stylesheet did, i.e. after
+      the text had painted, and the swap shifted the page (CLS 0.25 on /ar at
+      375px, measured).
     -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

@@ -1,12 +1,13 @@
 .fab {
   position: fixed;
-  inset-inline-end: 20px;
-  /* Lifts clear of the cookie bar while it is on screen; the variable is unset
-     the rest of the time, so this is just 92px. */
-  bottom: calc(92px + var(--kf-consent-h, 0px));
+  inset-inline-end: var(--fab-edge);
+  /* Sits one launcher-and-gap above the WhatsApp button (tokens in index.css),
+     and lifts clear of the cookie bar while it is on screen — the variable is
+     unset the rest of the time. */
+  bottom: calc(var(--fab-edge) + var(--fab) + var(--fab-gap) + var(--kf-consent-h, 0px));
   z-index: 70;
-  width: 58px;
-  height: 58px;
+  width: var(--fab);
+  height: var(--fab);
   border-radius: 50%;
   background: var(--brand-gradient);
   display: grid;
@@ -19,7 +20,9 @@
 .fab:hover { transform: scale(1.07); }
 /* No blanket `stroke`/`fill` here any more: the launcher holds the shaded
    avatar, and forcing a stroke colour on it flattens every gradient inside. */
-.fabAvatar { filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .45)); }
+/* Sized from the launcher rather than fixed at 38px, which crowded a 50px
+   phone launcher. CSS width beats the SVG's width attribute. */
+.fabAvatar { width: 66%; height: 66%; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .45)); }
 
 .dot {
   position: absolute;
@@ -41,11 +44,15 @@
 
 .panel {
   position: fixed;
-  inset-inline-end: 20px;
-  bottom: calc(162px + var(--kf-consent-h, 0px));
+  inset-inline-end: var(--fab-edge);
+  bottom: calc(var(--fab-panel-bottom) + var(--kf-consent-h, 0px));
   z-index: 71;
   width: min(376px, calc(100vw - 32px));
-  max-height: min(620px, calc(100dvh - 120px));
+  /* Height is whatever is left between the panel's bottom and the nav. It was
+     `100dvh - 120px` against a 162px bottom, so on any window under ~780px
+     tall — most laptops — the header ran off the top of the screen. */
+  --panel-top-clear: 84px;
+  max-height: min(620px, calc(100dvh - var(--fab-panel-bottom) - var(--kf-consent-h, 0px) - var(--panel-top-clear)));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -209,10 +216,10 @@
   .panel {
     inset-inline: 12px;
     width: auto;
-    bottom: calc(156px + var(--kf-consent-h, 0px));
-    max-height: calc(100dvh - 176px);
+    /* A sheet may cover the nav; it only needs a sliver of page above it. */
+    --panel-top-clear: 20px;
+    max-height: calc(100dvh - var(--fab-panel-bottom) - var(--kf-consent-h, 0px) - var(--panel-top-clear));
   }
-  .fab { bottom: calc(86px + var(--kf-consent-h, 0px)); inset-inline-end: 16px; }
   /* Tightened so the intro form (two fields + button + note) fits above the
      launcher at 375x667 instead of being cut off at the panel edge. */
   .log { min-height: 84px; }
@@ -227,6 +234,6 @@
 
 /* Landscape phones: there is no room for a 620px panel above the button. */
 @media (max-height: 600px) {
-  .panel { max-height: calc(100dvh - 190px); }
+  .panel { --panel-top-clear: 12px; }
   .log { min-height: 90px; }
 }

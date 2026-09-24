@@ -4,6 +4,7 @@ import { Nav } from "./Nav";
 import { Footer } from "./Footer";
 import { useSmoothScroll } from "../lib/smooth-scroll";
 import { RouteSeo } from "./Seo";
+import { useI18n } from "../lib/i18n";
 
 /**
  * The chat widget pulls in socket.io-client, which is the single largest
@@ -49,12 +50,26 @@ function useDeferredMount(): boolean {
 export function Layout() {
   useSmoothScroll();
   const chatReady = useDeferredMount();
+  const { t } = useI18n();
 
   return (
     <div style={{ position: "relative", width: "100%", minHeight: "100vh", background: "var(--bg)" }}>
       <RouteSeo />
+      {/* First tab stop: past the nine nav controls straight to the page.
+          Focus moves into <main> itself, so the next Tab lands on the page's
+          first link; the hash stays out of the URL. */}
+      <a
+        href="#main"
+        className="skip-link"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById("main")?.focus();
+        }}
+      >
+        {t("Skip to content")}
+      </a>
       <Nav />
-      <main>
+      <main id="main" tabIndex={-1}>
         <Outlet />
       </main>
       <Footer />
