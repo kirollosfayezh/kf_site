@@ -3,6 +3,7 @@ import {
   getCountries,
   getCountryCallingCode,
   parsePhoneNumberFromString,
+  validatePhoneNumberLength,
   type CountryCode,
 } from "libphonenumber-js/max";
 import { getCountryForTimezone } from "countries-and-timezones";
@@ -118,31 +119,49 @@ export function readPhone(raw: string, country: CountryCode): PhoneState {
   const display = input ? typer.input(input) : "";
 
   const attempts = input.startsWith("+") ? [input] : [input, `+${input}`];
-  let best: { parsed: NonNullable<ReturnType<typeof parsePhoneNumberFromString>>; score: number } | null = null;
-  if (digits.length >= 6) {
+  let best: {
+    parsed: NonNullable<ReturnType<typeof parsePhoneNumberFromString>>;
+    score: number;
+    national: boolean;
+  } | null = null;
+  // Four digits is the shortest real number anywhere (Tokelau, Tristan da Cunha).
+  if (digits.length >= 4) {
     for (const candidate of attempts) {
       const parsed = parsePhoneNumberFromString(candidate, country);
       if (!parsed?.isValid()) continue;
       const type = parsed.getType();
       const score = type === "MOBILE" || type === "FIXED_LINE_OR_MOBILE" ? 2 : 1;
-      if (!best || score > best.score) best = { parsed, score };
+      if (!best || score > best.score) best = { parsed, score, national: candidate === input && !input.startsWith("+") };
     }
   }
 
   if (best) {
     const p = best.parsed;
-    // Re-format in the detected country's own style, so "201012345678" typed
-    // from Germany shows as "+20 10 12345678" rather than as a German number.
-    const shown = input.startsWith("+") || p.country !== country ? p.formatInternational() : display;
-    return { display: shown, country: p.country, valid: true, e164: p.number, type: p.getType(), complete: true };
+    // Read as a local number of the chosen country: keep that country, even
+    // where it shares a numbering plan with a larger one (Isle of Man and the
+    // UK, Åland and Finland) and the metadata files the number under the
+    // larger. Otherwise show it the international way, so "201012345678"
+    // typed from Germany reads "+20 10 12345678", not as a German number.
+    const local = best.national && p.countryCallingCode === getCountryCallingCode(country);
+    return {
+      display: local ? display : p.formatInternational(),
+      country: local ? country : p.country,
+      valid: true,
+      e164: p.number,
+      type: p.getType(),
+      complete: true,
+    };
   }
 
   const detected = typer.getCountry();
+  // "Complete" by the country's own length rules, so a half-typed number is
+  // not flagged while a full-length wrong one is.
+  const tooShort = !input || validatePhoneNumberLength(input, input.startsWith("+") ? undefined : country) === "TOO_SHORT";
   return {
     display,
     country: isCountry(detected) ? detected : input.startsWith("+") ? undefined : country,
     valid: false,
-    complete: digits.length >= 8,
+    complete: !tooShort,
   };
 }
 
