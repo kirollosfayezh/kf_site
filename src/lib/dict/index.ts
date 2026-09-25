@@ -19,9 +19,9 @@ import type { Lang } from "../langs.ts";
  */
 
 const LOADERS: Record<Exclude<Lang, "en">, () => Promise<{ default: Record<string, string> }>> = {
-  ar: () => import("./ar.json"),
-  de: () => import("./de.json"),
-  fr: () => import("./fr.json"),
+  ar: () => import("./ar.json", { with: { type: "json" } }),
+  de: () => import("./de.json", { with: { type: "json" } }),
+  fr: () => import("./fr.json", { with: { type: "json" } }),
 };
 
 const cache = new Map<Lang, Record<string, string>>([["en", {}]]);
@@ -117,7 +117,7 @@ export function loadDict(lang: Lang): Promise<Record<string, string>> {
  * lines exactly: "Software" / "built to *run* on," / "not to demo well."
  */
 const EN_DISPLAY: Record<string, string> = {
-  "Software built to run on, not to demo well.": "Software\nbuilt to *run* on,\nnot to demo well.",
+  "Custom software built to run on, not to demo well.": "Custom software\nbuilt to *run* on,\nnot to demo well.",
 };
 
 /**

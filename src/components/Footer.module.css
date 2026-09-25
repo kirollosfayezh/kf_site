@@ -108,3 +108,8 @@
   /* Long email addresses were the one real overflow source in the footer. */
   .colLinks a { overflow-wrap: anywhere; }
 }
+
+.newsletter {
+  margin-top: 44px;
+  max-width: 520px;
+}

@@ -1,24 +1,23 @@
 import { Link } from "react-router-dom";
 import { reopenConsent } from "../lib/pixels";
 import { useI18n } from "../lib/i18n";
+import { useContactInfo, useSettings } from "../lib/settings";
+import { resolveSocial, type SocialKey } from "../lib/contact";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import { SocialIcon, type SocialName } from "./SocialIcon";
+import { NewsletterForm } from "./NewsletterForm";
 import styles from "./Footer.module.css";
 
-const WA_LINK =
-  "https://wa.me/201500099671?text=" + encodeURIComponent("Hi KF Tech Solutions, I'd like to discuss a software project.");
-const EMAIL = "kirollos.fayez.h@gmail.com";
-
-/**
- * Only profiles that actually exist are listed. Instagram and TikTok were here
- * with `href: "#"` — a link that looks live and goes nowhere is worse than an
- * absent one, and it costs trust on the page where people check you are real.
- * Add them back with a real URL when the accounts exist.
- */
-const SOCIAL: { label: SocialName; href: string }[] = [
-  { label: "Facebook", href: "https://www.facebook.com/profile.php?id=61584985085435" },
-  { label: "LinkedIn", href: "https://linkedin.com/in/kirollos-fayez-65a33931a" },
-  { label: "GitHub", href: "https://github.com/koko619911" },
-];
+/** Settings keys → the icon set's names. */
+const ICON: Record<SocialKey, SocialName> = {
+  facebook: "Facebook",
+  instagram: "Instagram",
+  linkedin: "LinkedIn",
+  x: "X",
+  github: "GitHub",
+  youtube: "YouTube",
+  tiktok: "TikTok",
+};
 
 /**
  * The dictionary keys the whole copyright line, year included, because that is
@@ -26,14 +25,25 @@ const SOCIAL: { label: SocialName; href: string }[] = [
  * substituting it into the translated string gives both: a correct year and a
  * translated line. An untranslated year still falls back to the English key.
  */
-const COPYRIGHT_KEY = "\u00A9 2026 KF Tech Solutions. All rights reserved.";
+const COPYRIGHT_KEY = "© 2026 KF Tech Solutions. All rights reserved.";
 
 function copyright(t: (k: string) => string): string {
   return t(COPYRIGHT_KEY).replace("2026", String(new Date().getFullYear()));
 }
 
+/**
+ * Contact details and profiles come from Site settings (with the launch
+ * values as defaults), so the dashboard's Contact card actually does what it
+ * says. Only profiles that exist are listed: a link that looks live and goes
+ * nowhere is worse than an absent one, and it costs trust on the page where
+ * people check you are real.
+ */
 export function Footer() {
   const { t } = useI18n();
+  const settings = useSettings();
+  const { email } = useContactInfo();
+  const waLink = useWhatsAppLink();
+  const social = resolveSocial(settings?.social);
 
   return (
     <footer className={styles.footer}>
@@ -48,17 +58,18 @@ export function Footer() {
               {t("Turning ideas into real, working products. Custom software, web, mobile and business systems — built in Cairo, delivered worldwide.")}
             </p>
             <div className={styles.social}>
-              {SOCIAL.map((s) => (
+              {social.map((s) => (
                 <a
-                  key={s.label}
+                  key={s.key}
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={s.label}
-                  title={s.label}
+                  aria-label={ICON[s.key]}
+                  title={ICON[s.key]}
+                  data-track={`footer.social.${s.key}`}
                   className={styles.socialBtn}
                 >
-                  <SocialIcon name={s.label} />
+                  <SocialIcon name={ICON[s.key]} />
                 </a>
               ))}
             </div>
@@ -95,12 +106,20 @@ export function Footer() {
           <div>
             <h2 className={styles.colTitle}>{t("Get in touch")}</h2>
             <div className={styles.colLinks}>
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
+              <a href={waLink} target="_blank" rel="noopener noreferrer" data-track="footer.links.whatsapp">
                 {t("WhatsApp")}
               </a>
-              <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
+              <a href={`mailto:${email}`} data-track="footer.links.email">{email}</a>
             </div>
           </div>
+        </div>
+
+        <div className={styles.newsletter}>
+          <h2 className={styles.colTitle}>{t("Newsletter")}</h2>
+          <p className={styles.desc}>
+            {t("Occasional notes on software, automation and running a better business. No spam.")}
+          </p>
+          <NewsletterForm source="footer" compact />
         </div>
 
         <div className={styles.bottom}>
@@ -110,7 +129,7 @@ export function Footer() {
       </div>
 
       <a
-        href={WA_LINK}
+        href={waLink}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={t("Chat on WhatsApp")}
@@ -124,5 +143,3 @@ export function Footer() {
     </footer>
   );
 }
-
-export { WA_LINK, EMAIL };

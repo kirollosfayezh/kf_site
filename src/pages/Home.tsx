@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
+import { useFaqSchema } from "../components/Seo";
 import { pick, pickPlain, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_FAQS, FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS } from "../lib/fallback-content";
@@ -8,7 +9,8 @@ import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
 import { HeroStage } from "../components/HeroStage";
-import { WA_LINK } from "../components/Footer";
+import { Testimonials } from "../components/Testimonials";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import s from "../styles/sections.module.css";
 import h from "./Home.module.css";
 
@@ -180,7 +182,9 @@ const AI_RECIPES: AiRecipe[] = [
  * `up` animation, one step per line, exactly as before.
  */
 function heroHeadline(t: (key: string) => string) {
-  const lines = t("Software built to run on, not to demo well.").split("\n");
+  // "Custom software" leads: the h1 is the strongest on-page ranking signal
+  // and the old line carried no service keyword at all.
+  const lines = t("Custom software built to run on, not to demo well.").split("\n");
   return lines.map((line, i) => (
     <span
       key={line}
@@ -202,6 +206,7 @@ function heroHeadline(t: (key: string) => string) {
 
 export function Home() {
   const { t, lang } = useI18n();
+  const waLink = useWhatsAppLink();
   const [openFaq, setOpenFaq] = useState(-1);
   const [aiKey, setAiKey] = useState("inbox");
 
@@ -212,9 +217,15 @@ export function Home() {
 
   const activeRecipe = AI_RECIPES.find((r) => r.key === aiKey) ?? AI_RECIPES[0];
 
-  const faqItems = faqs.data && faqs.data.length > 0
-    ? faqs.data.map((f) => ({ q: pick(f.title, lang), a: pick(f.body ?? f.summary, lang) }))
-    : FALLBACK_FAQS;
+  const faqItems = useMemo(
+    () =>
+      faqs.data && faqs.data.length > 0
+        ? faqs.data.map((f) => ({ q: pick(f.title, lang), a: pick(f.body ?? f.summary, lang) }))
+        : FALLBACK_FAQS.map((f) => ({ q: t(f.q), a: t(f.a) })),
+    [faqs.data, lang, t],
+  );
+  // The FAQPage schema comes from the same list the accordion renders.
+  useFaqSchema(faqItems);
 
   return (
     <div>
@@ -441,7 +452,7 @@ export function Home() {
             <span className={s.eyebrow}>// {t("PROJECTS") || "PROJECTS"}</span>
             <h2 className={s.h2}>{t("From ideas to real products.")}</h2>
           </div>
-          <Link to="/projects" className={s.viewAll}>
+          <Link to="/projects" className={s.viewAll} data-track="home.projects.view-all">
             {t("View all projects")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
           </Link>
         </Reveal>
@@ -551,13 +562,17 @@ export function Home() {
               <Link to="/about" className="btn btn-primary">
                 {t("More about us")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
               </Link>
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+              <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-outline" data-track="home.about.whatsapp">
                 {t("Chat on WhatsApp")}
               </a>
             </div>
           </Reveal>
         </div>
       </section>
+
+      {/* CLIENTS — from the dashboard's Testimonials collection; renders
+          nothing until at least one is published. */}
+      <Testimonials limit={6} />
 
       {/* FAQ */}
       <section className={s.sectionNarrow}>
@@ -568,16 +583,15 @@ export function Home() {
         <div className={s.faqList}>
           {faqItems.map((f, i) => (
             <Reveal key={f.q} className={s.faqItem}>
-              {/* The answer is only in the DOM while the item is open, so the
-                  SEO layer reads both halves from these attributes instead —
-                  the same contract kf-seo.js used in the design export. This
-                  keeps the FAQPage schema and the visible accordion in step. */}
+              {/* Every answer is in the DOM, hidden until opened: text that
+                  only exists while a visitor clicks is text a crawler never
+                  reads, and the FAQPage schema (useFaqSchema) is built from the
+                  same list, so the two can never disagree. */}
               <button
                 type="button"
                 className={s.faqQ}
                 aria-expanded={openFaq === i}
-                data-kf-faq-q={f.q}
-                data-kf-faq-a={f.a}
+                aria-controls={`faq-${i}`}
                 onClick={() => setOpenFaq((cur) => (cur === i ? -1 : i))}
               >
                 <span>{f.q}</span>
@@ -587,7 +601,7 @@ export function Home() {
                   </svg>
                 </span>
               </button>
-              {openFaq === i && <p className={s.faqA}>{f.a}</p>}
+              <p id={`faq-${i}`} className={s.faqA} hidden={openFaq !== i}>{f.a}</p>
             </Reveal>
           ))}
         </div>
@@ -604,10 +618,10 @@ export function Home() {
           </h2>
           <p className={s.finalCtaLede}>{t("Tell us what you're trying to build and we'll help turn the idea into a real, working product.")}</p>
           <div className={s.finalCtaActions}>
-            <Link to="/contact" className="btn btn-primary">
+            <Link to="/contact" className="btn btn-primary" data-track="home.final.start-project">
               {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-outline" data-track="home.final.whatsapp">
               {t("WhatsApp Us")}
             </a>
           </div>

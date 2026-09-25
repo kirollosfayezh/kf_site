@@ -146,50 +146,51 @@ export function Nav() {
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
-              {langOpen && (
-                <div role="menu" aria-label={t("Language")} className={styles.langMenu}>
-                  {available.map((code) => (
-                    <button
-                      key={code}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={code === lang}
-                      lang={code}
-                      className={`${styles.langItem} ${code === lang ? styles.langItemActive : ""}`}
-                      onClick={() => {
-                        setLang(code);
-                        setLangOpen(false);
-                        /* A full navigation, not a client-side route change: the
-                           language prefix is the router's `basename`, which is
-                           read once at startup. Reloading at the new URL keeps
-                           the address bar, the served HTML and the rendered
-                           language in agreement. */
-                        window.location.assign(localePath(code, location.pathname));
-                      }}
-                    >
-                      <FlagIcon lang={code} size={22} />
-                      <span className={styles.langLabel}>{LANG_META[code].label}</span>
-                      <span className={styles.langShort}>{LANG_META[code].short}</span>
-                      {code === lang ? (
-                        <svg
-                          className={styles.langCheck}
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Always in the DOM, hidden when closed: real links with
+                  `hreflang` are how a crawler discovers the language versions
+                  of this page from the page itself, not only from the head. */}
+              <div role="menu" aria-label={t("Language")} className={styles.langMenu} hidden={!langOpen}>
+                {available.map((code) => (
+                  <a
+                    key={code}
+                    /* A full navigation, not a client-side route change: the
+                       language prefix is the router's `basename`, which is
+                       read once at startup. Loading the new URL keeps the
+                       address bar, the served HTML and the rendered language
+                       in agreement. */
+                    href={localePath(code, location.pathname)}
+                    hrefLang={code}
+                    role="menuitemradio"
+                    aria-checked={code === lang}
+                    lang={code}
+                    className={`${styles.langItem} ${code === lang ? styles.langItemActive : ""}`}
+                    onClick={() => {
+                      setLang(code);
+                      setLangOpen(false);
+                    }}
+                  >
+                    <FlagIcon lang={code} size={22} />
+                    <span className={styles.langLabel}>{LANG_META[code].label}</span>
+                    <span className={styles.langShort}>{LANG_META[code].short}</span>
+                    {code === lang ? (
+                      <svg
+                        className={styles.langCheck}
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : null}
+                  </a>
+                ))}
+              </div>
             </div>
 
             <button type="button" className={`${styles.iconBtn} kf-desktop-nav`} aria-label={t("Toggle light and dark theme")} onClick={toggleTheme}>

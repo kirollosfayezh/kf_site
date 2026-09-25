@@ -1,10 +1,13 @@
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
+import { useFaqSchema } from "../components/Seo";
 import { pick } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
-import { WA_LINK, EMAIL } from "../components/Footer";
+import { useContactInfo } from "../lib/settings";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
+import { trackConversion } from "../lib/conversions";
 import { submitLead } from "../services/leads";
 import { ApiError } from "../services/http";
 import s from "../styles/sections.module.css";
@@ -38,6 +41,8 @@ const EMPTY: FormState = { name: "", company: "", email: "", phone: "", ptype: "
 
 export function Contact() {
   const { t, lang } = useI18n();
+  const { phone, email } = useContactInfo();
+  const waLink = useWhatsAppLink();
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -46,9 +51,14 @@ export function Contact() {
   const [openFaq, setOpenFaq] = useState(-1);
 
   const faqs = useContentList("faqs");
-  const faqItems = faqs.data && faqs.data.length > 0
-    ? faqs.data.map((f) => ({ q: pick(f.title, lang), a: pick(f.body ?? f.summary, lang) }))
-    : FALLBACK_FAQS;
+  const faqItems = useMemo(
+    () =>
+      faqs.data && faqs.data.length > 0
+        ? faqs.data.map((f) => ({ q: pick(f.title, lang), a: pick(f.body ?? f.summary, lang) }))
+        : FALLBACK_FAQS.map((f) => ({ q: t(f.q), a: t(f.a) })),
+    [faqs.data, lang, t],
+  );
+  useFaqSchema(faqItems);
 
   function onField<K extends keyof FormState>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -80,6 +90,8 @@ export function Contact() {
         message: form.message,
       });
       setSubmitted(true);
+      // Reported here, after the API accepted it — not on the button.
+      trackConversion("lead");
     } catch (err) {
       const message = err instanceof ApiError ? err.message : "Something went wrong sending your request.";
       setSubmitError(message);
@@ -101,7 +113,7 @@ export function Contact() {
             <p className={s.pageLede}>{t("Share a few details and we'll get back to you with next steps — usually within one business day. Prefer to talk now? Reach us directly.")}</p>
 
             <div className={c.contactCards}>
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={c.contactCard}>
+              <a href={waLink} target="_blank" rel="noopener noreferrer" className={c.contactCard} data-track="contact.whatsapp">
                 <span className={c.contactIcon} style={{ background: "rgba(37,211,102,.14)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366">
                     <path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.5.4.1.2.1.9-.1 1.5z" />
@@ -109,7 +121,7 @@ export function Contact() {
                 </span>
                 <span>
                   <span className={c.contactLabel}>{t("WhatsApp")}</span>
-                  <span className={c.contactValue}>+20 150 009 9671</span>
+                  <span className={c.contactValue} dir="ltr">{phone}</span>
                 </span>
               </a>
               <Link to="/book" data-track="contact.book-call" className={c.contactCard}>
@@ -124,7 +136,7 @@ export function Contact() {
                   <span className={c.contactValue}>{t("Pick a time — we call you on WhatsApp")}</span>
                 </span>
               </Link>
-              <a href={`mailto:${EMAIL}`} className={c.contactCard}>
+              <a href={`mailto:${email}`} className={c.contactCard} data-track="contact.email">
                 <span className={c.contactIcon} style={{ background: "rgba(255,106,0,.1)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -133,7 +145,7 @@ export function Contact() {
                 </span>
                 <span>
                   <span className={c.contactLabel}>{t("Email")}</span>
-                  <span className={c.contactValue}>{EMAIL}</span>
+                  <span className={c.contactValue} dir="ltr">{email}</span>
                 </span>
               </a>
               <div className={c.contactCard}>
@@ -247,7 +259,7 @@ export function Contact() {
                   {errors.message && <span className={c.errorText}>{t("Tell us a little about your project.")}</span>}
                 </label>
 
-                <button type="submit" disabled={submitting} data-track="contact.submit" className={`btn btn-primary ${c.submitBtn}`}>
+                <button type="submit" disabled={submitting} className={`btn btn-primary ${c.submitBtn}`}>
                   {submitting ? t("Sending…") : t("Send Project Request")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                 </button>
                 {submitError && <p className={c.formError}>{t(submitError)}</p>}
@@ -266,14 +278,13 @@ export function Contact() {
         <div className={s.faqList}>
           {faqItems.map((f, i) => (
             <Reveal key={f.q} className={s.faqItem}>
-              {/* Answer text lives in the DOM only while open, so the SEO layer
-                  reads both halves from these attributes — see Home.tsx. */}
+              {/* Answers stay in the DOM (hidden) so a crawler reads them;
+                  the schema is built from the same list — see Home.tsx. */}
               <button
                 type="button"
                 className={s.faqQ}
                 aria-expanded={openFaq === i}
-                data-kf-faq-q={f.q}
-                data-kf-faq-a={f.a}
+                aria-controls={`faq-${i}`}
                 onClick={() => setOpenFaq((cur) => (cur === i ? -1 : i))}
               >
                 <span>{f.q}</span>
@@ -283,7 +294,7 @@ export function Contact() {
                   </svg>
                 </span>
               </button>
-              {openFaq === i && <p className={s.faqA}>{f.a}</p>}
+              <p id={`faq-${i}`} className={s.faqA} hidden={openFaq !== i}>{f.a}</p>
             </Reveal>
           ))}
         </div>

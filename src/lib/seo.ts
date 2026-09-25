@@ -10,14 +10,15 @@
  *
  * 1. `path` values are the app's real routes (`/campaign`, not the export's
  *    `/get-a-quote`), so canonicals point at URLs that actually resolve.
- * 2. Language alternates cover all four languages the export shipped — en, ar,
- *    de and fr — because the site now actually serves each of them at
- *    `?lang=<code>`. hreflang must only ever name URLs that really do render in
- *    that language, so this list and `LANGS` in `lib/i18n` have to stay in step.
+ * 2. Language alternates cover the languages the export shipped — en, ar, de
+ *    and fr — each served under its own path prefix (`/ar/services`), limited
+ *    at build and run time to the ones switched on in the dashboard. hreflang
+ *    must only ever name URLs that really do render in that language.
  */
 
 import { LANGS, type Lang } from "./langs.ts";
 import { translate } from "./dict/index.ts";
+import { ogImageUrl } from "./images.ts";
 
 export type { Lang };
 
@@ -51,9 +52,40 @@ export const SITE = {
   ],
 } as const;
 
-/** Fallback share image. 1200x630 is the size both Facebook and X expect. */
-export const OG_IMAGE =
-  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&q=80&auto=format&fit=crop";
+/**
+ * Fallback share image: the branded card in `public/`, 1200×630 as Facebook
+ * and X expect. It replaced an Unsplash stock photo — a share card is the one
+ * place the brand should be recognisable, not a generic laptop.
+ */
+export const OG_IMAGE = "/og-default.png";
+export const OG_IMAGE_ALT = "KF Tech Solutions — custom software, POS systems and AI automation";
+
+/**
+ * Contact details and profiles that can be edited in the dashboard. `SITE`
+ * stays the compiled-in default; `setSiteIdentity` lets both the build (from
+ * the fetched settings) and the runtime (from the settings context) replace
+ * them before the schema is written, so the Organization node and the footer
+ * never disagree.
+ */
+export interface SiteIdentity {
+  phone: string;
+  email: string;
+  sameAs: string[];
+}
+
+let identity: SiteIdentity = { phone: SITE.phone, email: SITE.email, sameAs: [...SITE.sameAs] };
+
+export function setSiteIdentity(next: Partial<SiteIdentity>): void {
+  identity = {
+    phone: next.phone?.trim() || SITE.phone,
+    email: next.email?.trim() || SITE.email,
+    sameAs: next.sameAs?.length ? next.sameAs : [...SITE.sameAs],
+  };
+}
+
+export function siteIdentity(): SiteIdentity {
+  return identity;
+}
 
 export interface PageSeo {
   path: string;
@@ -61,11 +93,30 @@ export interface PageSeo {
   desc: string;
   keywords?: string;
   type?: "website" | "article";
+  /** What kind of page this is, for the JSON-LD that goes with it. */
+  kind?: "page" | "article" | "project" | "legal";
+  /** The CMS item behind an article/project/legal page, for its schema. */
+  item?: ArticleLike;
   image?: string;
+  /** Plain-language description of the share image, for `og:image:alt`. */
+  imageAlt?: string;
+  /** True only when `image` really is 1200×630 — the dimensions are claimed
+   *  only then, because a wrong claim makes Facebook and LinkedIn drop the card. */
+  imageSized?: boolean;
   noindex?: boolean;
   published?: string;
   modified?: string;
   section?: string;
+  /** FAQ items rendered on the page, emitted as `FAQPage` alongside the rest
+   *  of the graph. Set per language by the build; the runtime uses `useFaqSchema`. */
+  faq?: { q: string; a: string }[];
+  /**
+   * Dashboard overrides per language. `title`/`desc` hold the English text
+   * (built-in or overridden); these hold an editor's explicit translations,
+   * which win over the dictionary lookup `tr()` would otherwise do.
+   */
+  titleByLang?: Partial<Record<Lang, string>>;
+  descByLang?: Partial<Record<Lang, string>>;
   /**
    * The languages this page genuinely exists in. Omitted means all of them,
    * which is true of every static page — their copy is in the dictionary.
@@ -222,6 +273,31 @@ function tr(text: string | undefined, lang: Lang): string | undefined {
   return translate(text, lang);
 }
 
+/**
+ * The title for one language: an editor's explicit translation first, then the
+ * English text (built-in or overridden) through the dictionary.
+ *
+ * Before per-language overrides existed, any title edited in the dashboard
+ * turned every translated page's `<title>` into that English string — the
+ * dictionary is keyed by the *built-in* English, so the edited text matched
+ * nothing and fell through untranslated.
+ */
+export function resolveTitle(page: PageSeo, lang: Lang): string {
+  return page.titleByLang?.[lang]?.trim() || tr(page.title, lang);
+}
+
+export function resolveDesc(page: PageSeo, lang: Lang): string {
+  return page.descByLang?.[lang]?.trim() || tr(page.desc, lang);
+}
+
+/** English names of the languages, for schema `availableLanguage` fields. */
+const LANGUAGE_NAMES: Record<Lang, string> = {
+  en: "English",
+  ar: "Arabic",
+  de: "German",
+  fr: "French",
+};
+
 export function localePath(lang: Lang, path: string): string {
   if (lang === "en") return path;
   const clean = path === "/" ? "" : path;
@@ -284,18 +360,34 @@ const AREA_SERVED = [
  * manual action. Ratings belong on Clutch and G2, whose pages carry them
  * legitimately.
  */
-export function organisationSchema(origin: string) {
+export function organisationSchema(origin: string, siteLangs: readonly Lang[] = LANGS) {
+  const { email, phone, sameAs } = siteIdentity();
+  const languages = siteLangs.map((l) => LANGUAGE_NAMES[l]);
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${origin}/#organization`,
     name: SITE.name,
     url: `${origin}/`,
-    logo: absolute(origin, SITE.logo),
-    image: OG_IMAGE,
+    // Google wants the logo as an ImageObject with its real dimensions; the
+    // 512 icon is square, which is the one shape it never crops.
+    logo: { "@type": "ImageObject", url: absolute(origin, SITE.logo), width: 512, height: 512 },
+    image: absolute(origin, OG_IMAGE),
     description: PAGES.home.desc,
-    email: SITE.email,
-    telephone: SITE.phone,
+    email,
+    telephone: phone,
+    // The sales contact point is what "contact this business" answers use;
+    // the languages listed are the ones the site actually serves.
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "sales",
+        telephone: phone,
+        email,
+        availableLanguage: languages,
+        areaServed: AREA_SERVED,
+      },
+    ],
     founder: { "@type": "Person", name: SITE.founder, jobTitle: "Founder & Lead Developer" },
     // Locality only — no street address is claimed, because none is public.
     address: {
@@ -306,8 +398,8 @@ export function organisationSchema(origin: string) {
     // Based in Egypt, delivering worldwide. Schema.org has no "worldwide" enum,
     // so the markets actually served are named, with a catch-all Place.
     areaServed: AREA_SERVED,
-    availableLanguage: ["English", "Arabic", "German", "French"],
-    sameAs: SITE.sameAs,
+    availableLanguage: languages,
+    sameAs,
     knowsAbout: [
       "Custom software development",
       "AI automation",
@@ -319,7 +411,7 @@ export function organisationSchema(origin: string) {
   };
 }
 
-export function websiteSchema(origin: string) {
+export function websiteSchema(origin: string, siteLangs: readonly Lang[] = LANGS) {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -327,34 +419,54 @@ export function websiteSchema(origin: string) {
     url: `${origin}/`,
     name: SITE.name,
     publisher: { "@id": `${origin}/#organization` },
-    inLanguage: [...LANGS],
+    inLanguage: [...siteLangs],
   };
 }
 
-/** Also used to generate llms.txt, so assistants and the OfferCatalog schema
- *  describe the same service list. */
-export const SERVICE_SUMMARY: [string, string][] = [
-  ["Custom Software Development", "Business systems built around your exact requirements."],
-  ["Web Development", "Fast, responsive, conversion-focused websites and web applications."],
-  ["Mobile Application Development", "Cross-platform apps for iOS and Android."],
-  ["Business Systems & POS", "POS, inventory, HR and internal management systems."],
-  ["AI Automation", "AI agents and automated workflows integrated into real operations."],
-  ["IoT Solutions", "Connected devices, sensors and telemetry dashboards."],
-  ["API & Backend Engineering", "Secure, scalable APIs and backend infrastructure."],
+/**
+ * The service list, keyed by the **CMS slug** each service renders under.
+ *
+ * The slug is what `/services` uses as the card's `id`, so `@id` fragments
+ * here resolve to a real anchor. The previous list derived ids from the
+ * names ("custom-software-development") and none of them matched a card, so
+ * every Service entity pointed into the void. Also used for llms.txt, so
+ * assistants and the OfferCatalog describe the same offerings.
+ */
+export const SERVICES: { slug: string; name: string; desc: string }[] = [
+  { slug: "custom-software", name: "Custom Software Development", desc: "Business systems built around your exact requirements." },
+  { slug: "web-development", name: "Web Development", desc: "Fast, responsive, conversion-focused websites and web applications." },
+  { slug: "mobile-applications", name: "Mobile Application Development", desc: "Cross-platform apps for iOS and Android." },
+  { slug: "business-systems", name: "Business Systems & POS", desc: "POS, inventory, HR and internal management systems." },
+  { slug: "automation", name: "Automation", desc: "Replace repetitive manual workflows with smart automation." },
+  { slug: "iot-solutions", name: "IoT Solutions", desc: "Connected devices, sensors and telemetry dashboards." },
+  { slug: "ai-solutions", name: "AI Automation", desc: "AI agents and automated workflows integrated into real operations." },
+  { slug: "api-and-backend", name: "API & Backend Engineering", desc: "Secure, scalable APIs and backend infrastructure." },
 ];
 
 /**
- * A slug per service, so each one is an `@id`-anchored entity rather than an
- * anonymous blob nested inside an Offer. Stable ids are what let the catalogue,
- * a future `/services/:slug` page and an assistant's knowledge graph all point
- * at the same thing.
+ * A stable `@id` per service, so each one is an entity rather than an anonymous
+ * blob nested inside an Offer. It is what lets the catalogue, the card on
+ * /services and an assistant's knowledge graph all point at the same thing.
  */
-const serviceId = (origin: string, name: string) =>
-  `${origin}/services#${name
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")}`;
+const serviceId = (origin: string, slug: string) => `${origin}/services#${slug}`;
+
+/** The full node for one service, in one language. */
+function serviceNode(origin: string, lang: Lang, svc: (typeof SERVICES)[number]) {
+  return {
+    "@type": "Service",
+    "@id": serviceId(origin, svc.slug),
+    name: tr(svc.name, lang),
+    description: tr(svc.desc, lang),
+    serviceType: svc.name,
+    url: `${absolute(origin, localePath(lang, PAGES.services.path))}#${svc.slug}`,
+    provider: { "@id": `${origin}/#organization` },
+    areaServed: AREA_SERVED,
+    availableChannel: {
+      "@type": "ServiceChannel",
+      serviceUrl: absolute(origin, localePath(lang, PAGES.contact.path)),
+    },
+  };
+}
 
 /**
  * One `Service` node per offering.
@@ -366,55 +478,68 @@ const serviceId = (origin: string, name: string) =>
  * bare `"Worldwide"` string resolves to nothing.
  */
 export function serviceSchemas(origin: string, lang: Lang) {
-  return SERVICE_SUMMARY.map(([name, description]) => ({
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "@id": serviceId(origin, name),
-    name: tr(name, lang),
-    description: tr(description, lang),
-    serviceType: name,
-    provider: { "@id": `${origin}/#organization` },
-    areaServed: AREA_SERVED,
-    availableChannel: {
-      "@type": "ServiceChannel",
-      serviceUrl: absolute(origin, localePath(lang, PAGES.contact.path)),
-    },
-  }));
+  return SERVICES.map((svc) => ({ "@context": "https://schema.org", ...serviceNode(origin, lang, svc) }));
 }
 
-/** The catalogue references the nodes above by `@id` rather than restating
- *  them, so one service is one entity however many pages mention it. */
-export function serviceCatalogSchema(origin: string) {
+/**
+ * The catalogue of offerings.
+ *
+ * On /services it references the Service nodes above by `@id`, so one service
+ * is one entity. Anywhere else (the homepage) the nodes are inlined: an `@id`
+ * reference only resolves within the page that defines it, and the homepage
+ * used to reference eight ids that existed only on /services — a catalogue of
+ * dangling pointers.
+ */
+export function serviceCatalogSchema(origin: string, lang: Lang, opts: { inline?: boolean } = {}) {
   return {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
     "@id": `${origin}/services#catalog`,
-    name: "Software & automation services",
-    itemListElement: SERVICE_SUMMARY.map(([name], i) => ({
+    name: tr("Software & automation services", lang),
+    itemListElement: SERVICES.map((svc, i) => ({
       "@type": "Offer",
       position: i + 1,
-      itemOffered: { "@id": serviceId(origin, name) },
+      itemOffered: opts.inline ? serviceNode(origin, lang, svc) : { "@id": serviceId(origin, svc.slug) },
     })),
   };
 }
 
-export function breadcrumbSchema(origin: string, path: string, leafName?: string) {
-  const crumbs = [{ name: "Home", item: `${origin}/` }];
-  if (path !== "/") {
-    const parts = path.replace(/^\//, "").split("/").filter(Boolean);
-    let acc = "";
-    parts.forEach((p, i) => {
-      acc += `/${p}`;
-      const isLeaf = i === parts.length - 1;
-      crumbs.push({
-        name:
-          isLeaf && leafName
-            ? leafName
-            : p.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        item: `${origin}${acc}`,
-      });
-    });
+/** The section each top-level path belongs to, as its dictionary key. */
+const SECTION_LABELS: Record<string, string> = {
+  services: "Services",
+  solutions: "Solutions",
+  projects: "Projects",
+  about: "About",
+  blog: "Insights",
+  contact: "Contact",
+  book: "Book a call",
+  campaign: "Get a free quote",
+};
+
+/**
+ * The breadcrumb trail, in the page's own language and pointing at the
+ * page's own language URLs.
+ *
+ * It used to title-case the path segments in English and link to the English
+ * URLs from every translation — so `/ar/services` announced "Home › Services"
+ * and pointed at `/services`, a trail that contradicted the page it was on.
+ * `/legal/<doc>` had a "Legal" crumb linking to `/legal`, which does not exist.
+ */
+export function breadcrumbSchema(origin: string, page: PageSeo, lang: Lang, available: readonly Lang[]) {
+  const here = (path: string) => absolute(origin, available.includes(lang) ? localePath(lang, path) : path);
+  const parts = page.path.replace(/^\//, "").split("/").filter(Boolean);
+  const crumbs = [{ name: tr("Home", lang), item: absolute(origin, localePath(lang, "/")) }];
+
+  const section = parts[0];
+  const leaf = parts.length > 1;
+  // The section crumb, when its index page exists: /legal has none.
+  if (section && SECTION_LABELS[section]) {
+    crumbs.push({ name: tr(SECTION_LABELS[section], lang), item: here(`/${section}`) });
   }
+  if (leaf) {
+    crumbs.push({ name: resolveTitle(page, lang).split(" | ")[0], item: here(page.path) });
+  }
+
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -427,30 +552,37 @@ export function breadcrumbSchema(origin: string, path: string, leafName?: string
   };
 }
 
+/** `image` as an ImageObject, with dimensions only when they are true. */
+function imageObject(origin: string, page: PageSeo) {
+  const url = absolute(origin, page.image || OG_IMAGE);
+  const sized = !page.image || page.imageSized;
+  return { "@type": "ImageObject", url, ...(sized ? { width: 1200, height: 630 } : {}) };
+}
+
 export function articleSchema(
   origin: string,
   page: PageSeo & { path: string },
   lang: Lang,
 ) {
+  const url = absolute(origin, (page.langs ?? LANGS).includes(lang) ? localePath(lang, page.path) : page.path);
+  const tags = Array.isArray(page.item?.meta?.tags)
+    ? (page.item!.meta!.tags as unknown[]).filter((x): x is string => typeof x === "string")
+    : [];
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    headline: tr(page.title, lang).split(" | ")[0],
-    description: tr(page.desc, lang),
-    image: page.image || OG_IMAGE,
+    headline: resolveTitle(page, lang).split(" | ")[0],
+    description: resolveDesc(page, lang),
+    url,
+    image: imageObject(origin, page),
     datePublished: page.published,
     dateModified: page.modified || page.published,
     articleSection: page.section,
+    ...(tags.length ? { keywords: tags.join(", ") } : {}),
     inLanguage: lang,
-    author: { "@type": "Person", name: SITE.founder, url: `${origin}/about` },
+    author: { "@type": "Person", name: SITE.founder, url: `${origin}/about`, sameAs: siteIdentity().sameAs },
     publisher: { "@id": `${origin}/#organization` },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": absolute(
-        origin,
-        (page.langs ?? LANGS).includes(lang) ? localePath(lang, page.path) : page.path,
-      ),
-    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
   };
 }
 
@@ -467,14 +599,20 @@ export function faqSchema(items: { q: string; a: string }[]) {
   };
 }
 
+/**
+ * Routes whose page owns its own metadata, built from fetched data. The
+ * Layout's `RouteSeo` must return null for these: effects run child-first, so
+ * if it resolved them it would run *after* the page and overwrite the article's
+ * tags with — since no PAGES entry matches — the noindex "Page not found" set.
+ * That is exactly what happened to every case study and legal page on a
+ * client-side navigation.
+ */
+const SELF_DESCRIBED = ["/blog/", "/projects/", "/legal/"];
+
 /** Resolve a pathname to its PAGES entry. Returns null for routes that own
- *  their own metadata (currently `/blog/:id`, handled by the Article page). */
+ *  their own metadata (`/blog/:id`, `/projects/:slug`, `/legal/:slug`). */
 export function pageForPath(pathname: string): PageSeo | null {
-  const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean.startsWith("/blog/")) return null;
-  if (clean.startsWith("/q/")) return PAGES.quote;
-  const match = Object.values(PAGES).find((p) => p.path === clean);
-  return match ?? PAGES.notFound;
+  return pageForPathIn(PAGES, pathname);
 }
 
 /* ------------------------------------------------------- tag descriptors */
@@ -491,8 +629,21 @@ export function pageForPath(pathname: string): PageSeo | null {
 export type SeoTag =
   | { kind: "title"; text: string }
   | { kind: "meta"; attr: "name" | "property"; key: string; content: string }
-  | { kind: "link"; rel: string; href: string; hreflang?: string }
+  | { kind: "link"; rel: string; href: string; hreflang?: string; type?: string; title?: string }
   | { kind: "jsonld"; data: unknown };
+
+/** Site-wide inputs the tag builder needs beyond the page itself. */
+export interface SeoOptions {
+  /**
+   * The languages the site currently serves, from the dashboard's language
+   * list. hreflang, `og:locale:alternate` and the schema's language fields are
+   * limited to these — advertising a German alternate while German is switched
+   * off points crawlers at pages that render in English.
+   */
+  siteLangs?: readonly Lang[];
+  /** The site's X handle (`@kftech`), for `twitter:site`. */
+  twitterSite?: string;
+}
 
 /**
  * `origin` may be empty when `VITE_SITE_URL` was not set at build time. The
@@ -503,17 +654,21 @@ export type SeoTag =
  * description, robots, the OG/Twitter card) still ships, and at runtime the
  * client re-applies the full set using the origin actually serving the page.
  */
-export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
+export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOptions = {}): SeoTag[] {
+  const siteLangs = opts.siteLangs ?? LANGS;
   // The canonical is the URL *for this language*. Pointing every translation at
   // the English path is what invalidated the hreflang cluster before.
-  // Only prefix the path for a language the page actually exists in; anything
-  // else canonicalises to the English URL rather than to a page that is not
-  // there.
-  const available = page.langs ?? LANGS;
+  // Only prefix the path for a language the page actually exists in — and the
+  // site currently serves; anything else canonicalises to the English URL
+  // rather than to a page that is not there.
+  const available = (page.langs ?? siteLangs).filter((l) => siteLangs.includes(l));
   const url = absolute(origin, available.includes(lang) ? localePath(lang, page.path) : page.path);
   const image = page.image || OG_IMAGE;
-  const title = tr(page.title, lang);
-  const desc = tr(page.desc, lang);
+  // Dimensions are claimed for the branded default and for CMS photos that
+  // went through `ogImageUrl`; a wrong claim makes the card get dropped.
+  const imageSized = !page.image || page.imageSized === true;
+  const title = resolveTitle(page, lang);
+  const desc = resolveDesc(page, lang);
   const tags: SeoTag[] = [{ kind: "title", text: title }];
 
   const m = (attr: "name" | "property", key: string, content?: string) => {
@@ -541,47 +696,72 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string): SeoTag[] {
     );
   }
 
+  // The feed for this language, on the blog index and every article — the
+  // link is how readers and aggregators discover it.
+  if (origin && (page.path === PAGES.blog.path || page.kind === "article")) {
+    const feedTitle = resolveTitle(PAGES.blog, lang).split(" | ")[0];
+    const feedFor = (l: Lang) =>
+      tags.push({
+        kind: "link",
+        rel: "alternate",
+        type: "application/rss+xml",
+        title: feedTitle,
+        href: absolute(origin, localePath(l, "/feed.xml")),
+      });
+    feedFor(available.includes(lang) ? lang : "en");
+    if (lang !== "en" && available.includes(lang)) feedFor("en");
+  }
+
   m("property", "og:type", page.type || "website");
   m("property", "og:site_name", SITE.name);
   m("property", "og:title", title);
   m("property", "og:description", desc);
   if (origin) m("property", "og:url", url);
   m("property", "og:image", absolute(origin, image));
-  m("property", "og:image:width", "1200");
-  m("property", "og:image:height", "630");
+  if (imageSized) {
+    m("property", "og:image:width", "1200");
+    m("property", "og:image:height", "630");
+  }
+  m("property", "og:image:alt", tr(page.imageAlt || OG_IMAGE_ALT, lang));
   m("property", "og:locale", LOCALES[lang].og);
-  LANGS.filter((l) => l !== lang).forEach((l) =>
-    tags.push({ kind: "meta", attr: "property", key: "og:locale:alternate", content: LOCALES[l].og }),
-  );
+  siteLangs
+    .filter((l) => l !== lang)
+    .forEach((l) =>
+      tags.push({ kind: "meta", attr: "property", key: "og:locale:alternate", content: LOCALES[l].og }),
+    );
 
   m("name", "twitter:card", "summary_large_image");
+  m("name", "twitter:site", opts.twitterSite?.trim() || undefined);
   m("name", "twitter:title", title);
   m("name", "twitter:description", desc);
   m("name", "twitter:image", absolute(origin, image));
+  m("name", "twitter:image:alt", tr(page.imageAlt || OG_IMAGE_ALT, lang));
 
   if (!origin) return tags;
 
-  tags.push({ kind: "jsonld", data: organisationSchema(origin) });
-  tags.push({ kind: "jsonld", data: websiteSchema(origin) });
-  tags.push({
-    kind: "jsonld",
-    data: breadcrumbSchema(
-      origin,
-      page.path,
-      page.type === "article" ? title.split(" | ")[0] : undefined,
-    ),
-  });
-  if (page.path === PAGES.home.path || page.path === PAGES.services.path) {
-    tags.push({ kind: "jsonld", data: serviceCatalogSchema(origin) });
+  tags.push({ kind: "jsonld", data: organisationSchema(origin, siteLangs) });
+  tags.push({ kind: "jsonld", data: websiteSchema(origin, siteLangs) });
+  // No trail on the homepage: a single "Home" crumb is noise.
+  if (page.path !== PAGES.home.path && !page.noindex) {
+    tags.push({ kind: "jsonld", data: breadcrumbSchema(origin, page, lang, available) });
   }
-  // The `Service` entities themselves live on /services only. Repeating them on
-  // the homepage would define the same `@id` twice with nothing gained.
+  if (page.path === PAGES.home.path) {
+    tags.push({ kind: "jsonld", data: serviceCatalogSchema(origin, lang, { inline: true }) });
+  }
+  // The `Service` entities themselves live on /services; the catalogue there
+  // references them by id, while the homepage inlines its own copies.
   if (page.path === PAGES.services.path) {
+    tags.push({ kind: "jsonld", data: serviceCatalogSchema(origin, lang) });
     serviceSchemas(origin, lang).forEach((data) => tags.push({ kind: "jsonld", data }));
   }
-  if (page.type === "article") {
+  if (page.kind === "article" || page.type === "article") {
     tags.push({ kind: "jsonld", data: articleSchema(origin, page, lang) });
   }
+  if (page.kind === "project" && page.item) {
+    tags.push({ kind: "jsonld", data: projectSchema(origin, page.item, lang, url) });
+  }
+  const faq = page.faq?.length ? faqSchema(page.faq) : null;
+  if (faq) tags.push({ kind: "jsonld", data: faq });
 
   return tags;
 }
@@ -609,6 +789,8 @@ export function tagsToHtml(tags: SeoTag[]): string {
         case "link":
           return `<link rel="${esc(t.rel)}" href="${esc(t.href)}"${
             t.hreflang ? ` hreflang="${esc(t.hreflang)}"` : ""
+          }${t.type ? ` type="${esc(t.type)}"` : ""}${
+            t.title ? ` title="${esc(t.title)}"` : ""
           } data-kf-seo="1" />`;
         case "jsonld":
           // `</script>` inside JSON would close the tag early; escaping the
@@ -652,12 +834,20 @@ function localized(text: ArticleLike["title"], lang: Lang): string {
  * title and the body are present — a translated headline over an English body
  * is exactly the page Google drops the cluster for.
  */
-export function availableLangs(post: ArticleLike): Lang[] {
+export function availableLangs(post: ArticleLike, siteLangs: readonly Lang[] = LANGS): Lang[] {
   return LANGS.filter(
     (l) =>
-      l === "en" ||
-      ((post.title?.[l] ?? "").trim().length > 0 && (post.body?.[l] ?? "").trim().length > 0),
+      siteLangs.includes(l) &&
+      (l === "en" ||
+        ((post.title?.[l] ?? "").trim().length > 0 && (post.body?.[l] ?? "").trim().length > 0)),
   );
+}
+
+/** The share image for a CMS item: its first photo, cropped to card size. */
+function itemImage(item: ArticleLike, lang: Lang): Pick<PageSeo, "image" | "imageSized" | "imageAlt"> {
+  const { url, sized } = ogImageUrl(item.media?.[0]);
+  const alt = typeof item.meta?.alt === "string" && item.meta.alt.trim() ? item.meta.alt : localized(item.title, lang);
+  return { image: url, imageSized: sized, imageAlt: url ? alt : undefined };
 }
 
 /**
@@ -665,7 +855,7 @@ export function availableLangs(post: ArticleLike): Lang[] {
  * and by the build-time prerender, so a crawler that never runs JavaScript and
  * a browser that does describe the post identically.
  */
-export function articlePageSeo(post: ArticleLike, lang: Lang): PageSeo {
+export function articlePageSeo(post: ArticleLike, lang: Lang, siteLangs: readonly Lang[] = LANGS): PageSeo {
   const title = localized(post.title, lang);
   const summary = localized(post.summary, lang);
   const brand = PAGES.home.title.split(" — ")[0];
@@ -684,11 +874,13 @@ export function articlePageSeo(post: ArticleLike, lang: Lang): PageSeo {
     title: `${title} | ${brand}`,
     desc: summary || localized(post.body, lang).replace(/\s+/g, " ").slice(0, 155),
     type: "article",
-    image: post.media?.[0],
+    kind: "article",
+    item: post,
+    ...itemImage(post, lang),
     published: post.createdAt,
     modified: post.updatedAt,
     section: category,
-    langs: availableLangs(post),
+    langs: availableLangs(post, siteLangs),
   };
 }
 
@@ -696,10 +888,10 @@ export function articlePageSeo(post: ArticleLike, lang: Lang): PageSeo {
  * The SEO entry for one project's case-study page.
  *
  * Typed `website` rather than `article`: a case study is a portfolio entry, not
- * a dated post, so it carries no `BlogPosting` and no publish date it would
- * have to keep honest.
+ * a dated post, so it carries no `BlogPosting`; its `CreativeWork` node comes
+ * from `projectSchema`.
  */
-export function projectPageSeo(item: ArticleLike, lang: Lang): PageSeo {
+export function projectPageSeo(item: ArticleLike, lang: Lang, siteLangs: readonly Lang[] = LANGS): PageSeo {
   const title = localized(item.title, lang);
   const summary = localized(item.summary, lang);
   const brand = PAGES.home.title.split(" — ")[0];
@@ -713,10 +905,13 @@ export function projectPageSeo(item: ArticleLike, lang: Lang): PageSeo {
       localized(item.body, lang).replace(/\s+/g, " ").slice(0, 155) ||
       PAGES.projects.desc,
     type: "website",
-    image: item.media?.[0],
+    kind: "project",
+    item,
+    ...itemImage(item, lang),
+    published: item.createdAt,
     modified: item.updatedAt,
     section: tag,
-    langs: availableLangs(item),
+    langs: availableLangs(item, siteLangs),
   };
 }
 
@@ -731,6 +926,8 @@ export function projectSchema(origin: string, item: ArticleLike, lang: Lang, url
     : [];
   const client = typeof item.meta?.client === "string" ? item.meta.client : undefined;
   const year = typeof item.meta?.year === "string" ? item.meta.year : undefined;
+  const tag = typeof item.meta?.tag === "string" ? item.meta.tag : undefined;
+  const { image, imageSized } = itemImage(item, lang);
 
   return {
     "@context": "https://schema.org",
@@ -739,8 +936,11 @@ export function projectSchema(origin: string, item: ArticleLike, lang: Lang, url
     name: localized(item.title, lang),
     description: localized(item.summary, lang) || localized(item.body, lang).slice(0, 300),
     url,
-    image: item.media?.[0] || OG_IMAGE,
+    image: imageObject(origin, { path: url, title: "", desc: "", image, imageSized }),
     inLanguage: lang,
+    ...(tag ? { about: { "@type": "Thing", name: tr(tag, lang) } } : {}),
+    ...(item.createdAt ? { datePublished: item.createdAt } : {}),
+    ...(item.updatedAt ? { dateModified: item.updatedAt } : {}),
     creator: { "@id": `${origin}/#organization` },
     ...(client ? { sourceOrganization: { "@type": "Organization", name: client } } : {}),
     ...(year ? { dateCreated: year } : {}),
@@ -754,7 +954,7 @@ export function projectSchema(origin: string, item: ArticleLike, lang: Lang, url
  * `noindex` is deliberately off — a privacy policy should be findable, and
  * search engines treat a missing one as a trust signal against a business site.
  */
-export function legalPageSeo(doc: ArticleLike, lang: Lang): PageSeo {
+export function legalPageSeo(doc: ArticleLike, lang: Lang, siteLangs: readonly Lang[] = LANGS): PageSeo {
   const title = localized(doc.title, lang);
   const brand = PAGES.home.title.split(" — ")[0];
   return {
@@ -762,21 +962,42 @@ export function legalPageSeo(doc: ArticleLike, lang: Lang): PageSeo {
     title: `${title} | ${brand}`,
     desc: localized(doc.summary, lang) || localized(doc.body, lang).replace(/\s+/g, " ").slice(0, 155),
     type: "website",
+    kind: "legal",
+    item: doc,
     modified: doc.updatedAt,
-    langs: availableLangs(doc),
+    langs: availableLangs(doc, siteLangs),
   };
 }
 
 /* ------------------------------------------------------ dashboard overrides */
 
+/** A per-language text as the API stores it, or the legacy plain string. */
+type Localised = string | Partial<Record<Lang, string>> | null | undefined;
+
 /** One row of `GET /api/seo` — a per-page override edited in the dashboard. */
 export interface SeoOverride {
   key: string;
-  title?: string;
-  description?: string;
+  title?: Localised;
+  description?: Localised;
   keywords?: string;
   image?: string;
   noindex?: boolean | null;
+}
+
+/** A legacy string override is an English one. */
+function localisedOverride(value: Localised): Partial<Record<Lang, string>> {
+  if (!value) return {};
+  if (typeof value === "string") return { en: value };
+  return value;
+}
+
+/** The non-blank translations, minus English (which lives in `title`/`desc`). */
+function translationsOf(value: Partial<Record<Lang, string>>): Partial<Record<Lang, string>> | undefined {
+  const out: Partial<Record<Lang, string>> = {};
+  for (const l of LANGS) {
+    if (l !== "en" && value[l]?.trim()) out[l] = value[l]!.trim();
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 
 /**
@@ -786,6 +1007,10 @@ export interface SeoOverride {
  * description field gets the built-in one back rather than a page with no
  * description at all. `noindex` is three-state for the same reason — only an
  * explicit `true`/`false` overrides, `null`/absent inherits.
+ *
+ * Translations are kept apart from the English text: `title` is what the
+ * dictionary lookup keys on, `titleByLang` is what an editor typed for one
+ * language and wins outright there (see `resolveTitle`).
  *
  * Unknown keys are ignored rather than added, so a stale row left behind by a
  * renamed route can never introduce a page the router does not serve.
@@ -797,12 +1022,18 @@ export function mergeSeoOverrides(overrides: SeoOverride[] | undefined | null): 
   for (const o of overrides) {
     const base = PAGES[o.key];
     if (!base) continue;
+    const title = localisedOverride(o.title);
+    const description = localisedOverride(o.description);
     merged[o.key] = {
       ...base,
-      title: o.title?.trim() || base.title,
-      desc: o.description?.trim() || base.desc,
+      title: title.en?.trim() || base.title,
+      desc: description.en?.trim() || base.desc,
+      titleByLang: translationsOf(title),
+      descByLang: translationsOf(description),
       keywords: o.keywords?.trim() || base.keywords,
       image: o.image?.trim() || base.image,
+      // A dashboard share image is a raw URL of unknown size; claim nothing.
+      imageSized: o.image?.trim() ? false : base.imageSized,
       noindex: typeof o.noindex === "boolean" ? o.noindex : base.noindex,
     };
   }
@@ -815,7 +1046,7 @@ export function pageForPathIn(
   pathname: string,
 ): PageSeo | null {
   const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean.startsWith("/blog/")) return null;
+  if (SELF_DESCRIBED.some((prefix) => clean.startsWith(prefix))) return null;
   if (clean.startsWith("/q/")) return pages.quote ?? PAGES.quote;
   return Object.values(pages).find((p) => p.path === clean) ?? pages.notFound ?? PAGES.notFound;
 }

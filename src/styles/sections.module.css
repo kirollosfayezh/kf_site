@@ -691,3 +691,8 @@
   .artLayout { padding: 48px 16px; }
   .artFigure { padding: 0 16px; }
 }
+
+/* Article author box — a link to /about with the founder's photo. */
+.artAuthor { color: inherit; text-decoration: none; }
+.artAvatarImg { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.artAuthorBio { font-size: var(--fs-label); color: var(--text2); margin-top: 2px; max-width: 46ch; }

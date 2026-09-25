@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve:dist": "node build/vercel-like.mjs",
+    "og:image": "bash build/make-og-image.sh"
   },
   "dependencies": {
     "countries-and-timezones": "^3.10.0",

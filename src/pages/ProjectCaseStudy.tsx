@@ -7,7 +7,7 @@ import { pick, pickPlain, metaString, metaPoints } from "../lib/content-helpers"
 import { useContentItem } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { Img } from "../components/Img";
-import { WA_LINK } from "../components/Footer";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import s from "../styles/sections.module.css";
 
 /* Inline rather than from an icon package: the site ships no icon library on
@@ -42,15 +42,17 @@ function GithubIcon() {
  */
 export function ProjectCaseStudy() {
   const { slug } = useParams<{ slug: string }>();
-  const { t, lang } = useI18n();
+  const { t, lang, available } = useI18n();
   const { data: item, loading, error } = useContentItem("projects", slug);
+  // Hooks run unconditionally; the topic is simply absent until the item lands.
+  const waLink = useWhatsAppLink(item ? pick(item.title, lang) : undefined);
 
-  // Same contract as the Article page: hold the generic /projects metadata
-  // until the item arrives, and fall back to a noindex entry if it never does,
-  // so a dead project URL cannot be indexed as a soft 404.
-  const seo = useMemo<PageSeo>(
-    () => (item ? projectPageSeo(item, lang) : error ? PAGES.notFound : PAGES.projects),
-    [item, error, lang],
+  // Same contract as the Article page: leave the prerendered tags alone until
+  // the item arrives, and fall back to a noindex entry if it never does, so a
+  // dead project URL cannot be indexed as a soft 404.
+  const seo = useMemo<PageSeo | null>(
+    () => (item ? projectPageSeo(item, lang, available) : error ? PAGES.notFound : null),
+    [item, error, lang, available],
   );
   useSeo(seo);
 
@@ -207,10 +209,10 @@ export function ProjectCaseStudy() {
             {t("Tell us what you're building and we'll turn it into a real, working product.")}
           </p>
           <div className={s.finalCtaActions}>
-            <Link to="/contact" className="btn btn-primary">
+            <Link to="/contact" className="btn btn-primary" data-track="project.final.start-project">
               {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-outline" data-track="project.final.whatsapp">
               {t("WhatsApp us")}
             </a>
           </div>

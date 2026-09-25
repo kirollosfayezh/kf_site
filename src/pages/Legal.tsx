@@ -18,12 +18,15 @@ import s from "../styles/sections.module.css";
  */
 export function Legal() {
   const { slug } = useParams<{ slug: string }>();
-  const { t, lang } = useI18n();
+  const { t, lang, available } = useI18n();
   const { data: doc, loading, error } = useContentItem("legalPages", slug);
 
-  const seo = useMemo<PageSeo>(
-    () => (doc ? legalPageSeo(doc, lang) : error ? PAGES.notFound : PAGES.home),
-    [doc, error, lang],
+  // Nothing is applied until the document arrives: the prerendered tags are
+  // already right, and the old placeholder (the homepage entry) briefly gave a
+  // legal page a canonical pointing at `/`.
+  const seo = useMemo<PageSeo | null>(
+    () => (doc ? legalPageSeo(doc, lang, available) : error ? PAGES.notFound : null),
+    [doc, error, lang, available],
   );
   useSeo(seo);
 

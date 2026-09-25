@@ -61,15 +61,28 @@ crawler that runs no JavaScript and a browser that does can never disagree:
 - **Runtime** — `components/Seo.tsx`. `RouteSeo` (mounted in the Layout) applies
   the entry for the current route; `Article.tsx` calls `useSeo()` with the
   fetched post, because CMS content isn't known until it arrives.
-- **Build** — `build/seo-build.ts`, run by the `kf-seo-prerender` Vite plugin.
-  It writes a real HTML file per route with the head tags baked in
-  (`/services` → `dist/services/index.html`), one per published article fetched
-  from the API, plus `404.html`, `sitemap.xml` and `robots.txt`.
+- **Build** — `build/seo-build.ts` (`runSeoBuild`), run by the `kf-seo-prerender`
+  Vite plugin. It writes a real HTML file per route with the head tags baked in
+  (`/services` → `dist/services/index.html`), one per published article, case
+  study and legal page fetched from the API, plus `404.html`, `sitemap.xml`
+  (with image entries), `feed.xml` per language, `robots.txt` and `llms.txt`.
 
-Because those static files exist, `vercel.json` narrows its SPA rewrite to
-`/blog/*` only. Everything else resolves from the filesystem, and an unknown URL
-falls through to `404.html` with a genuine 404 status instead of being answered
-by the homepage.
+The build reads the CMS with retries and **fails if the API cannot be read**:
+a cold backend once made a deploy ship a sitemap with no articles, and a red
+deploy is cheaper than that. Only the languages switched on in the dashboard
+are prerendered and advertised (hreflang, sitemap, feeds). Content edits reach
+crawlers on the next deploy — set `VERCEL_DEPLOY_HOOK_URL` on the backend and
+the dashboard triggers one automatically.
+
+Because those static files exist, `vercel.json` narrows its SPA rewrites to
+`/blog/*`, `/projects/*`, `/legal/*` and `/q/*` (for items published after the
+build). Everything else resolves from the filesystem, and an unknown URL falls
+through to `404.html` with a genuine 404 status instead of being answered by
+the homepage. `npm run serve:dist` serves `dist/` with the same rules for
+checking a build locally.
+
+The share card (`public/og-default.png`) is rendered from `build/og-default.html`
+by `npm run og:image`; commit the PNG after changing it.
 
 ### Adding a page
 
@@ -88,17 +101,22 @@ canonicalises to itself rather than claiming to be production.
 
 ### Languages
 
-Language is `en`/`ar`, and `?lang=ar` in the URL overrides the stored
-preference. That is what makes the published hreflang alternates truthful —
-they point at URLs that really do render in that language.
+Each language lives under its own path prefix — `/ar/services`, `/de/services`
+— which is the URL shape the prerender, the canonical and the hreflang set all
+use, so every advertised alternate really renders in that language. The old
+`?lang=ar` form is redirected to the prefixed URL (by Vercel and, as a fallback,
+by the client). Which languages exist is decided in the dashboard's Site
+settings; English is always on.
 
 ## Scripts
 
 ```bash
-npm run dev       # local dev server
-npm run build     # type-check (tsc -b) + production build to dist/
-npm run preview   # preview the production build locally
-npm run lint      # oxlint
+npm run dev         # local dev server
+npm run build       # type-check (tsc -b) + production build to dist/
+npm run preview     # preview the production build locally (SPA fallback only)
+npm run serve:dist  # serve dist/ with vercel.json's rewrites, redirects and headers
+npm run og:image    # re-render public/og-default.png from build/og-default.html
+npm run lint        # oxlint
 ```
 
 ## Backend contract

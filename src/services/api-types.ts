@@ -76,6 +76,9 @@ export interface TrackingSettings {
   metaPixelId?: string;
   tiktokPixelId?: string;
   snapchatPixelId?: string;
+  linkedinPartnerId?: string;
+  linkedinConversionId?: string;
+  clarityId?: string;
   events?: Record<string, boolean>;
   respectDnt?: boolean;
   consentMode?: boolean;
@@ -92,5 +95,15 @@ export interface SiteSettings {
   seo: { defaultTitle: string; defaultDescription: string };
   pixels: TrackingSettings;
   contact: { email?: string; phone?: string; whatsapp?: string };
+  /** Profile URLs (X is stored as a handle) edited in Site settings. */
+  social?: {
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+    x?: string;
+    github?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
   updatedAt: string;
 }

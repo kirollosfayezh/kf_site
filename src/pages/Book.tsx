@@ -5,7 +5,8 @@ import { useI18n } from "../lib/i18n";
 import { guessCountry, readPhone, rememberCountry } from "../lib/phone";
 import { PhoneField } from "../components/PhoneField";
 import { Reveal } from "../components/Reveal";
-import { WA_LINK } from "../components/Footer";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
+import { trackConversion } from "../lib/conversions";
 import { ApiError } from "../services/http";
 import { createBooking, getSlots, type BookingResult, type Slot, type SlotList } from "../services/sales";
 import s from "../styles/sections.module.css";
@@ -55,6 +56,7 @@ function icsFile(booking: BookingResult, title: string, description: string): st
  */
 export function Book() {
   const { t, lang } = useI18n();
+  const waLink = useWhatsAppLink(t("booking a call"));
   const tz = useMemo(visitorTimeZone, []);
   const [data, setData] = useState<SlotList | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -126,6 +128,8 @@ export function Book() {
       });
       if (phoneState.country) rememberCountry(phoneState.country);
       setDone(res);
+      // The booking exists on the server — that is the conversion.
+      trackConversion("booking", { id: res.id });
     } catch (err) {
       if (err instanceof ApiError && err.code === "SLOT_TAKEN") {
         setError("That time was just taken — please pick another.");
@@ -191,7 +195,7 @@ export function Book() {
               ) : !data.enabled || days.length === 0 ? (
                 <div className={b.empty}>
                   <p>{t("No times are open right now. Message us on WhatsApp and we'll find one together.")}</p>
-                  <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-primary">{t("WhatsApp us")}</a>
+                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" data-track="book.empty.whatsapp">{t("WhatsApp us")}</a>
                 </div>
               ) : (
                 <>
@@ -323,7 +327,7 @@ export function Book() {
                   </div>
 
                   {error && <p className={c.formError}>{t(error)}</p>}
-                  <button type="submit" disabled={sending} data-track="book.submit" className={`btn btn-primary ${c.submitBtn}`}>
+                  <button type="submit" disabled={sending} className={`btn btn-primary ${c.submitBtn}`}>
                     {sending ? t("Sending…") : t("Confirm booking")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                   </button>
                   <p className={c.formNote}>{t("Free, 30 minutes, no obligation. Your number is only used to call you.")}</p>

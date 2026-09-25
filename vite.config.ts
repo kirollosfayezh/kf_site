@@ -1,17 +1,6 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
-import { mergeSeoOverrides } from './src/lib/seo.ts'
-import {
-  fetchArticles,
-  fetchSeoOverrides,
-  prerenderPages,
-  fetchProjects,
-  fetchLegal,
-  writeLlmsTxt,
-  writeRobots,
-  writeSitemap,
-  checkArabicFont,
-} from './build/seo-build.ts'
+import { SeoFetchError, runSeoBuild } from './build/seo-build.ts'
 
 /**
  * The site is a client-rendered SPA, so without this every route shipped the
@@ -42,55 +31,24 @@ function seoPrerender(origin: string, apiBase: string | undefined): Plugin {
         )
       }
 
-      // Fetched once and shared, so the sitemap and the prerendered article
-      // pages can never list a different set of posts.
-      const [articles, projects, legal, overrides] = await Promise.all([
-        fetchArticles(apiBase),
-        fetchProjects(apiBase),
-        fetchLegal(apiBase),
-        fetchSeoOverrides(apiBase),
-      ])
-      // Dashboard edits win over the compiled-in PAGES table, so the static
-      // HTML matches what the editor sees on the site.
-      const pages = mergeSeoOverrides(overrides)
-      if (apiBase && !articles.length) {
-        this.warn(
-          `No blog posts came back from ${apiBase}. Static routes still ship, but ` +
-            'articles will not be prerendered or listed in sitemap.xml. Check the ' +
-            'API is reachable from the build environment.',
-        )
+      // Everything is fetched once and shared, so the sitemap, the feeds and
+      // the prerendered pages can never list different sets of content.
+      try {
+        const { summary, warnings } = await runSeoBuild({ dist, origin, apiBase })
+        warnings.forEach((w) => this.warn(w))
+        this.info(summary)
+      } catch (err) {
+        // A cold backend once made the build ship a sitemap with no articles,
+        // no case studies and no legal pages — silently. Never again: if the
+        // CMS cannot be read after every retry, the deploy goes red.
+        if (err instanceof SeoFetchError) {
+          this.error(
+            `SEO build data could not be fetched from ${apiBase}: ${err.message}. ` +
+              'Refusing to ship a prerender and sitemap without the CMS content.',
+          )
+        }
+        throw err
       }
-
-      // Always prerender: the per-route HTML files are what let vercel.json
-      // narrow its rewrite to /blog/*, so that unknown paths reach 404.html
-      // instead of the homepage. Skipping this would 404 every real route.
-      const {
-        routes,
-        articles: count,
-        projects: projectCount,
-        legal: legalCount,
-      } = await prerenderPages(dist, origin, articles, pages, projects, legal)
-
-      const fontDrift = await checkArabicFont(dist)
-      if (fontDrift) this.warn(fontDrift)
-
-      if (!origin) {
-        this.info(
-          `SEO: prerendered ${routes} routes + ${count} articles + ${projectCount} case studies + ${legalCount} legal (no origin set)`,
-        )
-        return
-      }
-
-      const urls = await writeSitemap(dist, origin, articles, pages, projects, legal)
-      await writeRobots(dist, origin)
-      await writeLlmsTxt(dist, origin, articles)
-
-      this.info(
-        `SEO: prerendered ${routes} routes + ${count} articles + ${projectCount} case ` +
-          `studies, sitemap.xml with ` +
-          `${urls} URLs, robots.txt + llms.txt` +
-          `${overrides.length ? `, ${overrides.length} dashboard override(s)` : ""} (origin ${origin})`,
-      )
     },
   }
 }

@@ -1,14 +1,14 @@
 import { Routes, Route } from "react-router-dom";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useMemo } from "react";
 import { I18nProvider, isLang, type Lang } from "./lib/i18n";
 import { ThemeProvider } from "./lib/theme";
+import { SettingsProvider } from "./lib/settings";
 import { Layout } from "./components/Layout";
-import { getSettings } from "./services/content";
+import { useSiteSettings } from "./hooks/useContent";
 import { AnalyticsProvider } from "./lib/analytics-provider";
 import { ConsentBanner } from "./components/ConsentBanner";
 import { PromoDialog } from "./components/PromoDialog";
 import { SeoProvider } from "./components/Seo";
-import type { SiteSettings } from "./services/api-types";
 
 /**
  * Route-level code splitting. Every page is its own chunk, so a first visit to
@@ -46,45 +46,29 @@ function PageFallback() {
   );
 }
 
-function useSiteSettings(): { lang: Lang; enabled: Lang[] | undefined; settings: SiteSettings | null } {
-  const [lang, setLang] = useState<Lang>("en");
-  const [enabled, setEnabled] = useState<Lang[] | undefined>(undefined);
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    getSettings()
-      .then((value) => {
-        if (cancelled) return;
-        setSettings(value);
-        if (isLang(value.defaultLanguage)) setLang(value.defaultLanguage);
-        // Which languages the switcher offers is an editor decision, made in
-        // the dashboard's Site settings screen.
-        const codes = (value.languages ?? [])
-          .filter((l) => l.enabled)
-          .map((l) => l.code)
-          .filter(isLang);
-        if (codes.length) setEnabled(codes);
-      })
-      .catch(() => {
-        /* keep English default, and load no pixels, if settings can't be fetched */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  return { lang, enabled, settings };
-}
-
 export default function App() {
-  const { lang: defaultLang, enabled, settings } = useSiteSettings();
+  // One fetch, through the content cache; a failed fetch keeps the English
+  // default, loads no pixels and leaves the footer on its compiled-in details.
+  const { data: settings } = useSiteSettings();
+  const defaultLang: Lang = isLang(settings?.defaultLanguage) ? settings.defaultLanguage : "en";
+  // Which languages the switcher offers is an editor decision, made in the
+  // dashboard's Site settings screen.
+  const enabled = useMemo<Lang[] | undefined>(() => {
+    const codes = (settings?.languages ?? [])
+      .filter((l) => l.enabled)
+      .map((l) => l.code)
+      .filter(isLang);
+    return codes.length ? codes : undefined;
+  }, [settings]);
 
   return (
     <ThemeProvider>
+      <SettingsProvider value={settings}>
       <I18nProvider defaultLang={defaultLang} enabled={enabled}>
         <AnalyticsProvider settings={settings} />
         <ConsentBanner settings={settings} />
         <PromoDialog />
-        <SeoProvider>
+        <SeoProvider settings={settings}>
         <Routes>
           <Route element={<Layout />}>
             <Route
@@ -210,6 +194,7 @@ export default function App() {
         </Routes>
         </SeoProvider>
       </I18nProvider>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }
