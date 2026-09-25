@@ -13,6 +13,14 @@ export interface IntroOptions {
   onComplete?: () => void;
   /** Force a quality tier; default picks from viewport + device hints. */
   quality?: "high" | "low";
+  /**
+   * Playback speed of the approach (camera push-in, the samurai raising the
+   * blade) and of the impact (wind-up, slash, split, reveal). 1 is the
+   * original pacing; the site runs the approach fast and the impact only
+   * moderately so the cut still reads as a cut.
+   */
+  speed?: number;
+  impactSpeed?: number;
   /** CSS font-family for the brush glyphs on the paper (e.g. next/font's variable value). */
   brushFont?: string;
 }
@@ -287,8 +295,8 @@ export async function createSamuraiIntro(canvas: HTMLCanvasElement, opts: IntroO
     sparks.emit(paper.W, paper.cut, contactX, 0.2, worldOnSheet);
     // hit-stop: the world holds its breath for a beat
     // brief hit-stop (kept short so it reads as impact, not as a stutter)
-    tl.timeScale(0.45);
-    gsap.to(tl, { timeScale: 1, duration: 0.22, delay: 0.04, ease: "power1.in" });
+    tl.timeScale(0.45 * impactSpeed);
+    gsap.to(tl, { timeScale: impactSpeed, duration: 0.22, delay: 0.04, ease: "power1.in" });
   };
 
   const split = () => {
@@ -298,7 +306,11 @@ export async function createSamuraiIntro(canvas: HTMLCanvasElement, opts: IntroO
     shreds.emit(paper.W, paper.cut, contactX, 0.15, worldOnSheet);
   };
 
+  const approachSpeed = Math.max(0.1, opts.speed ?? 1);
+  const impactSpeed = Math.max(0.1, opts.impactSpeed ?? approachSpeed);
   const tl = gsap.timeline({ paused: true, defaults: { ease: "power2.inOut" } });
+  // The approach plays at its own speed; from the wind-up on, the impact's.
+  tl.call(() => tl.timeScale(impactSpeed), [], 4.2);
   tl.to(S, { paperGlow: 0.75, smoke: 1, duration: 1.6, ease: "sine.inOut" }, 0)
     .to(S, { camZ: PAPER_DIST, camY: 0.9, duration: 4.5 }, 0)
     .to(S, { key: 1, duration: 1.9 }, 0.9)
@@ -453,6 +465,7 @@ export async function createSamuraiIntro(canvas: HTMLCanvasElement, opts: IntroO
       started = true;
       clock.getDelta();
       render();
+      tl.timeScale(approachSpeed);
       tl.play(0);
     },
     /** Dev helper: deterministically advance to time t (seconds) and render. */

@@ -292,6 +292,9 @@ const ITEM_MODULES = {
   legal: "src/pages/Legal.tsx",
 } as const;
 
+/** The homepage intro's engine: a lazy chunk the boot script preloads when the show will play. */
+const INTRO_ENGINE_MODULE = "src/intro/engine/engine.ts";
+
 /** The emitted files a module pulls in through static imports, itself included. */
 function closure(manifest: Manifest, key: string, js = new Set<string>(), css = new Set<string>()) {
   const entry = manifest[key];
@@ -522,7 +525,9 @@ export async function prerenderPages(
 ): Promise<PrerenderResult> {
   // The boot script (theme + language redirect before paint) goes into the
   // shell itself, so the shell-served pages carry it too.
-  const shell = injectHead(stripStaticHead(await readFile(join(distDir, "index.html"), "utf8")), bootScript(ctx.langs));
+  const introChunks = manifest ? [...closure(manifest, INTRO_ENGINE_MODULE).js].map((f) => `/${f}`) : [];
+  if (manifest && !introChunks.length) warnings.push(`the build manifest has no entry for ${INTRO_ENGINE_MODULE}; the intro's chunk will not be preloaded`);
+  const shell = injectHead(stripStaticHead(await readFile(join(distDir, "index.html"), "utf8")), bootScript(ctx.langs, introChunks));
   const opts = tagOptions(ctx);
   // `/q` is the client quote page: private links, served by the SPA shell.
   const prerenderable = Object.values(ctx.pages).filter((p) => p.path !== "/404" && p.path !== "/q");
