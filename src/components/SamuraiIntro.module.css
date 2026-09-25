@@ -1,13 +1,19 @@
-/* Above everything (chat 70, offer popup 95, consent 70). */
+/*
+ * Above everything (chat 70, offer popup 95, consent 70). While it covers the
+ * page it also takes the touches: iOS ignores `overflow: hidden` on body, so
+ * without this a swipe scrolled the hidden page underneath and a tap could
+ * land on a button nobody could see.
+ */
 .intro {
   position: fixed;
   inset: 0;
   z-index: 120;
-  pointer-events: none;
+  pointer-events: auto;
+  touch-action: none;
   background: #0a0a0d;
 }
-/* Once the paper is cut the page shows through the canvas. */
-:global(html[data-intro="revealed"]) .intro { background: transparent; }
+/* Once the paper is cut the page shows through the canvas and is usable. */
+:global(html[data-intro="revealed"]) .intro { background: transparent; pointer-events: none; }
 
 .canvas {
   position: absolute;

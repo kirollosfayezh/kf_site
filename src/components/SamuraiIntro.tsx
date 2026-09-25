@@ -41,17 +41,21 @@ interface Control {
   finished: boolean;
   skipped: boolean;
   unmounted: boolean;
+  /** The engine has been asked for; a second effect run must not ask again. */
+  started: boolean;
   failsafe: number;
   watchdog: number;
   unlock: () => void;
 }
+
+const freshControl = (): Control => ({ finished: false, skipped: false, unmounted: false, started: false, failsafe: 0, watchdog: 0, unlock: () => {} });
 
 export function SamuraiIntro() {
   const { t } = useI18n();
   const { pathname } = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<IntroHandle | null>(null);
-  const ctl = useRef<Control>({ finished: false, skipped: false, unmounted: false, failsafe: 0, watchdog: 0, unlock: () => {} });
+  const ctl = useRef<Control>(freshControl());
   const [phase, setPhase] = useState<Phase>("idle");
 
   /** Ends the show, whichever way it ended: complete, skipped, failed, timed out. */
@@ -83,7 +87,12 @@ export function SamuraiIntro() {
 
   // Decided once per page load: the route is read at that moment.
   useEffect(() => {
-    const c = ctl.current;
+    // A fresh control per run: React's development StrictMode runs this
+    // effect, its cleanup, then the effect again, and the first run's
+    // "finished" would otherwise leave the second stuck on the loader with
+    // the page locked.
+    const c = freshControl();
+    ctl.current = c;
     // The boot script may already have covered the page; if the rules say no
     // (or this is a client-side navigation to the homepage), uncover it.
     if (!shouldPlayIntro(pathname) || !hasFastWebGL()) {
@@ -139,7 +148,8 @@ export function SamuraiIntro() {
   // import can resolve before the overlay has even rendered, so this waits
   // for the "loading" commit rather than racing it.
   useEffect(() => {
-    if (phase !== "loading") return;
+    if (phase !== "loading" || ctl.current.started) return;
+    ctl.current.started = true;
     const canvas = canvasRef.current;
     if (!canvas) {
       finish();

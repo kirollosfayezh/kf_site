@@ -62,8 +62,11 @@ export async function createSamuraiIntro(canvas: HTMLCanvasElement, opts: IntroO
     alpha: true,
     powerPreference: "high-performance",
   });
-  // Render resolution is the main GPU cost: cap it, then adapt at runtime (see frame()).
-  let pixelRatio = Math.min(window.devicePixelRatio || 1, low ? 1 : 1.5);
+  // Render resolution is the main GPU cost: cap it, then adapt at runtime (see
+  // frame()). Phones are the low tier, but they are also the sharpest screens:
+  // at 1× the screen's white frame and the </> mark went soft on a 3× display,
+  // so the cap is 2× everywhere and frame() steps it down only if frames lag.
+  let pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
   renderer.setPixelRatio(pixelRatio);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -181,10 +184,14 @@ export async function createSamuraiIntro(canvas: HTMLCanvasElement, opts: IntroO
     const visH = 2 * PAPER_DIST * t;
     const visW = visH * aspect;
     // A monitor: the screen fills most of the view, the stand sits below it.
-    const W = visW * (aspect < 0.8 ? 0.9 : 0.88);
-    const H = visH * (aspect < 0.8 ? 0.62 : 0.7);
-    const neckH = visH * 0.12;
-    sheetY = neckH * 0.55;
+    // On a portrait phone the screen keeps its landscape proportions and
+    // simply gets smaller — stretched to fill the tall viewport it read as a
+    // door, not a monitor — and sits in the upper half, above the figure.
+    const portrait = aspect < 0.8;
+    const W = visW * (portrait ? 0.9 : 0.88);
+    const H = portrait ? W / 1.6 : visH * 0.7;
+    const neckH = visH * (portrait ? 0.07 : 0.12);
+    sheetY = portrait ? visH * 0.16 : neckH * 0.55;
 
     // samurai placement: left of centre on landscape, centred on portrait
     const halfWs = (PAPER_DIST - SAM_Z) * t * aspect;
