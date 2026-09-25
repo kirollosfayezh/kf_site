@@ -6,6 +6,7 @@ import { pick, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { useSettings } from "../lib/settings";
 import { CONSENT_CHANGED_EVENT, needsConsent } from "../lib/pixels";
+import { INTRO_DONE_EVENT, introRunning } from "../lib/intro";
 import { trackClick } from "../services/analytics";
 import { Img } from "../components/Img";
 import s from "./PromoDialog.module.css";
@@ -54,6 +55,22 @@ export function PromoDialog() {
     window.addEventListener(CONSENT_CHANGED_EVENT, done);
     return () => window.removeEventListener(CONSENT_CHANGED_EVENT, done);
   }, [settings]);
+
+  // Nor while the opening animation is on: an offer over the show is noise,
+  // and one waiting behind it would pop the moment the page appears. When
+  // the show ran, the delay below counts from its end rather than from the
+  // page load, so the visitor gets to see the page before the offer.
+  const [introBusy, setIntroBusy] = useState(false);
+  const introEndedAt = useRef(0);
+  useEffect(() => {
+    setIntroBusy(introRunning());
+    const done = () => {
+      introEndedAt.current = performance.now();
+      setIntroBusy(false);
+    };
+    window.addEventListener(INTRO_DONE_EVENT, done);
+    return () => window.removeEventListener(INTRO_DONE_EVENT, done);
+  }, []);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -80,14 +97,14 @@ export function PromoDialog() {
   }, [data]);
 
   useEffect(() => {
-    if (!promo || dismissed.includes(promo.id) || quiet || consentPending) return;
+    if (!promo || dismissed.includes(promo.id) || quiet || consentPending || introBusy) return;
 
     // Measured from when the page loaded, not from when the offer arrived —
     // otherwise the fetch time is added to the delay, and a slow connection
     // pushes the offer past the point anyone is still looking.
     const configured = Number(metaString(promo.meta, "delaySeconds") ?? "");
     const wanted = Number.isFinite(configured) && configured >= 0 ? configured * 1000 : 1500;
-    const elapsed = performance.now();
+    const elapsed = performance.now() - introEndedAt.current;
     const remaining = Math.max(0, wanted - elapsed);
 
     if (remaining === 0) {
@@ -96,7 +113,7 @@ export function PromoDialog() {
     }
     const id = window.setTimeout(() => setOpen(true), remaining);
     return () => window.clearTimeout(id);
-  }, [promo, dismissed, quiet, consentPending]);
+  }, [promo, dismissed, quiet, consentPending, introBusy]);
 
   // Navigating onto a quiet route closes an offer that is already up.
   useEffect(() => {

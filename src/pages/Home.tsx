@@ -230,7 +230,7 @@ export function Home() {
   return (
     <div>
       {/* HERO */}
-      <section className={h.hero}>
+      <section className={h.hero} data-hero>
         <HeroStage className={h.heroStage} />
         <div className={h.heroVignette1} aria-hidden="true" />
         <div className={h.heroVignette2} aria-hidden="true" />

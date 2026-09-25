@@ -256,6 +256,33 @@ img { max-width: 100%; display: block; }
 .up { animation: kfUp 1.05s cubic-bezier(.22, 1, .36, 1) both; }
 .fade { animation: kfFadeIn 1.4s ease both; }
 
+/*
+ * The opening animation (SamuraiIntro). The inline boot script sets
+ * `data-intro="pending"` before the first paint when it will play, and this
+ * cover keeps the page hidden until the overlay itself mounts — no flash of
+ * the homepage before the show. While the page is covered the hero's own
+ * entrance animations hold at their first frame, so they play for real once
+ * the cut reveals it.
+ */
+html[data-intro="pending"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: #0a0a0d;
+}
+/*
+ * The hero's entrance at the cut. Deliberately transform-only: the hero's
+ * text keeps painting under the cover at its normal time, so the page's
+ * Largest Contentful Paint is unchanged for visitors who get the show (an
+ * element at opacity 0 would not count until the reveal, seconds later).
+ */
+html[data-intro] [data-hero] { transform: translateY(22px) scale(1.02); }
+html[data-intro="revealed"] [data-hero] {
+  transform: none;
+  transition: transform 1.1s cubic-bezier(.22, 1, .36, 1);
+}
+
 .kf-reveal { opacity: 0; }
 .kf-reveal.kf-in { animation: kfRise .8s cubic-bezier(.22, 1, .36, 1) forwards; opacity: 1; }
 

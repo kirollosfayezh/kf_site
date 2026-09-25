@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { afterIntroReveal } from "../lib/intro";
 
 /**
  * The animated hero from the original static export (`_stage()` in
@@ -646,7 +647,13 @@ export function HeroStage({ className }: { className?: string }) {
      */
     let idleHandle: number | null = null;
     let frameHandle = 0;
-    const whenIdle = (fn: () => void) => {
+    let cancelIntroWait = () => {};
+    const whenIdle = (run: () => void) => {
+      // While the opening animation covers the page its scene owns the GPU;
+      // this one starts once the cut has revealed the hero.
+      const fn = () => {
+        cancelIntroWait = afterIntroReveal(run);
+      };
       const w = window as Window & {
         requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
         cancelIdleCallback?: (h: number) => void;
@@ -661,6 +668,7 @@ export function HeroStage({ className }: { className?: string }) {
     };
     const cancelIdle = () => {
       cancelAnimationFrame(frameHandle);
+      cancelIntroWait();
       if (idleHandle === null) return;
       const w = window as Window & { cancelIdleCallback?: (h: number) => void };
       if (w.cancelIdleCallback) w.cancelIdleCallback(idleHandle);

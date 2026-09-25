@@ -184,6 +184,19 @@ Design tokens (colors, fonts, spacing) are defined once as CSS custom properties
 `src/index.css` — `--bg`, `--panel`, `--text`, `--border`, etc., swapped for a light
 theme under `:root[data-kf-theme="light"]`.
 
+## Homepage intro
+
+The homepage opens with a short WebGL "samurai cut" (`src/components/SamuraiIntro.tsx`,
+engine in `src/intro/engine/`, three.js + GSAP in their own lazy chunk). It plays only
+on the homepage, once per visitor per day (`localStorage` `kf-intro-seen`), and is
+skipped for reduced-motion, automated browsers (Lighthouse, the prerender verifier),
+data-saver/2G connections and devices without accelerated WebGL — those visitors never
+download the chunk. The inline boot script sets `<html data-intro="pending">` before the
+first paint so the page is covered from the start; the hero is held with a transform
+only (never opacity) so LCP is unaffected. Skip with the button (bottom corner) or
+`Esc`. The hero's own WebGL scene, the offer popup and the chat greeting wait for the
+reveal (`src/lib/intro.ts`).
+
 ## Responsive & RTL notes
 
 The layout is checked at 375px, 768px and 1280px in both `dir="ltr"` and `dir="rtl"`
