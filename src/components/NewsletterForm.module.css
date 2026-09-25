@@ -50,13 +50,18 @@
   color: var(--text2);
 }
 
-/* Off-screen, not display:none — a bot that skips hidden fields is the
-   point, and a person can never reach it (tabIndex -1, aria-hidden). */
+/* Visually clipped, not display:none — a bot that skips hidden fields is
+   the point, and a person can never reach it (tabIndex -1, aria-hidden).
+   Clipped in place rather than parked at left:-9999px: in a right-to-left
+   page an element off the left edge is scrollable overflow, and every
+   Arabic page gained 10,000px of sideways scroll. */
 .hp {
   position: absolute;
-  left: -9999px;
   width: 1px;
   height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   opacity: 0;
   pointer-events: none;
 }

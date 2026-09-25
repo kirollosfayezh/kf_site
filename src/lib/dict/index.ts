@@ -18,10 +18,15 @@ import type { Lang } from "../langs.ts";
  * for a moment rather than blank, and re-renders when the file lands.
  */
 
+// No `with { type: "json" }` here: Vite's dev server serves JSON as a JS
+// module, and the attribute makes the browser reject it — every non-English
+// page then silently fell back to English in development. (Vite warns that
+// its future config loader would like the attribute; the config only touches
+// this module for `primeDict`/`translate`, never these loaders.)
 const LOADERS: Record<Exclude<Lang, "en">, () => Promise<{ default: Record<string, string> }>> = {
-  ar: () => import("./ar.json", { with: { type: "json" } }),
-  de: () => import("./de.json", { with: { type: "json" } }),
-  fr: () => import("./fr.json", { with: { type: "json" } }),
+  ar: () => import("./ar.json"),
+  de: () => import("./de.json"),
+  fr: () => import("./fr.json"),
 };
 
 const cache = new Map<Lang, Record<string, string>>([["en", {}]]);

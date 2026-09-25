@@ -153,6 +153,10 @@ for (const path of ["/", "/ar", "/blog", article].filter(Boolean)) {
     await new Promise((r) => setTimeout(r, 500));
     const cls = await page.evaluate(() => window.__kfCls);
     check(`CLS ${path} ${mobile ? "phone" : "desktop"}`, cls <= CLS_LIMIT, cls.toFixed(3));
+    // Sideways scroll is a layout bug (an RTL page once gained 10,000px of it
+    // from an off-screen honeypot), and one no visual check spots.
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check(`no horizontal overflow ${path} ${mobile ? "phone" : "desktop"}`, overflow <= 0, `${overflow}px`);
     await ctx.close();
   }
 }

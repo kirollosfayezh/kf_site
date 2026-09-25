@@ -102,6 +102,9 @@ export async function checkDisplayFont(): Promise<string | null> {
     const css = await res.text();
     if (css.includes(DISPLAY_FONT_URL)) return null;
     const served = [...new Set(css.match(/https:\/\/fonts\.gstatic\.com\/s\/spacegrotesk\/[^)]+/g) ?? [])];
+    // No Space Grotesk files at all means Google answered something other
+    // than the stylesheet (a rate-limit page, say) — nothing to compare.
+    if (!served.length) return null;
     return (
       `the display font preload (${DISPLAY_FONT_URL}) is no longer in Google's stylesheet — update DISPLAY_FONT_URL ` +
       `in build/seo-build.ts to the Space Grotesk latin file it serves now (served: ${served.join(", ") || "none"})`

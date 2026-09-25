@@ -4,6 +4,7 @@ import type { CountryCode } from "libphonenumber-js/max";
 import { useI18n } from "../lib/i18n";
 import { defaultCountry, guessCountry, readPhone, rememberCountry } from "../lib/phone";
 import { PhoneField } from "../components/PhoneField";
+import { Calendar, type DayKey } from "../components/Calendar";
 import { Reveal } from "../components/Reveal";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import { trackConversion } from "../lib/conversions";
@@ -25,9 +26,21 @@ function visitorTimeZone(): string {
 }
 
 /** "2026-01-11" in the visitor's own zone — slots are grouped by the day *they* see. */
-function localDay(iso: string, tz: string) {
+function localDay(iso: string | number, tz: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
 }
+
+/** The hour (0–23) of an instant in the visitor's zone, for grouping times. */
+function localHour(iso: string, tz: string) {
+  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", hourCycle: "h23" }).format(new Date(iso)));
+}
+
+/** Morning / afternoon / evening, so a long list of times reads in three glances. */
+const PERIODS = [
+  { key: "Morning", from: 0, to: 12 },
+  { key: "Afternoon", from: 12, to: 17 },
+  { key: "Evening", from: 17, to: 24 },
+] as const;
 
 /** An .ics file, so the call lands in the visitor's own calendar. */
 function icsFile(booking: BookingResult, title: string, description: string): string {
@@ -92,22 +105,35 @@ export function Book() {
   useEffect(load, []);
 
   const days = useMemo(() => {
-    const map = new Map<string, Slot[]>();
+    const map = new Map<DayKey, Slot[]>();
     for (const sl of data?.slots ?? []) {
       const key = localDay(sl.start, tz);
       map.set(key, [...(map.get(key) ?? []), sl]);
     }
-    return [...map.entries()];
+    return map;
   }, [data, tz]);
+  const available = useMemo(() => new Map([...days].map(([k, list]) => [k, list.length])), [days]);
+  const dayKeys = useMemo(() => [...days.keys()].sort(), [days]);
 
+  // The first free day is selected for the visitor; a day that loses its
+  // last free time (someone else booked it) falls back the same way.
   useEffect(() => {
-    if (days.length && (!day || !days.some(([d]) => d === day))) setDay(days[0][0]);
-  }, [days, day]);
+    if (dayKeys.length && (!day || !days.has(day))) setDay(dayKeys[0]);
+  }, [dayKeys, days, day]);
 
-  const dayFmt = new Intl.DateTimeFormat(locale(lang), { weekday: "short", day: "numeric", month: "short", timeZone: tz });
+  // The calendar's bounds: today through the last day the business takes bookings.
+  const todayKey = useMemo(() => localDay(Date.now(), tz), [tz]);
+  const maxKey = useMemo(() => {
+    const horizon = localDay(Date.now() + Math.max(1, data?.daysAhead ?? 14) * 86400000, tz);
+    const last = dayKeys[dayKeys.length - 1];
+    return last && last > horizon ? last : horizon;
+  }, [data?.daysAhead, dayKeys, tz]);
+
   const timeFmt = new Intl.DateTimeFormat(locale(lang), { hour: "2-digit", minute: "2-digit", timeZone: tz });
+  const dateFmt = new Intl.DateTimeFormat(locale(lang), { weekday: "long", day: "numeric", month: "long", timeZone: tz });
   const longFmt = new Intl.DateTimeFormat(locale(lang), { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: tz });
-  const daySlots = days.find(([d]) => d === day)?.[1] ?? [];
+  const daySlots = (day && days.get(day)) || [];
+  const periods = PERIODS.map((p) => ({ ...p, slots: daySlots.filter((sl) => { const h = localHour(sl.start, tz); return h >= p.from && h < p.to; }) })).filter((p) => p.slots.length);
 
   async function submit(e?: FormEvent) {
     e?.preventDefault();
@@ -197,50 +223,72 @@ export function Book() {
                 <div className={b.skeleton} aria-busy="true" aria-label={t("Loading…")}>
                   {Array.from({ length: 8 }).map((_, i) => <span key={i} />)}
                 </div>
-              ) : !data.enabled || days.length === 0 ? (
+              ) : !data.enabled || dayKeys.length === 0 ? (
                 <div className={b.empty}>
                   <p>{t("No times are open right now. Message us on WhatsApp and we'll find one together.")}</p>
                   <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" data-track="book.empty.whatsapp">{t("WhatsApp us")}</a>
                 </div>
               ) : (
-                <>
-                  <div className={b.days} role="tablist" aria-label={t("Day")}>
-                    {days.map(([d, list]) => (
-                      <button
-                        key={d}
-                        type="button"
-                        role="tab"
-                        aria-selected={d === day}
-                        className={`${b.day} ${d === day ? b.dayOn : ""}`}
-                        onClick={() => setDay(d)}
-                      >
-                        <span className={b.dayName}>{dayFmt.format(new Date(list[0].start))}</span>
-                        <span className={b.dayCount}>{list.length} {t("times")}</span>
-                      </button>
-                    ))}
+                <div className={b.pickerBody}>
+                  <Calendar
+                    locale={locale(lang)}
+                    lang={lang}
+                    dir={lang === "ar" ? "rtl" : "ltr"}
+                    available={available}
+                    selected={day}
+                    onSelect={(k) => {
+                      setDay(k);
+                      setSlot(null);
+                      setError(null);
+                    }}
+                    min={todayKey}
+                    max={maxKey}
+                    today={todayKey}
+                    t={t}
+                  />
+                  <div className={b.timesPanel}>
+                    <div className={b.timesHead}>
+                      {day ? (
+                        <>
+                          <span className={b.timesDate}>{dateFmt.format(new Date(`${day}T12:00:00`))}</span>
+                          <span className={b.timesCount}>{t("{n} free times").replace("{n}", String(daySlots.length))}</span>
+                        </>
+                      ) : (
+                        <span className={b.timesDate}>{t("Pick a day to see the times.")}</span>
+                      )}
+                    </div>
+                    {day && !daySlots.length ? <p className={b.timesEmpty}>{t("No free times on this day.")}</p> : null}
+                    <div className={b.periods} role="listbox" aria-label={t("Time")}>
+                      {periods.map((p) => (
+                        <div key={p.key} className={b.period}>
+                          <div className={b.periodName}>{t(p.key)}</div>
+                          <div className={b.times}>
+                            {p.slots.map((sl) => (
+                              <button
+                                key={sl.start}
+                                type="button"
+                                role="option"
+                                aria-selected={slot?.start === sl.start}
+                                className={`${b.time} ${slot?.start === sl.start ? b.timeOn : ""}`}
+                                onClick={() => {
+                                  setSlot(sl);
+                                  setError(null);
+                                  // On a phone the form is below: bring it into view.
+                                  if (window.matchMedia("(max-width: 900px)").matches) {
+                                    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                  }
+                                }}
+                              >
+                                {timeFmt.format(new Date(sl.start))}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className={b.horizon}>{t("Bookings open up to {n} days ahead.").replace("{n}", String(data.daysAhead ?? 14))}</p>
                   </div>
-                  <div className={b.times} role="listbox" aria-label={t("Time")}>
-                    {daySlots.map((sl) => (
-                      <button
-                        key={sl.start}
-                        type="button"
-                        role="option"
-                        aria-selected={slot?.start === sl.start}
-                        className={`${b.time} ${slot?.start === sl.start ? b.timeOn : ""}`}
-                        onClick={() => {
-                          setSlot(sl);
-                          setError(null);
-                          // On a phone the form is below: bring it into view.
-                          if (window.matchMedia("(max-width: 900px)").matches) {
-                            formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-                          }
-                        }}
-                      >
-                        {timeFmt.format(new Date(sl.start))}
-                      </button>
-                    ))}
-                  </div>
-                </>
+                </div>
               )}
             </Reveal>
 
