@@ -12,6 +12,8 @@ export interface SlotList {
   enabled: boolean;
   timezone: string;
   slotMinutes: number;
+  /** How far ahead the business takes bookings; bounds the calendar. */
+  daysAhead?: number;
   slots: Slot[];
 }
 
