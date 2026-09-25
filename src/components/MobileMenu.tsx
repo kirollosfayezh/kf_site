@@ -113,9 +113,15 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
     };
   }, [open, onClose]);
 
+  // The hash is read after mount: the build-time render has none, and this
+  // drawer is always in the tree, so a `#slug` deep link would otherwise make
+  // the first client render disagree with the HTML for one `aria-current`.
+  const [hash, setHash] = useState("");
+  useEffect(() => setHash(location.hash), [location.hash]);
+
   const isCurrent = (href: string) => {
-    const [path, hash] = href.split("#");
-    if (hash) return location.pathname === path && location.hash === `#${hash}`;
+    const [path, target] = href.split("#");
+    if (target) return location.pathname === path && hash === `#${target}`;
     return location.pathname === path;
   };
 

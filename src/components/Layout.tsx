@@ -52,6 +52,12 @@ export function Layout() {
   const chatReady = useDeferredMount();
   const { t } = useI18n();
 
+  // A marker for the prerender's verification script: set once React has
+  // taken over the server-rendered page.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-kf-hydrated", "1");
+  }, []);
+
   return (
     <div style={{ position: "relative", width: "100%", minHeight: "100vh", background: "var(--bg)" }}>
       <RouteSeo />

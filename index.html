@@ -53,6 +53,13 @@
       />
     </noscript>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Pages arrive prerendered. Sections that animate in on scroll start at
+      opacity 0 and only become visible when the reveal script adds `kf-in`;
+      a reader with JavaScript off (or a text crawler rendering CSS) would
+      otherwise see the page's text but not the page.
+    -->
+    <noscript><style>.kf-reveal { opacity: 1 !important; }</style></noscript>
     <title>KF Tech Solutions — Ideas into real, working products</title>
     <!--
       Stamped `data-kf-seo` so the runtime SEO layer treats this as one of its

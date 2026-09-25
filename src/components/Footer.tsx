@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { reopenConsent } from "../lib/pixels";
 import { useI18n } from "../lib/i18n";
@@ -27,8 +28,8 @@ const ICON: Record<SocialKey, SocialName> = {
  */
 const COPYRIGHT_KEY = "© 2026 KF Tech Solutions. All rights reserved.";
 
-function copyright(t: (k: string) => string): string {
-  return t(COPYRIGHT_KEY).replace("2026", String(new Date().getFullYear()));
+function copyright(t: (k: string) => string, year: number): string {
+  return t(COPYRIGHT_KEY).replace("2026", String(year));
 }
 
 /**
@@ -44,6 +45,11 @@ export function Footer() {
   const { email } = useContactInfo();
   const waLink = useWhatsAppLink();
   const social = resolveSocial(settings?.social);
+  // The key's own year first, the clock's after mount: the footer sits
+  // outside every Suspense boundary, so a build-year/visit-year mismatch
+  // would re-render the whole page on hydration.
+  const [year, setYear] = useState(2026);
+  useEffect(() => setYear(new Date().getFullYear()), []);
 
   return (
     <footer className={styles.footer}>
@@ -123,7 +129,7 @@ export function Footer() {
         </div>
 
         <div className={styles.bottom}>
-          <span className={styles.bottomText}>{copyright(t)}</span>
+          <span className={styles.bottomText}>{copyright(t, year)}</span>
           <span className={styles.bottomMono}>{t("Ideas into real, working products")}</span>
         </div>
       </div>

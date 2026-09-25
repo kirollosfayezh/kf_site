@@ -28,13 +28,55 @@ import { apiFetch } from "./http";
 const resolved = new Map<string, unknown>();
 const inFlight = new Map<string, Promise<unknown>>();
 
+/**
+ * The keys read during one render, for the build-time prerender.
+ *
+ * `cached()` is the only synchronous read path, so recording inside it
+ * captures exactly what a page looked at — hits and misses alike. The build
+ * ships the hits as the page's content snapshot; on a cold client the cache
+ * holds nothing but that snapshot, so the first render reads the same keys and
+ * gets the same values, and hydration matches by construction.
+ */
+let recorder: Set<string> | null = null;
+
 /** What is already known for this key, or null. Synchronous, for first paint. */
 export function cached<T>(key: string): T | null {
+  recorder?.add(key);
   return resolved.has(key) ? (resolved.get(key) as T) : null;
+}
+
+/** Seeds the cache — from the build's fetches on the server, from the page's
+ *  embedded snapshot on the client — before anything renders. */
+export function primeContent(entries: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(entries)) resolved.set(key, value);
+}
+
+export function resetContent(): void {
+  resolved.clear();
+}
+
+export function startRecording(): void {
+  recorder = new Set();
+}
+
+export function stopRecording(): { hits: Record<string, unknown>; misses: string[] } {
+  const keys = recorder ?? new Set<string>();
+  recorder = null;
+  const hits: Record<string, unknown> = {};
+  const misses: string[] = [];
+  for (const key of keys) {
+    if (resolved.has(key)) hits[key] = resolved.get(key);
+    else misses.push(key);
+  }
+  return { hits, misses };
 }
 
 /** Fetches `path`, sharing any request already in flight for the same key. */
 export function fetchCached<T>(key: string, path: string): Promise<T> {
+  // During the prerender everything a page needs was primed up front. A fetch
+  // here would mean a key the build did not know about — and a snapshot that
+  // silently differs from what the client will render. Loud beats subtle.
+  if (import.meta.env.SSR) throw new Error(`content fetch during prerender: ${key}`);
   const existing = inFlight.get(key);
   if (existing) return existing as Promise<T>;
 

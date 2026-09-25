@@ -43,6 +43,12 @@ export function setOverrides(lang: Lang, data: Record<string, string>): void {
   merged.delete(lang);
 }
 
+/** Whether overrides for this language were already applied (by the page's
+ *  embedded snapshot, ahead of anything a previous visit left in storage). */
+export function hasOverrides(lang: Lang): boolean {
+  return overrides.has(lang);
+}
+
 /** What is already loaded for this language, overrides included. Synchronous, for render. */
 export function dictFor(lang: Lang): Record<string, string> {
   const base = cache.get(lang) ?? {};

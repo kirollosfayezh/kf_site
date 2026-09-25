@@ -23,6 +23,8 @@ function formatDate(iso: string | undefined, lang: string): string {
       day: "numeric",
       month: "short",
       year: "numeric",
+      // The build machine and the visitor must print the same day.
+      timeZone: "UTC",
     })
     .toUpperCase();
 }
@@ -107,7 +109,9 @@ export function Article() {
 
             <div className={s.artMeta}>
               {tag && <span className={s.artCat}>{pickPlain(tag, lang)}</span>}
-              {date && <span dir="auto">{date}</span>}
+              {/* ICU month abbreviations can differ between Node and the
+                  browser; the server's text is kept rather than mismatched. */}
+              {date && <span dir="auto" suppressHydrationWarning>{date}</span>}
               <span className={s.artDot} aria-hidden="true">·</span>
               <span>{minutes} {t("min read")}</span>
             </div>

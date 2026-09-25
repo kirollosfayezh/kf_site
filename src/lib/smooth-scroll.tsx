@@ -27,6 +27,7 @@ import Lenis from "lenis";
  */
 export function useSmoothScroll() {
   const lenisRef = useRef<Lenis | null>(null);
+  const firstRun = useRef(true);
   const { pathname, hash } = useLocation();
 
   useEffect(() => {
@@ -74,9 +75,14 @@ export function useSmoothScroll() {
 
     const id = decodeURIComponent(hash.replace(/^#/, ""));
     if (!id) {
-      toTop();
+      // Not on the first run: the page arrives prerendered, and a visitor who
+      // has already scrolled while the JavaScript loaded must not be yanked
+      // back to the top the moment it takes over.
+      if (firstRun.current) firstRun.current = false;
+      else toTop();
       return;
     }
+    firstRun.current = false;
 
     toTop();
     let raf = 0;
