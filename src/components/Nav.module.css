@@ -115,6 +115,11 @@
   transform-origin: top var(--kf-menu-origin, right);
   animation: kfMenuIn .16s cubic-bezier(.22, 1, .36, 1) both;
 }
+/* The menu stays in the DOM when closed (its links carry hreflang for
+   crawlers) and is closed with the `hidden` attribute — whose browser default
+   `display: none` loses to the `display: flex` above unless restated here.
+   Without this the menu could be opened but never closed. */
+.langMenu[hidden] { display: none; }
 @keyframes kfMenuIn {
   from { opacity: 0; transform: translateY(-6px) scale(.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
