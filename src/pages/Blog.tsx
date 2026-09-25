@@ -36,6 +36,8 @@ function metaLine(
             day: "2-digit",
             month: "short",
             year: "numeric",
+            // The build machine and the visitor must print the same day.
+            timeZone: "UTC",
           })
           .toUpperCase(),
       );
@@ -130,7 +132,7 @@ export function Blog() {
                 <span className={s.featuredBadge}>{t("FEATURED")}</span>
               </div>
               <div className={s.featuredBody}>
-                <div className={s.featuredMeta}>{metaLine(featured.createdAt, pickPlain(metaString(featured.meta, "tag") ?? "", lang), lang, readingMinutes(pick(featured.body, lang)), t("min read"))}</div>
+                <div className={s.featuredMeta} suppressHydrationWarning>{metaLine(featured.createdAt, pickPlain(metaString(featured.meta, "tag") ?? "", lang), lang, readingMinutes(pick(featured.body, lang)), t("min read"))}</div>
                 <h2 className={s.featuredTitle}>{pick(featured.title, lang)}</h2>
                 <p className={s.featuredDesc}>{pick(featured.summary, lang)}</p>
                 <div className={s.featuredByline}>
@@ -157,7 +159,7 @@ export function Blog() {
                     {tag && <span className={s.cardTag}>{pickPlain(tag, lang)}</span>}
                   </div>
                   <div className={s.cardBody}>
-                    <div className={s.cardMetaLine}>{metaLine(post.createdAt, pickPlain(metaString(post.meta, "tag") ?? "", lang), lang, readingMinutes(pick(post.body, lang)), t("min read"))}</div>
+                    <div className={s.cardMetaLine} suppressHydrationWarning>{metaLine(post.createdAt, pickPlain(metaString(post.meta, "tag") ?? "", lang), lang, readingMinutes(pick(post.body, lang)), t("min read"))}</div>
                     <h2 className={s.cardTitle} style={{ marginTop: 10 }}>{pick(post.title, lang)}</h2>
                     <p className={s.cardDesc}>{pick(post.summary, lang)}</p>
                     <span className={s.cardRead}>

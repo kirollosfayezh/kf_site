@@ -1,5 +1,6 @@
 import { useMemo, type RefObject } from "react";
 import { countryOptions, dialCode, flagOf, type PhoneState } from "../lib/phone";
+import { useHydrated } from "../hooks/useHydrated";
 import type { CountryCode } from "libphonenumber-js/max";
 import styles from "./PhoneField.module.css";
 
@@ -51,7 +52,11 @@ export function PhoneField({
   onEnter?: () => void;
   size?: "sm" | "lg";
 }) {
-  const options = useMemo(() => countryOptions(lang), [lang]);
+  // Country names come from the browser's ICU data, which differs from the
+  // build machine's for a few regions; the list (behind the flag button) is
+  // filled in once hydrated so the two never disagree.
+  const hydrated = useHydrated();
+  const options = useMemo(() => (hydrated ? countryOptions(lang) : []), [lang, hydrated]);
   const shown = state.country ?? country;
   const name = options.find((o) => o.code === shown)?.name ?? shown;
   const invalid = showError && !state.valid;

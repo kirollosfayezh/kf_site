@@ -46,7 +46,7 @@ function PageFallback() {
   );
 }
 
-export default function App() {
+export default function App({ initialLang }: { initialLang?: Lang } = {}) {
   // One fetch, through the content cache; a failed fetch keeps the English
   // default, loads no pixels and leaves the footer on its compiled-in details.
   const { data: settings } = useSiteSettings();
@@ -64,7 +64,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <SettingsProvider value={settings}>
-      <I18nProvider defaultLang={defaultLang} enabled={enabled}>
+      <I18nProvider defaultLang={defaultLang} enabled={enabled} initialLang={initialLang}>
         <AnalyticsProvider settings={settings} />
         <ConsentBanner settings={settings} />
         <PromoDialog />

@@ -81,6 +81,15 @@ export function guessCountry(siteLang?: string): CountryCode {
   return (siteLang && LANG_COUNTRY[siteLang]) || "EG";
 }
 
+/**
+ * The country implied by the site language alone — what the build-time
+ * render uses, since it has no visitor to ask. The build machine's own
+ * `navigator.languages` (Node has one) would otherwise decide.
+ */
+export function defaultCountry(siteLang?: string): CountryCode {
+  return (siteLang && LANG_COUNTRY[siteLang]) || "EG";
+}
+
 export function rememberCountry(country: CountryCode): void {
   try {
     localStorage.setItem(COUNTRY_KEY, country);

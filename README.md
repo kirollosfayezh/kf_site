@@ -61,11 +61,24 @@ crawler that runs no JavaScript and a browser that does can never disagree:
 - **Runtime** — `components/Seo.tsx`. `RouteSeo` (mounted in the Layout) applies
   the entry for the current route; `Article.tsx` calls `useSeo()` with the
   fetched post, because CMS content isn't known until it arrives.
-- **Build** — `build/seo-build.ts` (`runSeoBuild`), run by the `kf-seo-prerender`
-  Vite plugin. It writes a real HTML file per route with the head tags baked in
-  (`/services` → `dist/services/index.html`), one per published article, case
-  study and legal page fetched from the API, plus `404.html`, `sitemap.xml`
-  (with image entries), `feed.xml` per language, `robots.txt` and `llms.txt`.
+- **Build** — `build/seo-build.ts` (`runSeoBuild`), run from the `builder`
+  hook in `vite.config.ts` after two bundles are built: the browser bundle and
+  a Node bundle of the same app (`src/entry-server.tsx`, in `dist-ssr/`). Every
+  route is rendered to a real HTML file — head tags *and* body — with the CMS
+  content it was rendered from embedded as JSON (`<script id="kf-content">`),
+  so a crawler, an assistant or a link preview sees the whole page and the
+  browser hydrates the same markup instead of re-rendering it (`/services` →
+  `dist/services/index.html`). One file per published article, case study and
+  legal page too, plus `404.html`, `sitemap.xml` (with image entries),
+  `feed.xml` per language, `robots.txt` and `llms.txt`.
+
+  Rules the prerender relies on: the first render must not depend on the
+  visitor (theme, time zone, stored language and ICU-formatted text are
+  decided after mount — see `useHydrated`), the URL alone decides the
+  language, and the offer popup, chat and consent bar render nothing until an
+  effect runs. `npm run verify:prerender` checks a build the way a crawler and
+  then a browser would (text without JavaScript, zero hydration mismatches,
+  layout shift), and must pass before a deploy.
 
 The build reads the CMS with retries and **fails if the API cannot be read**:
 a cold backend once made a deploy ship a sitemap with no articles, and a red
@@ -115,6 +128,7 @@ npm run dev         # local dev server
 npm run build       # type-check (tsc -b) + production build to dist/
 npm run preview     # preview the production build locally (SPA fallback only)
 npm run serve:dist  # serve dist/ with vercel.json's rewrites, redirects and headers
+npm run verify:prerender  # crawler + browser checks of a built dist/ (needs Chrome)
 npm run og:image    # re-render public/og-default.png from build/og-default.html
 npm run lint        # oxlint
 ```

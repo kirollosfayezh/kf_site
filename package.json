@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "serve:dist": "node build/vercel-like.mjs",
-    "og:image": "bash build/make-og-image.sh"
+    "og:image": "bash build/make-og-image.sh",
+    "verify:prerender": "node build/verify-prerender.mjs"
   },
   "dependencies": {
     "countries-and-timezones": "^3.10.0",
@@ -26,6 +27,7 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
+    "puppeteer-core": "^25.12.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   }

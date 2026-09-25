@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import type { CountryCode } from "libphonenumber-js/max";
 import { useI18n } from "../lib/i18n";
-import { guessCountry, readPhone, rememberCountry } from "../lib/phone";
+import { defaultCountry, guessCountry, readPhone, rememberCountry } from "../lib/phone";
 import { PhoneField } from "../components/PhoneField";
 import { Reveal } from "../components/Reveal";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
@@ -57,13 +57,18 @@ function icsFile(booking: BookingResult, title: string, description: string): st
 export function Book() {
   const { t, lang } = useI18n();
   const waLink = useWhatsAppLink(t("booking a call"));
-  const tz = useMemo(visitorTimeZone, []);
+  // Both start from what the build could know (UTC, the language's country)
+  // and become the visitor's own after mount — the page is prerendered, and
+  // the build machine's time zone is not the visitor's.
+  const [tz, setTz] = useState("UTC");
+  useEffect(() => setTz(visitorTimeZone()), []);
   const [data, setData] = useState<SlotList | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [day, setDay] = useState<string | null>(null);
   const [slot, setSlot] = useState<Slot | null>(null);
   const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState<CountryCode>(() => guessCountry(lang));
+  const [country, setCountry] = useState<CountryCode>(() => defaultCountry(lang));
+  useEffect(() => setCountry(guessCountry(lang)), [lang]);
   const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [attempted, setAttempted] = useState(false);

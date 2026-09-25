@@ -34,13 +34,16 @@ import {
   type SeoOverride,
 } from "../src/lib/seo.ts";
 import { LANGS, dirOf, isLang } from "../src/lib/langs.ts";
-import { primeDict, translate } from "../src/lib/dict/index.ts";
+import { primeDict, setOverrides, translate } from "../src/lib/dict/index.ts";
 import { FALLBACK_FAQS } from "../src/lib/fallback-content.ts";
 import { identityFromSettings } from "../src/lib/contact.ts";
 import type { SiteSettings } from "../src/services/api-types.ts";
+import { bootScript } from "./boot-script.ts";
 import ar from "../src/lib/dict/ar.json" with { type: "json" };
 import de from "../src/lib/dict/de.json" with { type: "json" };
 import fr from "../src/lib/dict/fr.json" with { type: "json" };
+
+const DICTS: Record<Exclude<Lang, "en">, Record<string, string>> = { ar, de, fr };
 
 /**
  * The browser loads one language on demand; the prerender needs all of them at
@@ -182,21 +185,205 @@ export function enabledLangs(settings: SiteSettings | null): Lang[] {
   return LANGS.filter((l) => on.has(l));
 }
 
+/** Interface-copy overrides edited on the dashboard's Translations screen. */
+async function fetchTranslations(apiBase: string | undefined, lang: Lang): Promise<Record<string, string>> {
+  const map = await fetchJson<Record<string, string>>(apiBase, `/api/translations/${lang}`);
+  return map && typeof map === "object" ? map : {};
+}
+
 /* --------------------------------------------------------------- context */
 
 /** Everything one build run needs, fetched once and shared by every writer —
  *  so the sitemap and the prerendered pages can never list different sets. */
 export interface BuildContext {
   pages: Record<string, PageSeo>;
+  settings: SiteSettings | null;
   articles: ArticleLike[];
   projects: ArticleLike[];
   legal: ArticleLike[];
   services: ArticleLike[];
   solutions: ArticleLike[];
   faqs: ArticleLike[];
+  testimonials: ArticleLike[];
+  aboutSections: ArticleLike[];
+  promos: ArticleLike[];
+  translations: Partial<Record<Lang, Record<string, string>>>;
   langs: Lang[];
   twitterSite?: string;
   overrides: number;
+}
+
+/* ------------------------------------------------------- body prerender */
+
+/** What `src/entry-server.tsx` exports, once built into `dist-ssr/`. */
+export interface SsrModule {
+  render(path: string, lang: Lang): Promise<{ html: string; hits: Record<string, unknown>; misses: string[]; errors: unknown[] }>;
+  primeDict(lang: Lang, data: Record<string, string>): void;
+  setOverrides(lang: Lang, data: Record<string, string>): void;
+  primeContent(entries: Record<string, unknown>): void;
+}
+
+/** Vite's client build manifest: source module → emitted file, its CSS, its imports. */
+type Manifest = Record<string, { file: string; css?: string[]; imports?: string[] }>;
+
+/**
+ * Which page module renders each route, so its CSS and JavaScript can be
+ * linked from the page's head. Every route is `React.lazy`, so its CSS
+ * travels with its chunk — a server-rendered body would otherwise paint
+ * unstyled until the chunk arrived.
+ */
+const ROUTE_MODULES: Record<string, string> = {
+  "/": "src/pages/Home.tsx",
+  "/about": "src/pages/About.tsx",
+  "/services": "src/pages/Services.tsx",
+  "/solutions": "src/pages/Solutions.tsx",
+  "/projects": "src/pages/Projects.tsx",
+  "/blog": "src/pages/Blog.tsx",
+  "/contact": "src/pages/Contact.tsx",
+  "/campaign": "src/pages/Campaign.tsx",
+  "/book": "src/pages/Book.tsx",
+};
+
+const ITEM_MODULES = {
+  article: "src/pages/Article.tsx",
+  project: "src/pages/ProjectCaseStudy.tsx",
+  legal: "src/pages/Legal.tsx",
+} as const;
+
+/** The emitted files a module pulls in through static imports, itself included. */
+function closure(manifest: Manifest, key: string, js = new Set<string>(), css = new Set<string>()) {
+  const entry = manifest[key];
+  if (!entry || js.has(entry.file)) return { js, css };
+  js.add(entry.file);
+  entry.css?.forEach((c) => css.add(c));
+  entry.imports?.forEach((k) => closure(manifest, k, js, css));
+  return { js, css };
+}
+
+/**
+ * The `<link>`s a prerendered page needs beyond the shell's: the route's own
+ * stylesheet(s), a `modulepreload` for its chunk, and the dictionary chunk on
+ * non-English pages. Vite's runtime preloader skips a stylesheet that is
+ * already in the document, so nothing loads twice.
+ */
+function assetsFor(manifest: Manifest, moduleKey: string, lang: Lang): string {
+  if (!manifest[moduleKey]) throw new Error(`the build manifest has no entry for ${moduleKey}`);
+  const base = closure(manifest, "index.html");
+  const route = closure(manifest, moduleKey);
+  const dict = lang !== "en" ? manifest[`src/lib/dict/${lang}.json`]?.file : undefined;
+  return [
+    ...[...route.css].filter((c) => !base.css.has(c)).map((c) => `<link rel="stylesheet" crossorigin href="/${c}" />`),
+    ...[...route.js].filter((j) => !base.js.has(j)).map((j) => `<link rel="modulepreload" crossorigin href="/${j}" />`),
+    ...(dict ? [`<link rel="modulepreload" crossorigin href="/${dict}" />`] : []),
+  ].join("\n  ");
+}
+
+/**
+ * A list item, with the bodies the page cannot read left out.
+ *
+ * `pick()` reads the page's language, then English, then Arabic when English
+ * is empty — so those are kept and the rest dropped. Bodies are the bulk of a
+ * blog post, and the snapshot is inline in every page.
+ */
+function pruneForLang<T extends ArticleLike>(item: T, lang: Lang): T {
+  if (!item.body) return item;
+  const keep = new Set<Lang>([lang, "en"]);
+  if (!item.body.en?.trim()) keep.add("ar");
+  const body: Partial<Record<Lang, string>> = {};
+  for (const l of keep) if (item.body[l] !== undefined) body[l] = item.body[l];
+  return { ...item, body };
+}
+
+interface PageBody {
+  html: string;
+  snapshot: string;
+  assets: string;
+}
+
+/** The cache keys every page can read (the menu and the offer popup are on all of them). */
+function listsFor(ctx: BuildContext, lang: Lang): Record<string, unknown> {
+  const lists: Record<string, ArticleLike[]> = {
+    services: ctx.services,
+    solutions: ctx.solutions,
+    projects: ctx.projects,
+    faqs: ctx.faqs,
+    blogPosts: ctx.articles,
+    legalPages: ctx.legal,
+    testimonials: ctx.testimonials,
+    aboutSections: ctx.aboutSections,
+    promos: ctx.promos,
+  };
+  const out: Record<string, unknown> = {};
+  for (const [name, items] of Object.entries(lists)) out[`list:${name}`] = items.map((i) => pruneForLang(i, lang));
+  return out;
+}
+
+/** Items, keyed the way the pages ask for them (by slug, falling back to id). */
+function itemEntries(ctx: BuildContext): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [name, items] of [["blogPosts", ctx.articles], ["projects", ctx.projects], ["legalPages", ctx.legal]] as const) {
+    for (const item of items) out[`item:${name}:${item.slug || item.id}`] = item;
+  }
+  return out;
+}
+
+function warnOnce(warnings: string[], message: string): void {
+  if (!warnings.includes(message)) warnings.push(message);
+}
+
+/**
+ * Renders one page's body and packs it with the exact content it read.
+ *
+ * A missing `item:*` is a build error — the URL came from the same list, so
+ * the item exists and something failed to prime it; shipping "Loading…" in
+ * its place is worse than a red deploy. A missing list or settings means the
+ * page rendered with fallback copy, which the client would do too, so that is
+ * a warning.
+ */
+async function renderBody(
+  ssr: SsrModule,
+  manifest: Manifest,
+  ctx: BuildContext,
+  page: PageSeo,
+  lang: Lang,
+  moduleKey: string,
+  warnings: string[],
+): Promise<PageBody> {
+  const where = localePath(lang, page.path);
+  const rendered = await ssr.render(page.path, lang);
+  const { hits, misses, errors } = rendered;
+  if (errors.length) throw new Error(`prerender of ${where} failed: ${errors.map((e) => (e instanceof Error ? e.message : String(e))).join("; ")}`);
+  const itemMisses = misses.filter((k) => k.startsWith("item:"));
+  if (itemMisses.length) throw new Error(`prerender of ${where} read content nothing primed: ${itemMisses.join(", ")}`);
+  for (const key of misses) warnOnce(warnings, `${key} was not available at build time; pages using it were prerendered with fallback copy`);
+
+  // React hoists resource hints (the header logo's image preload) to the
+  // front of the markup; they belong in the head, and an element before the
+  // app's root div would confuse hydration.
+  let hoisted = "";
+  const html = rendered.html.replace(/^(?:<link [^>]*\/?>)+/, (m) => {
+    hoisted = m;
+    return "";
+  });
+  if (!html.includes("<h1")) throw new Error(`prerender of ${where} produced no <h1> — the page rendered a fallback instead of itself`);
+  if (html.includes("kf-page-fallback")) throw new Error(`prerender of ${where} still contains the route's loading fallback`);
+
+  const overrides = ctx.translations[lang];
+  const snapshot = {
+    v: 1,
+    lang,
+    content: hits,
+    i18n: overrides && Object.keys(overrides).length ? { [lang]: overrides } : {},
+  };
+  // `<` would end the script element early; the line separators are invalid
+  // in JavaScript source but legal in JSON.
+  const json = JSON.stringify(snapshot).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
+  if (json.length > 200_000) {
+    const sizes = Object.entries(hits).map(([k, v]) => `${k} ${Math.round(JSON.stringify(v).length / 1024)} kB`).join(", ");
+    warnings.push(`${where}: the content snapshot is ${Math.round(json.length / 1024)} kB (${sizes})`);
+  }
+  const assets = [hoisted, assetsFor(manifest, moduleKey, lang)].filter(Boolean).join("\n  ");
+  return { html, snapshot: json, assets };
 }
 
 function tagOptions(ctx: BuildContext): SeoOptions {
@@ -238,13 +425,27 @@ async function writePage(
   file: string,
   lang: Lang = "en",
   opts: SeoOptions = {},
+  body?: PageBody,
 ) {
-  const head = tagsToHtml(seoTags(page, lang, origin, opts)) + (lang === "ar" ? `\n  ${ARABIC_FONT_PRELOAD}` : "");
-  const html = injectHead(shell, head)
+  // Order: the route's assets (so the stylesheet is discovered early), the
+  // Arabic font preload, then the SEO tags.
+  const head =
+    (body?.assets ? `${body.assets}\n  ` : "") +
+    (lang === "ar" ? `${ARABIC_FONT_PRELOAD}\n  ` : "") +
+    tagsToHtml(seoTags(page, lang, origin, opts));
+  let html = injectHead(shell, head)
     // The shell is built with lang="en"; each localised file has to declare its
     // own language and direction, or a crawler reads Arabic markup as English
     // and a reader gets LTR text before hydration corrects it.
     .replace(/<html lang="[^"]*"( dir="[^"]*")?/i, `<html lang="${lang}" dir="${dirOf(lang)}"`);
+  if (body) {
+    // The rendered page, plus the content it was rendered from as JSON (not a
+    // script that runs — nothing executes to hand the data over).
+    html = html.replace(
+      '<div id="root"></div>',
+      () => `<div id="root">${body.html}</div>\n    <script id="kf-content" type="application/json">${body.snapshot}</script>`,
+    );
+  }
   const target = join(distDir, file);
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, html, "utf8");
@@ -262,56 +463,80 @@ export interface PrerenderResult {
   legal: number;
 }
 
-export async function prerenderPages(distDir: string, origin: string, ctx: BuildContext): Promise<PrerenderResult> {
-  const shell = stripStaticHead(await readFile(join(distDir, "index.html"), "utf8"));
+export async function prerenderPages(
+  distDir: string,
+  origin: string,
+  ctx: BuildContext,
+  ssr: SsrModule | null,
+  manifest: Manifest | null,
+  warnings: string[],
+): Promise<PrerenderResult> {
+  // The boot script (theme + language redirect before paint) goes into the
+  // shell itself, so the shell-served pages carry it too.
+  const shell = injectHead(stripStaticHead(await readFile(join(distDir, "index.html"), "utf8")), bootScript(ctx.langs));
   const opts = tagOptions(ctx);
   // `/q` is the client quote page: private links, served by the SPA shell.
   const prerenderable = Object.values(ctx.pages).filter((p) => p.path !== "/404" && p.path !== "/q");
+
+  // With the server bundle present every page gets a real body; without it
+  // (a build that only wants the head, e.g. a quick local check) the files
+  // are head-only shells, as they were before.
+  const withBody = ssr && manifest;
+  const bodyFor = (page: PageSeo, lang: Lang, moduleKey: string) =>
+    withBody ? renderBody(ssr, manifest, ctx, page, lang, moduleKey, warnings) : Promise.resolve(undefined);
+
+  let pageCount = 0;
+  let articleCount = 0;
+  let projectCount = 0;
+  let legalCount = 0;
 
   // Every route, in every enabled language, as its own file: `/services` and
   // `/de/services` are separate documents with their own canonical, hreflang
   // set and `<html lang>`. A language switched off in the dashboard gets no
   // files at all — Vercel then answers it with 404.html — rather than pages
   // that render in English under a German URL.
-  let pageCount = 0;
-  for (const page of prerenderable) {
-    for (const lang of ctx.langs) {
-      await writePage(distDir, shell, pageFor(ctx, page, lang), origin, fileFor(localePath(lang, page.path)), lang, opts);
+  for (const lang of ctx.langs) {
+    // The lists this language's pages read, trimmed to what they can show.
+    ssr?.primeContent(listsFor(ctx, lang));
+
+    for (const page of prerenderable) {
+      const moduleKey = ROUTE_MODULES[page.path];
+      if (!moduleKey) throw new Error(`no page module is registered for ${page.path} (build/seo-build.ts ROUTE_MODULES)`);
+      const full = pageFor(ctx, page, lang);
+      const body = await bodyFor(full, lang, moduleKey);
+      await writePage(distDir, shell, full, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       pageCount++;
     }
-  }
 
-  // Real per-article HTML, so a shared link or a crawler gets the post's own
-  // title, description, share image and BlogPosting schema without JavaScript.
-  // One document per language the article is actually written in, which for
-  // most is English alone. `articlePageSeo` reports that set, so an Arabic post
-  // gets a real `/ar/blog/x` to index while an untranslated one does not claim
-  // a page it cannot serve.
-  let articleCount = 0;
-  for (const post of ctx.articles) {
-    for (const lang of availableLangs(post, ctx.langs)) {
+    // Real per-article HTML, so a shared link or a crawler gets the post's
+    // own title, description, share image and BlogPosting schema without
+    // JavaScript. One document per language the article is actually written
+    // in, which for most is English alone. `availableLangs` reports that set,
+    // so an Arabic post gets a real `/ar/blog/x` to index while an
+    // untranslated one does not claim a page it cannot serve.
+    for (const post of ctx.articles) {
+      if (!availableLangs(post, ctx.langs).includes(lang)) continue;
       const page = articlePageSeo(post, lang, ctx.langs);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts);
+      const body = await bodyFor(page, lang, ITEM_MODULES.article);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       articleCount++;
     }
-  }
 
-  // Case-study pages, on the same terms as articles.
-  let projectCount = 0;
-  for (const item of ctx.projects) {
-    for (const lang of availableLangs(item, ctx.langs)) {
+    // Case-study pages, on the same terms as articles.
+    for (const item of ctx.projects) {
+      if (!availableLangs(item, ctx.langs).includes(lang)) continue;
       const page = projectPageSeo(item, lang, ctx.langs);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts);
+      const body = await bodyFor(page, lang, ITEM_MODULES.project);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       projectCount++;
     }
-  }
 
-  // Legal documents, on the same terms.
-  let legalCount = 0;
-  for (const doc of ctx.legal) {
-    for (const lang of availableLangs(doc, ctx.langs)) {
+    // Legal documents, on the same terms.
+    for (const doc of ctx.legal) {
+      if (!availableLangs(doc, ctx.langs).includes(lang)) continue;
       const page = legalPageSeo(doc, lang, ctx.langs);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts);
+      const body = await bodyFor(page, lang, ITEM_MODULES.legal);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       legalCount++;
     }
   }
@@ -651,36 +876,61 @@ export interface SeoBuildResult {
  * one snapshot. Throws `SeoFetchError` when the API cannot be read at all —
  * the build must fail rather than ship a site that has forgotten its content.
  */
-export async function runSeoBuild(input: { dist: string; origin: string; apiBase?: string }): Promise<SeoBuildResult> {
-  const { dist, origin, apiBase } = input;
+export async function runSeoBuild(input: {
+  dist: string;
+  origin: string;
+  apiBase?: string;
+  /** The built server bundle; without it pages are head-only shells. */
+  ssr?: SsrModule | null;
+  manifestPath?: string;
+}): Promise<SeoBuildResult> {
+  const { dist, origin, apiBase, ssr = null } = input;
   const warnings: string[] = [];
 
   const settings = await fetchSettings(apiBase);
-  const [articles, projects, legal, services, solutions, faqs, overrides] = await Promise.all([
-    fetchArticles(apiBase),
-    fetchProjects(apiBase),
-    fetchLegal(apiBase),
-    fetchCollection(apiBase, "services"),
-    fetchCollection(apiBase, "solutions"),
-    fetchCollection(apiBase, "faqs"),
-    fetchSeoOverrides(apiBase),
-  ]);
+  const langs = enabledLangs(settings);
+  const [articles, projects, legal, services, solutions, faqs, testimonials, aboutSections, promos, overrides, ...translationMaps] =
+    await Promise.all([
+      fetchArticles(apiBase),
+      fetchProjects(apiBase),
+      fetchLegal(apiBase),
+      fetchCollection(apiBase, "services"),
+      fetchCollection(apiBase, "solutions"),
+      fetchCollection(apiBase, "faqs"),
+      fetchCollection(apiBase, "testimonials"),
+      fetchCollection(apiBase, "aboutSections"),
+      fetchCollection(apiBase, "promos"),
+      fetchSeoOverrides(apiBase),
+      ...langs.map((l) => fetchTranslations(apiBase, l)),
+    ]);
+  const translations: Partial<Record<Lang, Record<string, string>>> = {};
+  langs.forEach((l, i) => {
+    translations[l] = translationMaps[i] as Record<string, string>;
+  });
 
   // The Organization schema carries whatever an editor put in Site settings,
   // exactly as the running site will once it has fetched them.
   setSiteIdentity(identityFromSettings(settings));
+  // Dashboard wording overrides reach the <title> and description through the
+  // same translator the page body uses.
+  for (const l of langs) setOverrides(l, translations[l] ?? {});
 
   const ctx: BuildContext = {
     // Dashboard edits win over the compiled-in PAGES table, so the static
     // HTML matches what the editor sees on the site.
     pages: mergeSeoOverrides(overrides),
+    settings,
     articles,
     projects,
     legal,
     services,
     solutions,
     faqs,
-    langs: enabledLangs(settings),
+    testimonials,
+    aboutSections,
+    promos,
+    translations,
+    langs,
     twitterSite: settings?.social?.x?.trim() || undefined,
     overrides: overrides.length,
   };
@@ -689,17 +939,32 @@ export async function runSeoBuild(input: { dist: string; origin: string; apiBase
     warnings.push(`No blog posts came back from ${apiBase}. The collection is empty: nothing to prerender or list for /blog.`);
   }
 
+  // The server bundle has its own dictionary and content cache; it is primed
+  // with the same data the head is built from, so the two cannot disagree.
+  let manifest: Manifest | null = null;
+  if (ssr) {
+    if (!input.manifestPath) throw new Error("a server bundle needs the client build manifest (manifestPath)");
+    manifest = JSON.parse(await readFile(input.manifestPath, "utf8")) as Manifest;
+    for (const [l, dict] of Object.entries(DICTS)) ssr.primeDict(l as Lang, dict);
+    for (const l of langs) ssr.setOverrides(l, translations[l] ?? {});
+    ssr.primeContent({ ...(settings ? { settings } : {}), ...itemEntries(ctx) });
+    for (const l of LANGS) {
+      const chunk = manifest[`src/lib/dict/${l}.json`];
+      if (l !== "en" && !chunk) throw new Error(`the build manifest has no chunk for the ${l} dictionary`);
+    }
+  }
+
   // Always prerender: the per-route HTML files are what let vercel.json
   // narrow its rewrite to /blog/*, so that unknown paths reach 404.html
   // instead of the homepage. Skipping this would 404 every real route.
-  const counts = await prerenderPages(dist, origin, ctx);
+  const counts = await prerenderPages(dist, origin, ctx, ssr, manifest, warnings);
 
   const fontDrift = await checkArabicFont(dist);
   if (fontDrift) warnings.push(fontDrift);
 
   const prerendered =
     `prerendered ${counts.routes} routes + ${counts.articles} articles + ${counts.projects} case studies + ` +
-    `${counts.legal} legal (${ctx.langs.join(", ")})`;
+    `${counts.legal} legal (${ctx.langs.join(", ")}${ssr ? ", full pages" : ", head only"})`;
 
   if (!origin) return { summary: `SEO: ${prerendered} (no origin set)`, warnings };
 

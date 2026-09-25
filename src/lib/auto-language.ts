@@ -1,4 +1,4 @@
-import { LANGS, isLang, type Lang } from "./langs";
+import { LANGS, isLang, type Lang } from "./langs.ts";
 
 /**
  * Sends a first-time visitor to the language they most likely read.
@@ -28,8 +28,10 @@ import { LANGS, isLang, type Lang } from "./langs";
 const STORAGE_KEY = "kf-lang";
 const AUTO_KEY = "kf-lang-auto";
 
-/** Time zones whose country reads Arabic, and the European pair we serve. */
-const ZONE_LANG: Record<string, Lang> = {
+/** Time zones whose country reads Arabic, and the European pair we serve.
+ *  Exported for the build, which inlines the same table into every page's
+ *  head so the redirect runs before the first paint. */
+export const ZONE_LANG: Record<string, Lang> = {
   // Arabic-speaking countries
   "Africa/Cairo": "ar",
   "Asia/Riyadh": "ar",
@@ -99,8 +101,9 @@ function stored(key: string): string | null {
  */
 function redirectLegacyParam(path: string, first: string | undefined): boolean {
   const params = new URLSearchParams(window.location.search);
-  const param = params.get("lang");
-  if (!isLang(param)) return false;
+  const raw = params.get("lang");
+  const param: Lang | null = isLang(raw) ? raw : null;
+  if (!param) return false;
   params.delete("lang");
   const search = params.toString() ? `?${params.toString()}` : "";
   const prefixed = first && isLang(first);
@@ -142,8 +145,21 @@ export function applyAutoLanguage(): void {
   // crawler hitting a prefixed page.
   if (first && isLang(first)) return;
 
-  // A visitor who has ever used the switcher, or been redirected once already.
-  if (stored(STORAGE_KEY) || stored(AUTO_KEY)) return;
+  // A visitor who chose a language with the switcher lands on its own URL.
+  // The page under an unprefixed URL is English — prerendered, canonical and
+  // all — so switching it in place would show Arabic under an English
+  // canonical; navigating to `/ar/...` keeps the served page honest.
+  const chosen = stored(STORAGE_KEY);
+  if (chosen) {
+    if (isLang(chosen) && chosen !== "en") {
+      stashEntry();
+      window.location.replace(`/${chosen}${path === "/" ? "" : path}${window.location.search}${window.location.hash}`);
+    }
+    return;
+  }
+
+  // A visitor who has been redirected (or detected as English) once already.
+  if (stored(AUTO_KEY)) return;
 
   /*
    * A non-English browser language wins outright: someone whose device is set

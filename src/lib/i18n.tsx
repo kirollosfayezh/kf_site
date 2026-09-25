@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { isDictLoaded, loadDict, setOverrides, translate } from "./dict";
+import { hasOverrides, isDictLoaded, loadDict, setOverrides, translate } from "./dict";
 import { getTranslationOverrides } from "../services/content";
 import { LANGS, LANG_META, dirOf, isLang, type Lang } from "./langs";
+import { localePath } from "./seo";
 
 export { LANGS, LANG_META, dirOf, isLang };
 export type { Lang };
@@ -94,13 +95,21 @@ export function I18nProvider({
   children,
   defaultLang = "en",
   enabled,
+  initialLang,
 }: {
   children: ReactNode;
   defaultLang?: Lang;
   /** Enabled language codes from site settings; English is always offered. */
   enabled?: Lang[];
+  /**
+   * The language of the URL being rendered. The build-time prerender and the
+   * client's hydration both pass it, so the first render is decided by the
+   * URL alone — a stored preference redirects (see `auto-language.ts`) rather
+   * than switching a page in place under a canonical that says otherwise.
+   */
+  initialLang?: Lang;
 }) {
-  const [lang, setLangState] = useState<Lang>(() => readUrlLang() ?? readStored() ?? defaultLang);
+  const [lang, setLangState] = useState<Lang>(() => initialLang ?? readUrlLang() ?? readStored() ?? defaultLang);
 
   /**
    * Driven by `settings.languages` so switching a language on in the dashboard
@@ -125,8 +134,14 @@ export function I18nProvider({
 
   useEffect(() => {
     // Only apply the backend-provided default when the visitor has expressed no
-    // preference at all — neither in the URL nor from a previous visit.
-    if (readUrlLang() === null && readStored() === null) setLangState(defaultLang);
+    // preference at all — neither in the URL nor from a previous visit. As a
+    // navigation to the language's own URL, not an in-place switch: the served
+    // page and its canonical are English, and Arabic text under an English
+    // canonical is the mismatch hreflang exists to prevent.
+    if (defaultLang !== "en" && readUrlLang() === null && readStored() === null) {
+      const { pathname, search, hash } = window.location;
+      window.location.replace(`${localePath(defaultLang, pathname)}${search}${hash}`);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultLang]);
 
@@ -148,7 +163,7 @@ export function I18nProvider({
    *  copy — so a missing translation degrades to readable text, never to blank. */
   // Re-renders once the active language's dictionary arrives. `ready` is only a
   // render trigger — `translate` reads the module-level cache, not this state.
-  const [dictReady, setDictReady] = useState(() => lang === "en");
+  const [dictReady, setDictReady] = useState(() => lang === "en" || isDictLoaded(lang));
   useEffect(() => {
     if (lang === "en") {
       setDictReady(true);
@@ -173,7 +188,9 @@ export function I18nProvider({
   const [overridesVersion, setOverridesVersion] = useState(0);
   useEffect(() => {
     let cancelled = false;
-    const stored = readStoredOverrides(lang);
+    // The page's own snapshot already applied this build's overrides; a copy
+    // left by an earlier visit must not paint over it (the fetch refreshes).
+    const stored = hasOverrides(lang) ? null : readStoredOverrides(lang);
     if (stored) {
       setOverrides(lang, stored);
       setOverridesVersion((v) => v + 1);
