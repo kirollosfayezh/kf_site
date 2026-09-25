@@ -92,6 +92,12 @@ const app = (
 );
 
 if (hydrating) {
+  // Let the browser paint the HTML it already has before React walks it:
+  // hydrating ~1,200 nodes is the longest task on load, and when the
+  // scripts arrive with the document (fast network, or a warm cache) Chrome
+  // would otherwise run it before the first frame — the page is on screen
+  // one frame later than it could be, and every lab tool measures that.
+  await new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
   hydrateRoot(root, app, {
     // A greppable prefix, so the prerender's verification script can fail on
     // any mismatch rather than on React's varying wording.

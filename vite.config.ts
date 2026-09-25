@@ -89,9 +89,17 @@ export default defineConfig(({ command, mode }) => {
     environments: {
       client: {
         build: {
-          // The prerender reads it to link each route's own CSS into its
-          // page, so a server-rendered body never paints unstyled.
+          // The prerender reads it for the dictionary chunk names.
           manifest: true,
+          /*
+           * One stylesheet, not one per route. Pages arrive with their body,
+           * so the route's CSS is render-blocking on first load — as six
+           * separate files it cost six requests on the critical path (a 4G
+           * phone spent ~0.5 s on the handshakes alone). The whole site's CSS
+           * is ~12 kB compressed; one file, one request, cached for every
+           * page after.
+           */
+          cssCodeSplit: false,
         },
       },
       ssr: {
