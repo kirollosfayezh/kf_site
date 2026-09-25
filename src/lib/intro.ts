@@ -85,7 +85,10 @@ export function shouldPlayIntro(pathname: string): boolean {
     /* fine: no memory of it either way */
   }
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
-  if (navigator.webdriver) return false;
+  // Lab tools measure the page, not the show. Headless and driven browsers
+  // report `webdriver`; Lighthouse (PageSpeed Insights, the DevTools panel),
+  // GTmetrix and WebPageTest identify themselves in the user agent instead.
+  if (navigator.webdriver || /Lighthouse|HeadlessChrome|GTmetrix|PTST/.test(navigator.userAgent)) return false;
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
   if (conn?.saveData || /2g/.test(conn?.effectiveType ?? "")) return false;
   if (Math.min(window.innerWidth, window.innerHeight) < 320) return false;
