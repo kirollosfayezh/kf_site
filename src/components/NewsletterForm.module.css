@@ -1,0 +1,62 @@
+.form {
+  position: relative;
+  max-width: 520px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-ui);
+  line-height: 1.3;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--brand-orange);
+}
+
+.compact .input {
+  padding: 10px 14px;
+}
+
+.note {
+  margin-top: 8px;
+  font-size: var(--fs-label);
+  color: var(--text3);
+}
+
+.error {
+  color: var(--brand-orange);
+}
+
+.status {
+  font-size: var(--fs-ui);
+  color: var(--text2);
+}
+
+/* Off-screen, not display:none — a bot that skips hidden fields is the
+   point, and a person can never reach it (tabIndex -1, aria-hidden). */
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}

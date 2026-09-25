@@ -1,0 +1,23 @@
+.portrait {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.stars {
+  display: block;
+  margin-top: 4px;
+  color: var(--brand-orange);
+  letter-spacing: 0.08em;
+  font-size: var(--fs-label);
+  line-height: 1.2;
+}
+
+.source {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: var(--fs-label);
+  color: var(--brand-orange);
+}

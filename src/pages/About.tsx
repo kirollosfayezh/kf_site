@@ -5,7 +5,8 @@ import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
-import { WA_LINK } from "../components/Footer";
+import { Testimonials } from "../components/Testimonials";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import s from "../styles/sections.module.css";
 
 /** The three workspace shots the original About page shows under the portrait. */
@@ -34,6 +35,7 @@ const STEPS = [
 
 export function About() {
   const { t, lang } = useI18n();
+  const waLink = useWhatsAppLink();
   const sections = useContentList("aboutSections");
 
   // `aboutSections` is the source for both blocks below, grouped by `meta.tag`.
@@ -130,15 +132,17 @@ export function About() {
         </BalancedGrid>
       </section>
 
+      <Testimonials limit={6} />
+
       <section className={s.finalCta}>
         <div className={s.finalCtaGlow} aria-hidden="true" />
         <Reveal className={s.finalCtaInner}>
           <h2 className={s.finalCtaTitle}>{t("Let's build something real.")}</h2>
           <div className={s.finalCtaActions}>
-            <Link to="/contact" className="btn btn-primary">
+            <Link to="/contact" className="btn btn-primary" data-track="about.final.start-project">
               {t("Start a project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-outline" data-track="about.final.whatsapp">
               {t("WhatsApp us")}
             </a>
           </div>

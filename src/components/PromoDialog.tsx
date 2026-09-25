@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
 import { pick, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
+import { useSettings } from "../lib/settings";
+import { CONSENT_CHANGED_EVENT, needsConsent } from "../lib/pixels";
+import { trackClick } from "../services/analytics";
 import { Img } from "../components/Img";
 import s from "./PromoDialog.module.css";
 
 const DISMISS_KEY = "kf-promo-seen";
+
+/**
+ * Pages where an offer popup would get in the way of something the visitor
+ * is already doing: reading their own quote, booking a call, or the ad
+ * landing page, which is itself the offer.
+ */
+const QUIET_ROUTES = [/^\/q(\/|$)/, /^\/book$/, /^\/campaign$/];
 
 /**
  * The offer popup, driven entirely from the dashboard's Offers screen.
@@ -27,7 +37,23 @@ const DISMISS_KEY = "kf-promo-seen";
 export function PromoDialog() {
   const { t, lang } = useI18n();
   const { data } = useContentList("promos");
+  // Basename-relative, so `/ar/book` reads as `/book` here.
+  const { pathname } = useLocation();
+  const quiet = QUIET_ROUTES.some((r) => r.test(pathname));
   const [open, setOpen] = useState(false);
+
+  // While the cookie bar is up the offer waits: its scrim used to cover the
+  // Accept button, so the first thing a new visitor had to do was dismiss an
+  // ad to reach the consent question.
+  const settings = useSettings();
+  const [consentPending, setConsentPending] = useState(false);
+  useEffect(() => {
+    if (!settings) return;
+    setConsentPending(needsConsent(settings.pixels));
+    const done = () => setConsentPending(false);
+    window.addEventListener(CONSENT_CHANGED_EVENT, done);
+    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, done);
+  }, [settings]);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -54,7 +80,7 @@ export function PromoDialog() {
   }, [data]);
 
   useEffect(() => {
-    if (!promo || dismissed.includes(promo.id)) return;
+    if (!promo || dismissed.includes(promo.id) || quiet || consentPending) return;
 
     // Measured from when the page loaded, not from when the offer arrived —
     // otherwise the fetch time is added to the delay, and a slow connection
@@ -70,7 +96,18 @@ export function PromoDialog() {
     }
     const id = window.setTimeout(() => setOpen(true), remaining);
     return () => window.clearTimeout(id);
-  }, [promo, dismissed]);
+  }, [promo, dismissed, quiet, consentPending]);
+
+  // Navigating onto a quiet route closes an offer that is already up.
+  useEffect(() => {
+    if (quiet) setOpen(false);
+  }, [quiet]);
+
+  // An impression, so the dashboard can tell how many saw the offer versus
+  // how many clicked it — otherwise the popup's effect is invisible.
+  useEffect(() => {
+    if (open && promo) trackClick("promo.view");
+  }, [open, promo]);
 
   const close = () => {
     setOpen(false);
@@ -162,11 +199,11 @@ export function PromoDialog() {
 
           <div className={s.actions}>
             {ctaUrl && /^https?:\/\//.test(ctaUrl) ? (
-              <a href={ctaUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary" onClick={close}>
+              <a href={ctaUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary" data-track="promo.cta" onClick={close}>
                 {ctaLabel || t("Claim this offer")}
               </a>
             ) : (
-              <Link to={ctaUrl || "/contact"} className="btn btn-primary" onClick={close}>
+              <Link to={ctaUrl || "/contact"} className="btn btn-primary" data-track="promo.cta" onClick={close}>
                 {ctaLabel || t("Claim this offer")}
               </Link>
             )}

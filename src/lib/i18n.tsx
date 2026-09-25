@@ -65,21 +65,16 @@ function readStored(): Lang | null {
 }
 
 /**
- * `?lang=ar` wins over anything stored. The SEO layer publishes hreflang
- * alternates pointing at these URLs, so a crawler — or anyone following a
- * shared link — has to land in that language rather than in whatever the last
- * visitor on this browser happened to pick. Announcing an alternate that
- * renders in English is worse for ranking than announcing none.
- */
-/**
  * The language is the **first path segment** — `/de/services`. That is the URL
- * shape the prerender and the hreflang set now use, so it has to be what the
- * running app reads too.
+ * shape the prerender and the hreflang set use, so it has to be what the
+ * running app reads too, and it wins over anything stored: a crawler — or
+ * anyone following a shared link — has to land in that language rather than
+ * in whatever the last visitor on this browser happened to pick.
  *
- * `?lang=` is still honoured as a fallback so old shared links keep working, but
- * it is no longer what the site advertises: Google rates URL parameters "Not
- * recommended" for language targeting, and a parameter cannot select a different
- * static file, so those URLs always served English HTML to a crawler.
+ * The legacy `?lang=` form is turned into the prefixed URL before React mounts
+ * (see `auto-language.ts`), so nothing here reads the query string. A
+ * parameter cannot select a different static file, so those URLs always served
+ * English HTML to a crawler.
  */
 function readPathLang(): Lang | null {
   try {
@@ -90,18 +85,9 @@ function readPathLang(): Lang | null {
   }
 }
 
-function readParam(): Lang | null {
-  try {
-    const v = new URLSearchParams(window.location.search).get("lang");
-    return isLang(v) ? v : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Path first, then the legacy query parameter. */
+/** What the URL says about the language, if anything. */
 function readUrlLang(): Lang | null {
-  return readPathLang() ?? readParam();
+  return readPathLang();
 }
 
 export function I18nProvider({

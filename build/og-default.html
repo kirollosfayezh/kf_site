@@ -1,0 +1,76 @@
+<!doctype html>
+<!--
+  The branded share card, 1200×630. Rendered once by `make-og-image.sh` into
+  public/og-default.png — it is not part of the build, so a change here means
+  re-running that script and committing the PNG.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1200px; height: 630px; overflow: hidden; }
+      body {
+        position: relative;
+        background: #0a0a0d;
+        color: #f4f2ee;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .glow {
+        position: absolute; inset: 0;
+        background:
+          radial-gradient(60% 70% at 78% 30%, rgba(255, 106, 0, 0.28), transparent 70%),
+          radial-gradient(45% 55% at 12% 90%, rgba(255, 55, 120, 0.16), transparent 70%);
+      }
+      .grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(80% 80% at 50% 50%, #000 40%, transparent 100%);
+        -webkit-mask-image: radial-gradient(80% 80% at 50% 50%, #000 40%, transparent 100%);
+      }
+      .card { position: absolute; inset: 0; padding: 72px 84px; display: flex; flex-direction: column; justify-content: space-between; }
+      .brand { display: flex; align-items: center; gap: 22px; }
+      .brand img { width: 88px; height: 79px; }
+      .brand .name { font-size: 34px; font-weight: 700; letter-spacing: -0.01em; }
+      .brand .tag { font-size: 18px; color: #a7a3a0; letter-spacing: 0.18em; text-transform: uppercase; margin-top: 6px; font-family: "SF Mono", Menlo, monospace; }
+      h1 { font-size: 78px; line-height: 1.02; font-weight: 700; letter-spacing: -0.035em; max-width: 960px; }
+      h1 em { font-style: normal; background: linear-gradient(90deg, #ff6a00, #ff3d7a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .services { display: flex; gap: 14px; flex-wrap: wrap; }
+      .services span {
+        font-size: 20px; padding: 12px 20px; border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.05); color: #e9e6e1;
+      }
+      .foot { display: flex; justify-content: space-between; align-items: flex-end; }
+      .foot .where { font-size: 20px; color: #a7a3a0; letter-spacing: 0.14em; text-transform: uppercase; font-family: "SF Mono", Menlo, monospace; }
+      .rule { position: absolute; left: 84px; right: 84px; bottom: 150px; height: 1px; background: linear-gradient(90deg, rgba(255,106,0,.6), rgba(255,255,255,.08)); }
+    </style>
+  </head>
+  <body>
+    <div class="glow"></div>
+    <div class="grid"></div>
+    <div class="card">
+      <div class="brand">
+        <img src="../public/logo-icon.png" alt="" />
+        <div>
+          <div class="name">KF Tech Solutions</div>
+          <div class="tag">Software studio · Cairo, EG</div>
+        </div>
+      </div>
+      <h1>Custom software<br />built to <em>run</em> on,<br />not to demo well.</h1>
+      <div class="rule"></div>
+      <div class="foot">
+        <div class="services">
+          <span>Custom software</span>
+          <span>POS systems</span>
+          <span>Web &amp; mobile</span>
+          <span>AI automation</span>
+        </div>
+        <div class="where">kftechsolutions</div>
+      </div>
+    </div>
+  </body>
+</html>

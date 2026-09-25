@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { WA_LINK } from "../components/Footer";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
+import { trackConversion } from "../lib/conversions";
 import { ApiError } from "../services/http";
 import { acceptQuote, declineQuote, getQuote, type PublicQuote } from "../services/sales";
 import q from "./Quote.module.css";
@@ -18,6 +19,7 @@ const locale = (lang: string) => (lang === "ar" ? "ar-EG" : lang);
 export function Quote() {
   const { token = "" } = useParams();
   const { t, lang } = useI18n();
+  const waLink = useWhatsAppLink(t("my quote"));
   const [quote, setQuote] = useState<PublicQuote | null>(null);
   const [error, setError] = useState<"notfound" | "network" | null>(null);
   const [mode, setMode] = useState<"idle" | "accept" | "decline">("idle");
@@ -39,7 +41,7 @@ export function Quote() {
         <div className={q.message}>
           <h1>{error === "notfound" ? t("This quote link is not valid.") : t("We couldn't load this quote right now.")}</h1>
           <p>{t("Message us on WhatsApp and we'll send it again.")}</p>
-          <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-primary">{t("WhatsApp us")}</a>
+          <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" data-track="quote.error.whatsapp">{t("WhatsApp us")}</a>
         </div>
       </section>
     );
@@ -68,8 +70,12 @@ export function Quote() {
     }
     setBusy(true);
     try {
-      setQuote(await acceptQuote(token, name.trim()));
+      const accepted = await acceptQuote(token, name.trim());
+      setQuote(accepted);
       setMode("idle");
+      // Signed on the server: a conversion, with the money attached so the ad
+      // platforms can optimise on value rather than on form fills.
+      trackConversion("quote_accepted", { value: accepted.totals.total, currency: accepted.currency, id: accepted.number });
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : "Something went wrong sending your request.");
     } finally {
@@ -124,7 +130,7 @@ export function Quote() {
         {quote.status === "expired" && (
           <div className={`${q.banner} ${q.bannerWarn}`} role="status">
             {t("This quote has expired. Ask us for an updated one.")}{" "}
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer">{t("WhatsApp us")}</a>
+            <a href={waLink} target="_blank" rel="noopener noreferrer" data-track="quote.expired.whatsapp">{t("WhatsApp us")}</a>
           </div>
         )}
 
@@ -212,7 +218,7 @@ export function Quote() {
           </label>
           {formError && <p className={q.error}>{t(formError)}</p>}
           <div className={q.row}>
-            <button type="submit" className="btn btn-primary" disabled={busy} data-track="quote.accept">
+            <button type="submit" className="btn btn-primary" disabled={busy}>
               {busy ? t("Sending…") : t("Accept quote")}
             </button>
             <button type="button" className="btn btn-outline" onClick={() => setMode("idle")}>{t("Cancel")}</button>

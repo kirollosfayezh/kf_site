@@ -7,7 +7,7 @@ import { pick } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { FlagIcon } from "./FlagIcon";
-import { WA_LINK } from "./Footer";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import styles from "./MobileMenu.module.css";
 
 interface Leaf {
@@ -37,6 +37,7 @@ interface Branch {
  */
 export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t, lang, setLang, available } = useI18n();
+  const waLink = useWhatsAppLink();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -118,12 +119,11 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
     return location.pathname === path;
   };
 
+  // The chips are real links (a full navigation, as in the header switcher:
+  // the language prefix is the router's `basename`, which is only read at
+  // startup); the click handler just records the choice.
   function chooseLang(code: Lang) {
-    if (code === lang) return;
-    setLang(code);
-    // A full navigation, as in the header switcher: the language prefix is the
-    // router's `basename`, which is only read at startup.
-    window.location.assign(localePath(code, location.pathname));
+    if (code !== lang) setLang(code);
   }
 
   return (
@@ -242,9 +242,10 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
               <span className={styles.groupLabel}>{t("Language")}</span>
               <div className={styles.langs} role="radiogroup" aria-label={t("Language")}>
                 {available.map((code) => (
-                  <button
+                  <a
                     key={code}
-                    type="button"
+                    href={localePath(code, location.pathname)}
+                    hrefLang={code}
                     role="radio"
                     aria-checked={code === lang}
                     lang={code}
@@ -253,7 +254,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
                   >
                     <FlagIcon lang={code} size={18} />
                     <span>{LANG_META[code].short}</span>
-                  </button>
+                  </a>
                 ))}
               </div>
             </div>
@@ -280,7 +281,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
             <Link to="/contact" data-track="nav.lets-build-mobile" className={styles.cta} onClick={onClose}>
               {t("Let's Build")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={styles.wa} aria-label={t("Chat on WhatsApp")}>
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className={styles.wa} aria-label={t("Chat on WhatsApp")} data-track="nav.mobile.whatsapp">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.08-.13-.27-.2-.57-.35zM12.04 21.5h-.01a9.45 9.45 0 0 1-4.82-1.32l-.35-.2-3.58.93.96-3.49-.23-.36a9.43 9.43 0 0 1-1.45-5.03c0-5.22 4.25-9.46 9.48-9.46 2.53 0 4.9.99 6.7 2.78a9.4 9.4 0 0 1 2.77 6.7c0 5.22-4.25 9.46-9.47 9.46zm8.06-17.52A11.32 11.32 0 0 0 12.04.64C5.76.64.64 5.75.64 12.03c0 2 .52 3.97 1.52 5.7L.54 23.64l6.05-1.59a11.4 11.4 0 0 0 5.44 1.39h.01c6.28 0 11.4-5.11 11.4-11.4 0-3.04-1.19-5.9-3.34-8.06z" />
               </svg>

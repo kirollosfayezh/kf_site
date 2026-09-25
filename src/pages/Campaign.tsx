@@ -6,7 +6,9 @@ import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
-import { WA_LINK } from "../components/Footer";
+import { Testimonials } from "../components/Testimonials";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
+import { trackConversion } from "../lib/conversions";
 import { submitLead } from "../services/leads";
 import { ApiError } from "../services/http";
 import s from "../styles/sections.module.css";
@@ -36,12 +38,6 @@ const FAQS = [
   { q: "Do I need to know exactly what I want?", a: "No. A rough idea of the problem is enough to start the conversation." },
 ];
 
-const QUOTES = [
-  { q: "Our POS finally matches how we actually work.", n: "Mina Adel", r: "Owner, Café Delight", i: "MA" },
-  { q: "Reporting that used to take a day now takes a minute.", n: "Ahmed Farouk", r: "Director, Farouk Retail", i: "AF" },
-  { q: "Delivered on time and communicated clearly throughout.", n: "Sarah Hoffmann", r: "PM, Bauwerk GmbH", i: "SH" },
-];
-
 interface FormState {
   name: string;
   email: string;
@@ -53,6 +49,7 @@ const EMPTY: FormState = { name: "", email: "", phone: "", type: "", message: ""
 
 export function Campaign() {
   const { t, lang } = useI18n();
+  const waLink = useWhatsAppLink(t("a free quote"));
   const [form, setForm] = useState<FormState>(EMPTY);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -82,6 +79,8 @@ export function Campaign() {
         message: form.message,
       });
       setSent(true);
+      // After the API accepted it — never on the button.
+      trackConversion("lead");
     } catch (error) {
       setErr(error instanceof ApiError ? error.message : "Something went wrong sending your request.");
     } finally {
@@ -112,7 +111,7 @@ export function Campaign() {
                 </span>
                 <h2 className={c.successTitle}>{t("Request received")}</h2>
                 <p className={c.successDesc}>{t("Thanks — we will reply within one business day. For anything urgent, message us on WhatsApp.")}</p>
-                <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ marginTop: 20 }}>
+                <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ marginTop: 20 }} data-track="campaign.success.whatsapp">
                   {t("Open WhatsApp")}
                 </a>
               </div>
@@ -154,7 +153,7 @@ export function Campaign() {
                   </label>
                 </div>
                 {err && <div className={c.formError}>{t(err)}</div>}
-                <button type="submit" disabled={sending} data-track="campaign.submit" className={`btn btn-primary ${c.submitBtn}`}>
+                <button type="submit" disabled={sending} className={`btn btn-primary ${c.submitBtn}`}>
                   {sending ? t("Sending…") : t("Send my request")}
                 </button>
                 <div className={c.formNote}>{t("No spam. Your details are only used to reply to this enquiry.")}</div>
@@ -213,23 +212,11 @@ export function Campaign() {
         </div>
       </section>
 
-      {/* Short client quotes — static in the original export. */}
-      <section className={s.section} style={{ paddingTop: 0 }}>
-        <div className={s.quoteGrid} style={{ marginTop: 0 }}>
-          {QUOTES.map((q) => (
-            <Reveal key={q.n} className={s.quoteCard}>
-              <p className={s.quoteText}>&ldquo;{t(q.q)}&rdquo;</p>
-              <div className={s.quoteWho}>
-                <span className={s.quoteAvatar} aria-hidden="true">{q.i}</span>
-                <span>
-                  <span className={s.quoteName} style={{ display: "block" }}>{q.n}</span>
-                  <span className={s.quoteRole}>{t(q.r)}</span>
-                </span>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      {/* Client quotes come from the dashboard's Testimonials collection —
+          the three named quotes that used to be hardcoded here were not
+          attributable to anyone the studio could point at. */}
+      <Testimonials limit={3} />
+
 
       <section className={s.sectionNarrow}>
         <Reveal className={s.headCenter}>
@@ -255,13 +242,13 @@ export function Campaign() {
               {t("A free scoping call, a fixed quote, and a working demo before you commit to the full build.")}
             </p>
             <div className={s.ctaPanelActions}>
-              <a href="#quote" className="btn btn-primary">
+              <a href="#quote" className="btn btn-primary" data-track="campaign.final.quote">
                 {t("Get a free quote")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
               </a>
               <Link to="/book" data-track="campaign.book-call" className="btn btn-outline">
                 {t("Book a call")}
               </Link>
-              <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+              <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-outline" data-track="campaign.final.whatsapp">
                 {t("WhatsApp us")}
               </a>
             </div>

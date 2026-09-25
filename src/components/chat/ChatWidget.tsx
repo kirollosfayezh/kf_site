@@ -14,6 +14,7 @@ import {
   type ChatMessage,
 } from "../../services/chat";
 import { ApiError } from "../../services/http";
+import { trackConversion } from "../../lib/conversions";
 import { useI18n } from "../../lib/i18n";
 import { guessCountry, readPhone, rememberCountry, switchCountry } from "../../lib/phone";
 import { ChatAvatar } from "./ChatAvatar";
@@ -291,6 +292,8 @@ export function ChatWidget() {
       setResumed(session.resumed && session.messages.length > 0);
       if (session.messages.some((m) => m.from === "agent")) setAgentJoined(true);
       setHasPhone(true);
+      // A new conversation is a conversion; picking an old one back up is not.
+      if (!session.resumed) trackConversion("chat_start");
 
       const text = pending.current;
       pending.current = null;

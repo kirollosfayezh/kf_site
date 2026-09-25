@@ -3,96 +3,80 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "trailingSlash": false,
   "rewrites": [
+    { "source": "/(ar|de|fr)/blog/(.*)", "destination": "/article-shell.html" },
+    { "source": "/blog/(.*)", "destination": "/article-shell.html" },
+    { "source": "/(ar|de|fr)/projects/(.*)", "destination": "/article-shell.html" },
+    { "source": "/projects/(.*)", "destination": "/article-shell.html" },
+    { "source": "/(ar|de|fr)/legal/(.*)", "destination": "/article-shell.html" },
+    { "source": "/legal/(.*)", "destination": "/article-shell.html" },
+    { "source": "/(ar|de|fr)/q/(.*)", "destination": "/article-shell.html" },
+    { "source": "/q/(.*)", "destination": "/article-shell.html" }
+  ],
+  "redirects": [
     {
-      "source": "/(ar|de|fr)/blog/(.*)",
-      "destination": "/article-shell.html"
+      "source": "/",
+      "has": [{ "type": "query", "key": "lang", "value": "(?<lng>ar|de|fr)" }],
+      "destination": "/:lng",
+      "permanent": true
     },
     {
-      "source": "/blog/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/(ar|de|fr)/projects/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/projects/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/(ar|de|fr)/q/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/q/(.*)",
-      "destination": "/article-shell.html"
+      "source": "/:path((?!ar(?:/|$)|de(?:/|$)|fr(?:/|$)).*)",
+      "has": [{ "type": "query", "key": "lang", "value": "(?<lng>ar|de|fr)" }],
+      "destination": "/:lng/:path",
+      "permanent": true
     }
   ],
   "headers": [
     {
-      "source": "/assets/(.*)",
+      "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(favicon.svg|favicon.ico|apple-touch-icon.png|icon-192.png|icon-512.png|site.webmanifest|icons.svg|logo-icon.png|founder.jpg)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
-    },
-    {
-      "source": "/(sitemap.xml|robots.txt)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "X-Frame-Options", "value": "DENY" }
       ]
     },
     {
       "source": "/((?!assets/).*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/(favicon.svg|favicon.ico|apple-touch-icon.png|icon-192.png|icon-512.png|site.webmanifest|icons.svg|logo-icon.png|founder.jpg|og-default.png)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+    },
+    {
+      "source": "/(sitemap.xml|robots.txt|llms.txt)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
+    },
+    {
+      "source": "/feed.xml",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
+        { "key": "Content-Type", "value": "application/rss+xml; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
+      ]
+    },
+    {
+      "source": "/(ar|de|fr)/feed.xml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/rss+xml; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
       ]
     },
     {
       "source": "/i18n/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300"
-        }
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
       ]
-    }
-  ],
-  "trailingSlash": false,
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "query",
-          "key": "lang",
-          "value": "(?<lng>ar|de|fr)"
-        }
-      ],
-      "destination": "/:lng/:path*",
-      "permanent": true
-    }
+    },
+    { "source": "/q/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
+    { "source": "/(ar|de|fr)/q/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
+    { "source": "/article-shell.html", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
   ]
 }

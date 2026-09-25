@@ -6,7 +6,7 @@ import { FALLBACK_PROJECTS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
-import { WA_LINK } from "../components/Footer";
+import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import s from "../styles/sections.module.css";
 
 const CASE_STEPS = [
@@ -19,6 +19,13 @@ const CASE_STEPS = [
 export function Projects() {
   const { t, lang } = useI18n();
   const projects = useContentList("projects");
+  const waLink = useWhatsAppLink(t("a similar project"));
+
+  // The illustrative case study only belongs next to illustrative projects:
+  // the static fallback set, or CMS rows an editor flagged as samples. Once
+  // real projects replace them the section — and its disclaimer — go away.
+  const showSample =
+    !projects.data || projects.data.length === 0 || projects.data.some((p) => p.meta?.sample === true);
 
   // Empty *and* failed responses both fall back to static copy.
   const items =
@@ -53,12 +60,9 @@ export function Projects() {
         <div className={s.pageHeroInner}>
           <Reveal>
             <span className={s.eyebrow}>{t("// PROJECTS")}</span>
-            <div className={s.titleRow}>
-              <h1 className={`${s.pageTitle} ${s.pageTitleLg}`} style={{ maxWidth: 800 }}>{t("From ideas to real products.")}</h1>
-              <span className={s.titleNote}>{t("Sample layouts · real screenshots drop in later")}</span>
-            </div>
+            <h1 className={`${s.pageTitle} ${s.pageTitleLg}`} style={{ maxWidth: 800 }}>{t("From ideas to real products.")}</h1>
             <p className={s.pageLedeLg}>
-              {t("The layouts below show how we present delivered work. Each slot is ready for a real project's screenshots, results and technologies.")}
+              {t("Delivered platforms, dashboards and mobile apps, with the problem, the approach and the technology behind each build.")}
             </p>
           </Reveal>
         </div>
@@ -104,28 +108,30 @@ export function Projects() {
       </section>
 
       {/* FEATURED CASE STUDY — static in the original export, restored here. */}
-      <section className={s.sectionAlt}>
-        <div className={s.section}>
-          <Reveal>
-            <span className={s.eyebrowPink}>{t("// FEATURED CASE STUDY")}</span>
-            <h2 className={s.caseTitle}>{t("A restaurant chain, from paper tickets to one connected system.")}</h2>
-          </Reveal>
-          <div className={s.caseGrid}>
-            {CASE_STEPS.map((c) => (
-              <Reveal key={c.n} className={s.caseCell}>
-                <div className={s.caseHead}>
-                  <span className={s.caseNum}>{c.n}</span>
-                  <span className={s.caseStepTitle}>{t(c.title)}</span>
-                </div>
-                <p className={s.caseBody}>{t(c.body)}</p>
-              </Reveal>
-            ))}
+      {showSample && (
+        <section className={s.sectionAlt}>
+          <div className={s.section}>
+            <Reveal>
+              <span className={s.eyebrowPink}>{t("// FEATURED CASE STUDY")}</span>
+              <h2 className={s.caseTitle}>{t("A restaurant chain, from paper tickets to one connected system.")}</h2>
+            </Reveal>
+            <div className={s.caseGrid}>
+              {CASE_STEPS.map((c) => (
+                <Reveal key={c.n} className={s.caseCell}>
+                  <div className={s.caseHead}>
+                    <span className={s.caseNum}>{c.n}</span>
+                    <span className={s.caseStepTitle}>{t(c.title)}</span>
+                  </div>
+                  <p className={s.caseBody}>{t(c.body)}</p>
+                </Reveal>
+              ))}
+            </div>
+            <p className={s.caseNote}>
+              {t("Illustrative example. We publish metrics only from real, delivered projects.")}
+            </p>
           </div>
-          <p className={s.caseNote}>
-            {t("Illustrative example. We publish metrics only from real, delivered projects.")}
-          </p>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className={s.finalCta}>
         <div className={s.finalCtaGlow} aria-hidden="true" />
@@ -133,10 +139,10 @@ export function Projects() {
           <h2 className={s.finalCtaTitle}>{t("Your project could be next.")}</h2>
           <p className={s.finalCtaLede}>{t("Tell us what you're building and we'll turn it into a real, working product.")}</p>
           <div className={s.finalCtaActions}>
-            <Link to="/contact" className="btn btn-primary">
+            <Link to="/contact" className="btn btn-primary" data-track="projects.final.start-project">
               {t("Start Your Project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-outline" data-track="projects.final.whatsapp">
               {t("WhatsApp us")}
             </a>
           </div>

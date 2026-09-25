@@ -12,9 +12,15 @@
  * Single-colour paths on `currentColor`, so they inherit the link's hover state
  * and work in both themes without a second set.
  */
-export type SocialName = "Facebook" | "Instagram" | "TikTok" | "LinkedIn" | "GitHub" | "WhatsApp";
+export type SocialName = "Facebook" | "Instagram" | "TikTok" | "LinkedIn" | "GitHub" | "WhatsApp" | "X" | "YouTube";
 
 const PATHS: Record<SocialName, React.ReactNode> = {
+  X: (
+    <path d="M18.9 1.2h3.7l-8 9.2 9.4 12.4h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.8L0 1.2h7.6l5.2 6.9 6.1-6.9zm-1.3 19.4h2L6.5 3.3H4.3l13.3 17.3z" />
+  ),
+  YouTube: (
+    <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z" />
+  ),
   Facebook: (
     <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.77-3.91 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.45 2.91h-2.33V22c4.78-.79 8.44-4.93 8.44-9.94z" />
   ),

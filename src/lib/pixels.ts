@@ -3,7 +3,7 @@ import type { TrackingSettings } from "../services/api-types";
 /**
  * Third-party marketing tags for the public site.
  *
- * Two rules shape this file.
+ * Three rules shape this file.
  *
  * **Nothing loads unless an id is set.** A site with an empty Marketing screen
  * ships no third-party script and sets no third-party cookie. That is also the
@@ -15,6 +15,13 @@ import type { TrackingSettings } from "../services/api-types";
  * direct pixel loaders below are the alternative to a container, not a
  * companion to one — configuring both loads the same pixel twice and
  * double-counts every conversion, which the dashboard warns about.
+ *
+ * **With consent mode on, nothing loads until the visitor accepts — Google
+ * included.** That is what the privacy policy promises ("if you decline, none
+ * of them load"). Google's tags used to load anyway in Consent Mode's denied
+ * state, which is a legitimate configuration but not the one the policy
+ * describes, and a policy that overstates what the site does is worse than
+ * one that undersells it.
  *
  * Deliberately separate from `services/analytics.ts`: that is our own
  * first-party reporting and always runs; this is optional marketing tagging.
@@ -28,24 +35,33 @@ declare global {
     _fbq?: unknown;
     ttq?: Record<string, (...args: unknown[]) => void> & { load?: (id: string) => void; page?: () => void };
     snaptr?: ((...args: unknown[]) => void) & { queue?: unknown[]; handleRequest?: (...args: unknown[]) => void };
+    lintrk?: ((a: string, b?: unknown) => void) & { q?: unknown[] };
+    _linkedin_partner_id?: string;
+    _linkedin_data_partner_ids?: string[];
+    clarity?: (...args: unknown[]) => void;
   }
 }
 
 /**
- * The site's own event vocabulary, mapped from the `data-track` labels already
- * on the buttons. Three semantic events rather than one per button: a marketing
- * platform cares whether someone became a lead, not which of two CTAs they
+ * The site's own click vocabulary, mapped from the `data-track` labels on the
+ * buttons. Two semantic events rather than one per button: a marketing
+ * platform cares whether someone reached out, not which of two CTAs they
  * clicked, and the raw label travels alongside for anyone who does care.
+ *
+ * A click is never a conversion. Conversions (`pixelConversion`) are reported
+ * by the code that knows the request succeeded — the form's success branch —
+ * not by the button. The old `*.submit → lead` rule fired the moment the
+ * button was pressed, so an empty form, a validation error and a server
+ * failure each counted as a lead in every ad platform.
  */
-export type SiteEvent = "lead" | "contact" | "cta" | "pageview";
+export type SiteEvent = "contact" | "cta" | "pageview";
 
 /** A click can never be a pageview, so the classifier's range excludes it. */
 type ClickEvent = Exclude<SiteEvent, "pageview">;
 
-/** Label prefix or exact label -> semantic event. First match wins. */
+/** Label pattern -> semantic event. First match wins. */
 const EVENT_MAP: [RegExp, ClickEvent][] = [
-  [/\.submit$/, "lead"],
-  [/^(footer\.whatsapp|chat\.launcher|nav\.phone|footer\.email)$/, "contact"],
+  [/(^|\.)(whatsapp|email|phone)$|^chat\.launcher$/, "contact"],
   [/.*/, "cta"],
 ];
 
@@ -54,21 +70,49 @@ export function classify(label: string): ClickEvent {
   return "cta";
 }
 
-/** Per-platform names for each semantic event. `null` means "do not send". */
-const NAMES: Record<ClickEvent, {
-  ga4: string;
-  meta: string | null;
-  tiktok: string | null;
-  snap: string | null;
-}> = {
-  lead: { ga4: "generate_lead", meta: "Lead", tiktok: "SubmitForm", snap: "SIGN_UP" },
+/** Per-platform names for each click event. `null` means "do not send". */
+const NAMES: Record<ClickEvent, { ga4: string; meta: string | null; tiktok: string | null; snap: string | null }> = {
   contact: { ga4: "contact", meta: "Contact", tiktok: "Contact", snap: null },
   cta: { ga4: "select_content", meta: null, tiktok: "ClickButton", snap: null },
 };
 
+/**
+ * The things a visitor can *do* that marketing counts. Each maps to the name
+ * every platform expects and to the dashboard switch that can silence it.
+ * A quote accepted carries its value, so Ads and Meta can optimise on money.
+ */
+export type ConversionKind = "lead" | "booking" | "chat_start" | "quote_accepted" | "newsletter";
+
+interface ConversionSpec {
+  /** The `pixels.events` key that switches this conversion off. */
+  switch: string;
+  ga4: string;
+  meta: string | null;
+  tiktok: string | null;
+  snap: string | null;
+  /** Report to Google Ads (needs id + label) and LinkedIn (needs a conversion id). */
+  ads: boolean;
+  linkedin: boolean;
+}
+
+const CONVERSIONS: Record<ConversionKind, ConversionSpec> = {
+  lead: { switch: "lead", ga4: "generate_lead", meta: "Lead", tiktok: "SubmitForm", snap: "SIGN_UP", ads: true, linkedin: true },
+  booking: { switch: "booking", ga4: "book_call", meta: "Schedule", tiktok: "SubmitForm", snap: "SIGN_UP", ads: true, linkedin: true },
+  chat_start: { switch: "chat", ga4: "chat_start", meta: "Contact", tiktok: "Contact", snap: null, ads: false, linkedin: false },
+  quote_accepted: { switch: "quote", ga4: "purchase", meta: "Purchase", tiktok: "CompletePayment", snap: "PURCHASE", ads: true, linkedin: true },
+  newsletter: { switch: "newsletter", ga4: "sign_up", meta: "Subscribe", tiktok: "Subscribe", snap: "SUBSCRIBE", ads: false, linkedin: false },
+};
+
+export interface ConversionDetails {
+  value?: number;
+  currency?: string;
+  /** A booking or quote number, so a platform can dedupe a retried report. */
+  id?: string;
+}
+
 let config: TrackingSettings = {};
 let active = false;
-const loaded = { gtm: false, ga: false, ads: false, meta: false, tiktok: false, snap: false };
+const loaded = { gtm: false, ga: false, ads: false, meta: false, tiktok: false, snap: false, linkedin: false, clarity: false };
 
 /* ---------------------------------------------------------------- consent */
 
@@ -94,6 +138,9 @@ export function readConsent(): Consent | null {
 /** Lets the footer's "Cookie settings" link reopen the banner from anywhere,
  *  without threading state through the whole tree for a once-a-session action. */
 export const CONSENT_REOPEN_EVENT = "kf:consent-reopen";
+
+/** Fired on `window` after a decision is stored; `detail` is the `Consent`. */
+export const CONSENT_CHANGED_EVENT = "kf:consent-changed";
 
 export function reopenConsent(): void {
   window.dispatchEvent(new CustomEvent(CONSENT_REOPEN_EVENT));
@@ -125,8 +172,16 @@ export function needsConsent(settings: TrackingSettings | undefined): boolean {
 }
 
 function anyTagConfigured(s: TrackingSettings): boolean {
-  return [s.gtmId, s.googleAnalyticsId, s.googleAdsId, s.metaPixelId, s.tiktokPixelId, s.snapchatPixelId]
-    .some((v) => clean(v).length > 0);
+  return [
+    s.gtmId,
+    s.googleAnalyticsId,
+    s.googleAdsId,
+    s.metaPixelId,
+    s.tiktokPixelId,
+    s.snapchatPixelId,
+    s.linkedinPartnerId,
+    s.clarityId,
+  ].some((v) => clean(v).length > 0);
 }
 
 const clean = (v: string | undefined) => v?.trim() || "";
@@ -145,6 +200,15 @@ function push(payload: Record<string, unknown>): void {
 }
 
 /* --------------------------------------------------------------- loaders */
+
+/*
+ * No loader sends a page view of its own. `pixelPageview` is the single
+ * source of page views for every tag, on every route change and once for the
+ * landing page — the TikTok and Snapchat snippets used to fire their own on
+ * load as well, so the entry page counted twice, while Meta got none.
+ * LinkedIn's Insight Tag and Clarity track on their own and have no SPA
+ * page-view call, so they are loaded and left alone.
+ */
 
 function loadGtm(id: string): void {
   if (loaded.gtm) return;
@@ -228,7 +292,6 @@ function loadTikTok(id: string): void {
   };
   /* eslint-enable @typescript-eslint/no-explicit-any */
   window.ttq?.load?.(id);
-  window.ttq?.page?.();
 }
 
 function loadSnapchat(id: string): void {
@@ -245,7 +308,36 @@ function loadSnapchat(id: string): void {
   /* eslint-enable @typescript-eslint/no-explicit-any */
   injectScript("https://sc-static.net/scevent.min.js");
   window.snaptr?.("init", id);
-  window.snaptr?.("track", "PAGE_VIEW");
+}
+
+function loadLinkedIn(partnerId: string): void {
+  if (loaded.linkedin) return;
+  loaded.linkedin = true;
+  window._linkedin_partner_id = partnerId;
+  window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+  window._linkedin_data_partner_ids.push(partnerId);
+  if (!window.lintrk) {
+    const stub = ((a: string, b?: unknown) => {
+      (stub.q ||= []).push([a, b]);
+    }) as Window["lintrk"] & { q?: unknown[] };
+    window.lintrk = stub;
+  }
+  injectScript("https://snap.licdn.com/li.lms-analytics/insight.min.js");
+}
+
+function loadClarity(id: string): void {
+  if (loaded.clarity) return;
+  loaded.clarity = true;
+  if (!window.clarity) {
+    const stub = function (...args: unknown[]) {
+      (stub.q ||= []).push(args);
+    } as ((...args: unknown[]) => void) & { q?: unknown[] };
+    window.clarity = stub;
+  }
+  injectScript(`https://www.clarity.ms/tag/${encodeURIComponent(id)}`);
+  // Clarity records session replays, so it only ever loads once the visitor
+  // has accepted (or consent is not required); tell it so it sets its cookie.
+  window.clarity("consent");
 }
 
 /* ------------------------------------------------------------------ init */
@@ -258,6 +350,66 @@ function dntEnabled(): boolean {
   return flag === "1" || flag === "yes";
 }
 
+/** Whether a Google tag is present to receive `gtag("event", …)` calls. */
+const googleLoaded = () => loaded.gtm || loaded.ga || loaded.ads;
+const anyLoaded = () => Object.values(loaded).some(Boolean);
+
+/**
+ * Loads every configured tag. Idempotent — each loader checks its own flag.
+ *
+ * A container is expected to own the individual tags. Loading them here as
+ * well is the documented double-count, so direct ids are honoured only when
+ * there is no container.
+ */
+function loadAll(): void {
+  const gtm = clean(config.gtmId);
+  if (gtm) {
+    loadGtm(gtm);
+    return;
+  }
+  const ga = clean(config.googleAnalyticsId);
+  const ads = clean(config.googleAdsId);
+  const meta = clean(config.metaPixelId);
+  const tiktok = clean(config.tiktokPixelId);
+  const snap = clean(config.snapchatPixelId);
+  const linkedin = clean(config.linkedinPartnerId);
+  const clarity = clean(config.clarityId);
+  if (ga) loadGoogleAnalytics(ga);
+  if (ads) loadGoogleAds(ads);
+  if (meta) loadMetaPixel(meta);
+  if (tiktok) loadTikTok(tiktok);
+  if (snap) loadSnapchat(snap);
+  if (linkedin) loadLinkedIn(linkedin);
+  if (clarity) loadClarity(clarity);
+}
+
+const DENIED = {
+  ad_storage: "denied",
+  ad_user_data: "denied",
+  ad_personalization: "denied",
+  analytics_storage: "denied",
+};
+
+const GRANTED = {
+  ad_storage: "granted",
+  ad_user_data: "granted",
+  ad_personalization: "granted",
+  analytics_storage: "granted",
+};
+
+/**
+ * The consent state machine, in full:
+ *
+ * - Do Not Track on → nothing loads, nothing is pushed.
+ * - Consent mode off → every configured tag loads at once.
+ * - Consent mode on → Google's consent defaults are declared (denied), then:
+ *   a stored "granted" from an earlier visit is replayed and everything loads;
+ *   otherwise **nothing** loads until the banner's Accept.
+ *
+ * The replay is what was missing before: a returning visitor who had accepted
+ * got the tags loaded, but never the `consent update` — so Google treated
+ * every later visit as denied and dropped the ad cookies it was allowed to set.
+ */
 export function initPixels(settings: TrackingSettings | undefined): void {
   if (!settings) return;
   config = settings;
@@ -267,102 +419,72 @@ export function initPixels(settings: TrackingSettings | undefined): void {
     return;
   }
 
-  // Consent Mode v2 must be set before any Google tag loads, otherwise the
-  // first hits go out under the wrong defaults.
-  if (settings.consentMode) {
-    ensureGtag();
-    window.gtag!("consent", "default", {
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      ad_personalization: "denied",
-      analytics_storage: "denied",
-      wait_for_update: 500,
-    });
-  }
-
   active = true;
 
-  const gtm = clean(settings.gtmId);
-  if (gtm) loadGtm(gtm);
-
-  // A container is expected to own the individual tags. Loading them here as
-  // well is the documented double-count, so direct ids are honoured only when
-  // there is no container.
-  if (!gtm) {
-    const ga = clean(settings.googleAnalyticsId);
-    const ads = clean(settings.googleAdsId);
-    if (ga) loadGoogleAnalytics(ga);
-    if (ads) loadGoogleAds(ads);
+  if (!settings.consentMode) {
+    loadAll();
+    if (settings.debug) console.info("[pixels] loaded", { ...loaded, container: clean(settings.gtmId) || "none" });
+    return;
   }
 
-  /*
-   * Google's tags load either way and honour the denied defaults set above —
-   * that is the whole point of Consent Mode, and it lets them model the traffic
-   * they cannot measure. Meta, TikTok and Snapchat have no equivalent: they set
-   * a cookie the moment they load. So when consent is required and not yet
-   * given, those three are held back entirely until the visitor accepts.
-   */
-  if (settings.consentMode && readConsent() !== "granted") {
-    if (settings.debug) console.info("[pixels] holding non-Google tags until consent");
-  } else {
-    loadConsentedTags();
+  // Consent Mode v2 must be declared before any Google tag loads, otherwise
+  // the first hits go out under the wrong defaults.
+  ensureGtag();
+  window.gtag!("consent", "default", { ...DENIED, wait_for_update: 500 });
+
+  if (readConsent() === "granted") {
+    window.gtag!("consent", "update", GRANTED);
+    loadAll();
+    if (settings.debug) console.info("[pixels] consent previously granted — loaded", { ...loaded });
+    return;
   }
-
-  if (settings.debug) console.info("[pixels] loaded", { ...loaded, container: gtm || "none" });
-}
-
-/** The tags that may only run once consent exists (or is not required). */
-function loadConsentedTags(): void {
-  if (clean(config.gtmId)) return; // the container owns them
-  const meta = clean(config.metaPixelId);
-  const tiktok = clean(config.tiktokPixelId);
-  const snap = clean(config.snapchatPixelId);
-  if (meta) loadMetaPixel(meta);
-  if (tiktok) loadTikTok(tiktok);
-  if (snap) loadSnapchat(snap);
+  if (settings.debug) console.info("[pixels] holding every tag until consent");
 }
 
 /**
  * Records the visitor's decision and acts on it immediately — no reload.
  *
- * On acceptance Google's consent signals are updated and the tags held back in
- * `initPixels` are loaded. On refusal nothing further loads and the Google tags
- * stay denied, which is already their state.
+ * On acceptance Google's consent signals are updated, every tag loads, and the
+ * page the visitor is on is reported once to the tags that just arrived (the
+ * route effect ran while they were held, so they never saw it). On refusal
+ * nothing further loads; tags loaded earlier in this session stay, and the
+ * next page load holds them.
  */
 export function setConsent(value: Consent): void {
   storeConsent(value);
   if (config.debug) console.info("[pixels] consent", value);
+  // Anything waiting on the decision (the offer popup holds back while the
+  // bar is up) hears about it without a reload.
+  window.dispatchEvent(new CustomEvent(CONSENT_CHANGED_EVENT, { detail: value }));
 
   if (value === "granted") {
-    window.gtag?.("consent", "update", {
-      ad_storage: "granted",
-      ad_user_data: "granted",
-      ad_personalization: "granted",
-      analytics_storage: "granted",
-    });
-    loadConsentedTags();
+    window.gtag?.("consent", "update", GRANTED);
+    const first = !anyLoaded();
+    loadAll();
+    if (first) pixelPageview(window.location.pathname || "/");
     return;
   }
 
-  window.gtag?.("consent", "update", {
-    ad_storage: "denied",
-    ad_user_data: "denied",
-    ad_personalization: "denied",
-    analytics_storage: "denied",
-  });
+  window.gtag?.("consent", "update", DENIED);
 }
 
 /* ---------------------------------------------------------------- events */
 
-const enabled = (event: SiteEvent) => config.events?.[event] !== false;
+const enabled = (key: string) => config.events?.[key] !== false;
 
-/** Mirrors a route change into the data layer and whichever tags are active. */
+/**
+ * Mirrors a route change into the data layer and whichever tags are active.
+ *
+ * `gtag("event", …)` is only called once a Google tag has loaded: before that
+ * the call would sit in `dataLayer` and be replayed the moment gtag.js
+ * arrived — after Accept, that meant every held page view fired at once.
+ */
 export function pixelPageview(path: string): void {
   if (!active || !enabled("pageview")) return;
   push({ event: "kf_pageview", page_path: path });
   if (config.debug) console.info("[pixels] pageview", path);
 
-  window.gtag?.("event", "page_view", { page_path: path });
+  if (googleLoaded()) window.gtag?.("event", "page_view", { page_path: path });
   window.fbq?.("track", "PageView");
   window.ttq?.page?.();
   window.snaptr?.("track", "PAGE_VIEW");
@@ -381,16 +503,53 @@ export function pixelEvent(label: string): void {
   if (config.debug) console.info("[pixels]", event, label);
 
   const names = NAMES[event];
-  window.gtag?.("event", names.ga4, { content_type: "cta", item_id: label });
+  if (googleLoaded()) window.gtag?.("event", names.ga4, { content_type: "cta", item_id: label });
   if (names.meta) window.fbq?.("track", names.meta);
   if (names.tiktok) window.ttq?.track?.(names.tiktok, { content_name: label });
   if (names.snap) window.snaptr?.("track", names.snap);
+}
+
+/**
+ * Reports something that actually happened — the server accepted the form,
+ * the booking was made, the quote was signed. Called from success branches
+ * only, never from a button.
+ */
+export function pixelConversion(kind: ConversionKind, details: ConversionDetails = {}): void {
+  if (!active) return;
+  const spec = CONVERSIONS[kind];
+  if (!enabled(spec.switch)) return;
+
+  const { value, currency, id } = details;
+  push({
+    event: "kf_conversion",
+    kf_kind: kind,
+    page_path: window.location.pathname,
+    ...(value !== undefined ? { value } : {}),
+    ...(currency ? { currency } : {}),
+    ...(id ? { transaction_id: id } : {}),
+  });
+  if (config.debug) console.info("[pixels] conversion", kind, details);
+
+  const money = value !== undefined ? { value, currency } : {};
+  if (googleLoaded()) {
+    window.gtag?.("event", spec.ga4, { ...money, ...(id ? { transaction_id: id } : {}), method: kind });
+  }
+  if (spec.meta) window.fbq?.("track", spec.meta, money);
+  if (spec.tiktok) window.ttq?.track?.(spec.tiktok, { content_name: kind, ...money });
+  if (spec.snap) window.snaptr?.("track", spec.snap, { ...(value !== undefined ? { price: value } : {}), currency, transaction_id: id });
 
   // Google Ads reports a conversion only when both halves are configured; the
   // dashboard flags an id without a label for exactly this reason.
-  if (event === "lead") {
+  if (spec.ads && googleLoaded()) {
     const adsId = clean(config.googleAdsId);
     const adsLabel = clean(config.googleAdsLabel);
-    if (adsId && adsLabel) window.gtag?.("event", "conversion", { send_to: `${adsId}/${adsLabel}` });
+    if (adsId && adsLabel) {
+      window.gtag?.("event", "conversion", { send_to: `${adsId}/${adsLabel}`, ...money, ...(id ? { transaction_id: id } : {}) });
+    }
+  }
+  // LinkedIn needs the conversion's own id from Campaign Manager.
+  const linkedinConversion = clean(config.linkedinConversionId);
+  if (spec.linkedin && loaded.linkedin && linkedinConversion) {
+    window.lintrk?.("track", { conversion_id: Number(linkedinConversion) });
   }
 }

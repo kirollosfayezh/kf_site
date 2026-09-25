@@ -16,7 +16,7 @@ import { API_BASE } from "./http";
  * both hammer the API and lose the last event when the page unloads.
  */
 
-type EventType = "pageview" | "click" | "session" | "consent";
+type EventType = "pageview" | "click" | "conversion" | "session" | "consent";
 
 interface Touch {
   referrer?: string;
@@ -95,11 +95,30 @@ function session(): { id: string; fresh: boolean } {
   }
 }
 
+/**
+ * The referrer and landing URL parked by `auto-language.ts` before it
+ * redirected a first-time visitor to their language. Read once and cleared:
+ * after that redirect `document.referrer` is this site, so without the stash
+ * every such visitor arrived from "direct".
+ */
+function entryStash(): { referrer?: string; url?: string } | null {
+  try {
+    const raw = sessionStorage.getItem("kf-entry");
+    if (!raw) return null;
+    sessionStorage.removeItem("kf-entry");
+    const parsed: unknown = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? (parsed as { referrer?: string; url?: string }) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Where this visit came from: the referring site and any campaign tags on the landing URL. */
 function touch(): Touch {
+  const entry = entryStash();
   const q = new URLSearchParams(window.location.search);
   const t: Touch = {
-    referrer: referrer(),
+    referrer: hostOf(entry?.referrer) ?? referrer(),
     landingPath: window.location.pathname,
     utmSource: q.get("utm_source") ?? undefined,
     utmMedium: q.get("utm_medium") ?? undefined,
@@ -128,10 +147,10 @@ function device(): QueuedEvent["device"] {
   return "desktop";
 }
 
-/** Only the host, so we group "came from Google" rather than per-URL noise. */
-function referrer(): string | undefined {
+/** Only the host, so we group "came from Google" rather than per-URL noise.
+ *  Our own host reads as no referrer at all: an internal hop is not a source. */
+function hostOf(raw: string | undefined): string | undefined {
   try {
-    const raw = document.referrer;
     if (!raw) return undefined;
     const url = new URL(raw);
     if (url.host === window.location.host) return undefined;
@@ -139,6 +158,10 @@ function referrer(): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+function referrer(): string | undefined {
+  return hostOf(document.referrer);
 }
 
 function send(events: QueuedEvent[]): void {
@@ -228,5 +251,16 @@ export function trackClick(label: string, path = window.location.pathname): void
  */
 export function trackConsent(status: "granted" | "denied", source: "banner" | "settings"): void {
   enqueue({ type: "consent", path: window.location.pathname, status, source });
+  flush();
+}
+
+/**
+ * Something the visitor completed — a lead sent, a call booked, a quote
+ * accepted. `kind` is the label. Sent straight away, like consent: it is the
+ * event the dashboard's numbers hang on, and a visitor who has just submitted
+ * a form is exactly the one about to leave the page.
+ */
+export function trackConversionEvent(kind: string): void {
+  enqueue({ type: "conversion", path: window.location.pathname, label: kind });
   flush();
 }

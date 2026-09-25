@@ -1,13 +1,15 @@
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { useSeo } from "../components/Seo";
-import { PAGES, articlePageSeo, SITE, type PageSeo } from "../lib/seo";
-import { pick, pickPlain, metaString, metaPoints, initials } from "../lib/content-helpers";
-import { renderRichText, readingMinutes } from "../lib/rich-text";
+import { useFaqSchema, useSeo } from "../components/Seo";
+import { PAGES, SITE_ORIGIN, absolute, articlePageSeo, localePath, SITE, type PageSeo } from "../lib/seo";
+import { pick, pickPlain, metaString, metaPoints } from "../lib/content-helpers";
+import { renderRichText, readingMinutes, extractFaq } from "../lib/rich-text";
 import { useContentItem, useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { Img } from "../components/Img";
+import { ShareBar } from "../components/ShareBar";
+import { NewsletterForm } from "../components/NewsletterForm";
 import s from "../styles/sections.module.css";
 
 /** "12 AUG 2026", as the design export prints it. Falls back to the raw string
@@ -40,20 +42,20 @@ function readStats(meta: Record<string, unknown> | undefined): { value: string; 
 
 export function Article() {
   const { id } = useParams<{ id: string }>();
-  const { t, lang } = useI18n();
+  const { t, lang, available } = useI18n();
   const { data: post, loading, error } = useContentItem("blogPosts", id);
   const all = useContentList("blogPosts");
 
   /**
    * The Layout's RouteSeo deliberately skips `/blog/:id`, so the article owns
    * its own tags. Until the post arrives there is nothing truthful to say about
-   * it, so hold the generic blog metadata rather than publishing a title built
-   * from an empty object; a missing post falls back to a noindex entry so a
-   * dead article URL can't be indexed as a soft 404.
+   * it, so apply nothing — the prerendered tags stay in place — rather than
+   * publishing a title built from an empty object; a missing post falls back to
+   * a noindex entry so a dead article URL can't be indexed as a soft 404.
    */
-  const seo = useMemo<PageSeo>(
-    () => (post ? articlePageSeo(post, lang) : error ? PAGES.notFound : PAGES.blog),
-    [post, error, lang],
+  const seo = useMemo<PageSeo | null>(
+    () => (post ? articlePageSeo(post, lang, available) : error ? PAGES.notFound : null),
+    [post, error, lang, available],
   );
   useSeo(seo);
 
@@ -62,6 +64,8 @@ export function Article() {
   // same pass, so the contents can never name a heading the article lacks.
   const { blocks, headings } = useMemo(() => renderRichText(body), [body]);
   const minutes = useMemo(() => readingMinutes(body), [body]);
+  // A "Common questions" section in the body becomes FAQPage schema.
+  useFaqSchema(useMemo(() => extractFaq(body), [body]));
 
   const tag = metaString(post?.meta, "tag");
 
@@ -111,13 +115,16 @@ export function Article() {
             <h1 className={s.pageTitle}>{title}</h1>
             {post.summary && <p className={s.pageLede}>{pick(post.summary, lang)}</p>}
 
-            <div className={s.artAuthor}>
-              <span className={s.artAvatar} aria-hidden="true">{initials(SITE.founder)}</span>
+            {/* A face and a link, not initials: an author a reader can look
+                up is part of what makes an article worth trusting. */}
+            <Link to="/about" className={s.artAuthor} data-track="article.author">
+              <img src="/founder.jpg" alt="" width={56} height={56} loading="lazy" decoding="async" className={s.artAvatarImg} />
               <div>
                 <div className={s.artAuthorName}>{SITE.founder}</div>
                 <div className={s.artAuthorRole}>{t("Founder, KF Tech Solutions")}</div>
+                <div className={s.artAuthorBio}>{t("Builds POS, web and automation systems for businesses in Egypt and abroad.")}</div>
               </div>
-            </div>
+            </Link>
           </Reveal>
         </div>
       </section>
@@ -156,6 +163,8 @@ export function Article() {
             {blocks.length ? blocks : <p>{t("This article doesn't have body content yet.")}</p>}
           </Reveal>
 
+          <ShareBar url={absolute(SITE_ORIGIN, localePath(lang, `/blog/${post.slug || post.id}`))} title={title} />
+
           {stats.length > 0 && (
             <div className={s.artStats}>
               {stats.map((m) => (
@@ -180,7 +189,7 @@ export function Article() {
             <p className={s.artCtaBody}>
               {t("We build POS and business systems around how you actually work.")}
             </p>
-            <Link to="/contact" className="btn btn-primary">
+            <Link to="/contact" className="btn btn-primary" data-track="article.cta.quote">
               {t("Get a quote")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
           </aside>
@@ -200,6 +209,14 @@ export function Article() {
               </div>
             </section>
           )}
+
+          <section style={{ marginTop: 46 }}>
+            <h2 className={s.artCtaTitle}>{t("Newsletter")}</h2>
+            <p className={s.artCtaBody}>
+              {t("Occasional notes on software, automation and running a better business. No spam.")}
+            </p>
+            <NewsletterForm source="article" />
+          </section>
         </div>
       </div>
     </article>

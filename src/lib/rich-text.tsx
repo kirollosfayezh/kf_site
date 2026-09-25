@@ -166,11 +166,6 @@ export function renderRichText(source: string): { blocks: ReactNode[]; headings:
   let para: string[] = [];
   let k = 0;
 
-  // `Seo.tsx` builds FAQPage schema by reading `data-kf-faq-*` off the DOM, so
-  // the answers are attached to the questions here rather than plumbed through
-  // a second channel. Same contract the hand-written FAQ accordion uses.
-  const faq = new Map(extractFaq(source).map((x) => [x.q, x.a]));
-
   const flushPara = () => {
     if (!para.length) return;
     const text = para.join(" ");
@@ -210,13 +205,10 @@ export function renderRichText(source: string): { blocks: ReactNode[]; headings:
       const id = slugify(text, headings.length);
       headings.push({ id, text, level });
       const Tag = level === 2 ? "h2" : "h3";
-      const answer = level === 3 ? faq.get(text) : undefined;
+      // FAQ schema for an article's "Common questions" section is built by the
+      // Article page from `extractFaq()` — the same parse, a separate channel.
       blocks.push(
-        <Tag
-          key={`h-${k++}`}
-          id={id}
-          {...(answer ? { "data-kf-faq-q": text, "data-kf-faq-a": answer } : {})}
-        >
+        <Tag key={`h-${k++}`} id={id}>
           {inline(text, `h${k}`)}
         </Tag>,
       );
