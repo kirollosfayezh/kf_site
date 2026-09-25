@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { afterIntroReveal } from "../lib/intro";
+import { afterIntroDone } from "../lib/intro";
 
 /**
  * The animated hero from the original static export (`_stage()` in
@@ -649,10 +649,11 @@ export function HeroStage({ className }: { className?: string }) {
     let frameHandle = 0;
     let cancelIntroWait = () => {};
     const whenIdle = (run: () => void) => {
-      // While the opening animation covers the page its scene owns the GPU;
-      // this one starts once the cut has revealed the hero.
+      // While the opening animation is up its scene owns the GPU, and the
+      // shader compile here is a long main-thread task that would freeze its
+      // last frames; this scene starts once the overlay is gone.
       const fn = () => {
-        cancelIntroWait = afterIntroReveal(run);
+        cancelIntroWait = afterIntroDone(run);
       };
       const w = window as Window & {
         requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;

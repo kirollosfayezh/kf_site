@@ -192,10 +192,13 @@ on the homepage, once per visitor per day (`localStorage` `kf-intro-seen`), and 
 skipped for reduced-motion, automated browsers (Lighthouse, the prerender verifier),
 data-saver/2G connections and devices without accelerated WebGL — those visitors never
 download the chunk. The inline boot script sets `<html data-intro="pending">` before the
-first paint so the page is covered from the start; the hero is held with a transform
-only (never opacity) so LCP is unaffected. Skip with the button (bottom corner) or
-`Esc`. The hero's own WebGL scene, the offer popup and the chat greeting wait for the
-reveal (`src/lib/intro.ts`).
+first paint so the page is covered from the start, and preloads the engine chunk in the
+same breath; the hero is held with a transform only (never opacity) so LCP is unaffected.
+The show is paced by `APPROACH_SPEED` / `IMPACT_SPEED` in `SamuraiIntro.tsx` (about 1.9 s
+from first frame to gone; the page is visible after ~1.3 s). Skip with the button (bottom
+corner) or `Esc`. The hero's own WebGL scene and the offer popup wait until the overlay is
+gone, the chat greeting until the reveal (`src/lib/intro.ts`). Timing on a real device:
+`performance.getEntriesByType("mark")` lists `kf-intro-loading/playing/revealed/done`.
 
 ## Responsive & RTL notes
 

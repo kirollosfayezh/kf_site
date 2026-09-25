@@ -41,6 +41,9 @@ export function setIntroState(state: IntroState | null): void {
   const root = document.documentElement;
   if (state) root.setAttribute("data-intro", state);
   else root.removeAttribute("data-intro");
+  // Visible in DevTools' Performance panel and `performance.getEntriesByType("mark")`:
+  // how long the show took on a real device is one call away.
+  performance.mark?.(`kf-intro-${state ?? "done"}`);
   if (state === "revealed") window.dispatchEvent(new CustomEvent(INTRO_REVEALED_EVENT));
   if (state === null) window.dispatchEvent(new CustomEvent(INTRO_DONE_EVENT));
 }
@@ -62,6 +65,21 @@ export function afterIntroReveal(fn: () => void): () => void {
   const once = () => fn();
   window.addEventListener(INTRO_REVEALED_EVENT, once, { once: true });
   return () => window.removeEventListener(INTRO_REVEALED_EVENT, once);
+}
+
+/**
+ * Runs `fn` now if no intro is up, else once the overlay is gone. For work
+ * heavy enough to stall a frame (the hero's shader compile): started at the
+ * reveal it would freeze the paper's fade-out.
+ */
+export function afterIntroDone(fn: () => void): () => void {
+  if (!introRunning()) {
+    fn();
+    return () => {};
+  }
+  const once = () => fn();
+  window.addEventListener(INTRO_DONE_EVENT, once, { once: true });
+  return () => window.removeEventListener(INTRO_DONE_EVENT, once);
 }
 
 /** Only the homepage gets the show; a deep link is someone who wants that page. */

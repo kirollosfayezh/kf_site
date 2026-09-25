@@ -63,7 +63,7 @@
   -webkit-backdrop-filter: blur(10px);
   cursor: pointer;
   opacity: 0;
-  animation: kfIntroFadeIn .5s .6s ease forwards;
+  animation: kfIntroFadeIn .35s .2s ease forwards;
   transition: color .2s, border-color .2s;
 }
 .skip:hover { color: #fff; border-color: rgba(255, 255, 255, .4); }
