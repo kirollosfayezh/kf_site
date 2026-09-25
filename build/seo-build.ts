@@ -72,6 +72,45 @@ function stripStaticHead(html: string): string {
 export const ARABIC_FONT_URL = "https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeaijdA5E64BdCIg.woff2";
 const ARABIC_FONT_PRELOAD = `<link rel="preload" href="${ARABIC_FONT_URL}" as="font" type="font/woff2" crossorigin />`;
 
+/**
+ * The display face the hero headline is set in (Space Grotesk 700, Latin
+ * subset), preloaded on every page.
+ *
+ * Google's stylesheet is loaded non-blocking, so the font used to arrive a
+ * second or two after the prerendered headline had painted in the fallback
+ * face; the swap made the headline bigger, which Chrome records as a *new*
+ * largest paint — mobile LCP read 4.4 s for text that had been on screen
+ * since 1.1 s. Preloaded, the first paint is in the real face and LCP is the
+ * first paint. Google serves this exact file to Chrome and Safari; Firefox
+ * gets a different one and ignores the preload. `checkDisplayFont()` warns
+ * at build time if Google's stylesheet stops naming it.
+ */
+export const DISPLAY_FONT_URL = "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2";
+const DISPLAY_FONT_PRELOAD = `<link rel="preload" href="${DISPLAY_FONT_URL}" as="font" type="font/woff2" crossorigin />`;
+const GOOGLE_FONTS_CSS =
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap";
+
+/** Asks Google for the stylesheet as Chrome would and checks the preloaded
+ *  file is still what it serves. Network trouble is not a build failure. */
+export async function checkDisplayFont(): Promise<string | null> {
+  try {
+    const res = await fetch(GOOGLE_FONTS_CSS, {
+      headers: { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const css = await res.text();
+    if (css.includes(DISPLAY_FONT_URL)) return null;
+    const served = [...new Set(css.match(/https:\/\/fonts\.gstatic\.com\/s\/spacegrotesk\/[^)]+/g) ?? [])];
+    return (
+      `the display font preload (${DISPLAY_FONT_URL}) is no longer in Google's stylesheet — update DISPLAY_FONT_URL ` +
+      `in build/seo-build.ts to the Space Grotesk latin file it serves now (served: ${served.join(", ") || "none"})`
+    );
+  } catch {
+    return null;
+  }
+}
+
 /** Warn when the preload and the stylesheet name different files: the preload
  *  would then fetch a font nothing uses, and Arabic would swap late again. */
 export async function checkArabicFont(distDir: string): Promise<string | null> {
@@ -261,10 +300,17 @@ function closure(manifest: Manifest, key: string, js = new Set<string>(), css = 
 }
 
 /**
- * The `<link>`s a prerendered page needs beyond the shell's: the route's own
- * stylesheet(s), a `modulepreload` for its chunk, and the dictionary chunk on
- * non-English pages. Vite's runtime preloader skips a stylesheet that is
- * already in the document, so nothing loads twice.
+ * The `<link>`s a prerendered page needs beyond the shell's.
+ *
+ * With `cssCodeSplit` off the shell's stylesheet already covers the route,
+ * so this is only the route's own CSS should that ever change, plus the
+ * dictionary chunk on non-English pages — `main.tsx` awaits it before
+ * hydrating, and preloaded it travels with the entry instead of after it.
+ *
+ * Deliberately no `modulepreload` for the route chunk and its dependencies:
+ * on a slow connection those ~150 kB competed with the stylesheet for the
+ * bandwidth the first paint was waiting on. The page is readable before
+ * hydration, so hydration can start a round trip later.
  */
 function assetsFor(manifest: Manifest, moduleKey: string, lang: Lang): string {
   if (!manifest[moduleKey]) throw new Error(`the build manifest has no entry for ${moduleKey}`);
@@ -273,7 +319,6 @@ function assetsFor(manifest: Manifest, moduleKey: string, lang: Lang): string {
   const dict = lang !== "en" ? manifest[`src/lib/dict/${lang}.json`]?.file : undefined;
   return [
     ...[...route.css].filter((c) => !base.css.has(c)).map((c) => `<link rel="stylesheet" crossorigin href="/${c}" />`),
-    ...[...route.js].filter((j) => !base.js.has(j)).map((j) => `<link rel="modulepreload" crossorigin href="/${j}" />`),
     ...(dict ? [`<link rel="modulepreload" crossorigin href="/${dict}" />`] : []),
   ].join("\n  ");
 }
@@ -431,6 +476,7 @@ async function writePage(
   // Arabic font preload, then the SEO tags.
   const head =
     (body?.assets ? `${body.assets}\n  ` : "") +
+    `${DISPLAY_FONT_PRELOAD}\n  ` +
     (lang === "ar" ? `${ARABIC_FONT_PRELOAD}\n  ` : "") +
     tagsToHtml(seoTags(page, lang, origin, opts));
   let html = injectHead(shell, head)
@@ -961,6 +1007,8 @@ export async function runSeoBuild(input: {
 
   const fontDrift = await checkArabicFont(dist);
   if (fontDrift) warnings.push(fontDrift);
+  const displayDrift = await checkDisplayFont();
+  if (displayDrift) warnings.push(displayDrift);
 
   const prerendered =
     `prerendered ${counts.routes} routes + ${counts.articles} articles + ${counts.projects} case studies + ` +

@@ -88,21 +88,27 @@ function lookAt(out: Mat4, ex: number, ey: number, ez: number, tx: number, ty: n
   return out;
 }
 
-function compile(gl: WebGLRenderingContext, type: number, src: string): WebGLShader | null {
+/**
+ * `check` asks for the compile result straight away, which forces the driver
+ * to finish compiling on this thread. With `KHR_parallel_shader_compile` the
+ * question is deferred to `whenLinked`, and the compile runs in the
+ * background instead.
+ */
+function compile(gl: WebGLRenderingContext, type: number, src: string, check: boolean): WebGLShader | null {
   const sh = gl.createShader(type);
   if (!sh) return null;
   gl.shaderSource(sh, src);
   gl.compileShader(sh);
-  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+  if (check && !gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
     gl.deleteShader(sh);
     return null;
   }
   return sh;
 }
 
-function program(gl: WebGLRenderingContext, vsSrc: string, fsSrc: string): WebGLProgram | null {
-  const vs = compile(gl, gl.VERTEX_SHADER, vsSrc);
-  const fs = compile(gl, gl.FRAGMENT_SHADER, fsSrc);
+function program(gl: WebGLRenderingContext, vsSrc: string, fsSrc: string, check: boolean): WebGLProgram | null {
+  const vs = compile(gl, gl.VERTEX_SHADER, vsSrc, check);
+  const fs = compile(gl, gl.FRAGMENT_SHADER, fsSrc, check);
   if (!vs || !fs) return null;
   const p = gl.createProgram();
   if (!p) return null;
@@ -113,11 +119,43 @@ function program(gl: WebGLRenderingContext, vsSrc: string, fsSrc: string): WebGL
   // here means they go away with it.
   gl.deleteShader(vs);
   gl.deleteShader(fs);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+  if (check && !gl.getProgramParameter(p, gl.LINK_STATUS)) {
     gl.deleteProgram(p);
     return null;
   }
   return p;
+}
+
+/**
+ * Calls back once every program has finished linking, with whether they all
+ * succeeded.
+ *
+ * Compiling these two shaders took about a second of main-thread time on an
+ * Intel Mac and more on a phone — one long task that lab tools score as
+ * blocking and a visitor feels as a stutter. `KHR_parallel_shader_compile`
+ * moves the compile to a driver thread; polling `COMPLETION_STATUS_KHR` is
+ * the only call that does not force it to finish. Without the extension the
+ * programs are already linked and the callback runs at once.
+ */
+function whenLinked(gl: WebGLRenderingContext, programs: WebGLProgram[], done: (ok: boolean) => void): () => void {
+  const ext = gl.getExtension("KHR_parallel_shader_compile") as { COMPLETION_STATUS_KHR: number } | null;
+  const linked = () => done(programs.every((p) => gl.getProgramParameter(p, gl.LINK_STATUS) === true));
+  if (!ext) {
+    linked();
+    return () => {};
+  }
+  let timer = 0;
+  let cancelled = false;
+  const poll = () => {
+    if (cancelled) return;
+    if (programs.every((p) => gl.getProgramParameter(p, ext.COMPLETION_STATUS_KHR) === true)) linked();
+    else timer = window.setTimeout(poll, 40);
+  };
+  poll();
+  return () => {
+    cancelled = true;
+    window.clearTimeout(timer);
+  };
 }
 
 /**
@@ -319,15 +357,30 @@ export function HeroStage({ className }: { className?: string }) {
         stencil: false,
         premultipliedAlpha: true,
         powerPreference: "high-performance",
-        failIfMajorPerformanceCaveat: false,
-      }) ?? canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+        /*
+         * No context at all when WebGL would be software-rendered
+         * (SwiftShader, llvmpipe): a fragment shader run on the CPU every
+         * frame is exactly the visitor who should get the static gradient
+         * instead. It also spares lab tools — headless Chrome, PageSpeed —
+         * a ~1 s shader compile they counted as blocking time.
+         */
+        failIfMajorPerformanceCaveat: true,
+      }) ?? null) as WebGLRenderingContext | null;
 
-      if (!gl) return; // No WebGL — the CSS gradient behind us is the fallback.
+      if (!gl) return; // No (fast) WebGL — the CSS gradient behind us is the fallback.
 
-      const terrainProg = program(gl, TERRAIN_VS, TERRAIN_FS);
-      const dustProg = program(gl, DUST_VS, DUST_FS);
-      if (!terrainProg || !dustProg) return;
+      const parallel = gl.getExtension("KHR_parallel_shader_compile") !== null;
+      const terrainProg = program(gl, TERRAIN_VS, TERRAIN_FS, !parallel);
+      const dustProg = program(gl, DUST_VS, DUST_FS, !parallel);
+      if (!terrainProg || !dustProg) {
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+        return;
+      }
 
+      // Everything from here on needs the linked programs, so it runs from
+      // `whenLinked` below — right away without the extension, a few frames
+      // later with it.
+      const start = () => {
       el.appendChild(canvas);
       // The CSS gradient is only the stand-in for this scene — drop it now that
       // the real one is painting, so additive blending sits on the same black
@@ -562,7 +615,58 @@ export function HeroStage({ className }: { className?: string }) {
         el.style.background = "";
       };
       if (disposed) cleanup();
+      };
+
+      // While the programs link in the background, disposal only has these
+      // to release; `start` replaces this once the scene exists.
+      let cancelLink = () => {};
+      cleanup = () => {
+        cancelLink();
+        gl.deleteProgram(terrainProg);
+        gl.deleteProgram(dustProg);
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+      };
+      cancelLink = whenLinked(gl, [terrainProg, dustProg], (ok) => {
+        if (disposed) return;
+        if (!ok) {
+          cleanup?.();
+          cleanup = null;
+          return;
+        }
+        start();
+      });
     }
+
+    /*
+     * Creating the context and compiling the shaders is one long main-thread
+     * task — around a second on a throttled phone. The page arrives
+     * prerendered now, so that task used to land right on top of hydration
+     * and the hero text's first paint; it waits for an idle moment instead
+     * (with a ceiling, so it never waits forever on a busy page).
+     */
+    let idleHandle: number | null = null;
+    let frameHandle = 0;
+    const whenIdle = (fn: () => void) => {
+      const w = window as Window & {
+        requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+        cancelIdleCallback?: (h: number) => void;
+      };
+      // Two frames first: the second callback runs only after the first
+      // frame has painted, so the page is on screen before any of this work.
+      frameHandle = requestAnimationFrame(() => {
+        frameHandle = requestAnimationFrame(() => {
+          idleHandle = w.requestIdleCallback ? w.requestIdleCallback(fn, { timeout: 2500 }) : window.setTimeout(fn, 400);
+        });
+      });
+    };
+    const cancelIdle = () => {
+      cancelAnimationFrame(frameHandle);
+      if (idleHandle === null) return;
+      const w = window as Window & { cancelIdleCallback?: (h: number) => void };
+      if (w.cancelIdleCallback) w.cancelIdleCallback(idleHandle);
+      else window.clearTimeout(idleHandle);
+      idleHandle = null;
+    };
 
     // Only boot once the hero is actually near the viewport; on an inner page
     // the scene is never created at all.
@@ -573,18 +677,19 @@ export function HeroStage({ className }: { className?: string }) {
           if (entries.some((e) => e.isIntersecting)) {
             nearIo?.disconnect();
             nearIo = null;
-            boot();
+            whenIdle(boot);
           }
         },
         { rootMargin: "200px" },
       );
       nearIo.observe(el);
     } else {
-      boot();
+      whenIdle(boot);
     }
 
     return () => {
       disposed = true;
+      cancelIdle();
       nearIo?.disconnect();
       cleanup?.();
     };
