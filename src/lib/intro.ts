@@ -96,17 +96,23 @@ export function isIntroRoute(pathname: string): boolean {
  */
 export function shouldPlayIntro(pathname: string): boolean {
   if (!isIntroRoute(pathname)) return false;
-  try {
-    const seen = Number(localStorage.getItem(INTRO_SEEN_KEY) || 0);
-    if (Date.now() - seen < INTRO_TTL_MS) return false;
-  } catch {
-    /* fine: no memory of it either way */
+  // `?kf-intro` replays it regardless of the once-a-day memory and of the
+  // lab-tool rules: for showing it to someone, and for testing it on a real
+  // phone through a driven browser. Nobody adds that to an audit by accident.
+  const replay = new URLSearchParams(window.location.search).has("kf-intro");
+  if (!replay) {
+    try {
+      const seen = Number(localStorage.getItem(INTRO_SEEN_KEY) || 0);
+      if (Date.now() - seen < INTRO_TTL_MS) return false;
+    } catch {
+      /* fine: no memory of it either way */
+    }
+    // Lab tools measure the page, not the show. Headless and driven browsers
+    // report `webdriver`; Lighthouse (PageSpeed Insights, the DevTools panel),
+    // GTmetrix and WebPageTest identify themselves in the user agent instead.
+    if (navigator.webdriver || /Lighthouse|HeadlessChrome|GTmetrix|PTST/.test(navigator.userAgent)) return false;
   }
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
-  // Lab tools measure the page, not the show. Headless and driven browsers
-  // report `webdriver`; Lighthouse (PageSpeed Insights, the DevTools panel),
-  // GTmetrix and WebPageTest identify themselves in the user agent instead.
-  if (navigator.webdriver || /Lighthouse|HeadlessChrome|GTmetrix|PTST/.test(navigator.userAgent)) return false;
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
   if (conn?.saveData || /2g/.test(conn?.effectiveType ?? "")) return false;
   if (Math.min(window.innerWidth, window.innerHeight) < 320) return false;
