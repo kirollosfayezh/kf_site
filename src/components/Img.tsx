@@ -1,4 +1,4 @@
-import type { ImgHTMLAttributes } from "react";
+import type { ImgHTMLAttributes, Ref } from "react";
 import { imageSrcSet, imageUrl } from "../lib/images";
 
 type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "srcSet" | "loading"> & {
@@ -22,6 +22,7 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "srcSet" | "loadi
    * wait until it slides in and reveal it half-drawn.
    */
   eager?: boolean;
+  ref?: Ref<HTMLImageElement>;
 };
 
 /**
