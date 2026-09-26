@@ -1,11 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Img } from "./Img";
 import { useI18n } from "../lib/i18n";
 import css from "./ProjectGallery.module.css";
 
+export type Device = "photo" | "desktop" | "mobile";
+
+/**
+ * How a photo is shown, from its URL's fragment: `…/shot.webp#desktop` is a
+ * desktop screenshot (drawn in a browser window), `#mobile` a phone screenshot
+ * (drawn in a phone), anything else a plain photo filling the box. The flag
+ * lives on the URL so it travels with the photo through reordering, the media
+ * library and the API without a schema change; browsers never send fragments,
+ * so the file requested is the same.
+ */
+export function parseMedia(url: string): { src: string; device: Device } {
+  const m = /#(desktop|mobile)$/.exec(url);
+  return m ? { src: url.slice(0, m.index), device: m[1] as Device } : { src: url.replace(/#.*$/, ""), device: "photo" };
+}
+
 /** Photos only: the media library also holds MP4s and PDFs, which a slide cannot show. */
 export function galleryImages(media: string[] | undefined): string[] {
-  return (media ?? []).filter((m) => m && !/\.(mp4|webm|pdf)(\?|#|$)/i.test(m));
+  return (media ?? []).filter((m) => m && !/\.(mp4|webm|pdf)(\?|#|$)/i.test(parseMedia(m).src));
 }
 
 type Props = {
@@ -151,7 +166,7 @@ export function ProjectGallery({ images, alt, width, sizes, priority = false, in
 
   if (count === 0) return null;
   if (count === 1) {
-    return <Img src={images[0]} alt={alt} width={width} sizes={sizes} priority={priority} />;
+    return <GallerySlide url={images[0]} alt={alt} width={width} sizes={sizes} priority={priority} />;
   }
 
   const slides = [...images, images[0]];
@@ -183,8 +198,8 @@ export function ProjectGallery({ images, alt, width, sizes, priority = false, in
           return (
             <div key={i} className={css.slide} aria-hidden={real !== current || i === count}>
               {show ? (
-                <Img
-                  src={src}
+                <GallerySlide
+                  url={src}
                   alt={i === count ? "" : `${alt} (${real + 1}/${count})`}
                   width={width}
                   sizes={sizes}
@@ -210,6 +225,68 @@ export function ProjectGallery({ images, alt, width, sizes, priority = false, in
             <span />
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+const DEFAULT_RATIO: Record<Device, number> = { photo: 16 / 10, desktop: 16 / 10, mobile: 9 / 19.5 };
+// A screenshot's own shape, within reason: very long full-page captures show
+// their top and are trimmed at the bottom rather than shrinking to a sliver.
+const RATIO_RANGE: Record<Device, [number, number]> = { photo: [0, 99], desktop: [1.2, 2.4], mobile: [0.42, 0.75] };
+
+/**
+ * One photo. A screenshot sits in a device frame sized to the screenshot's
+ * own proportions (read once it has loaded), so the whole capture is visible
+ * instead of being cropped at the box's edges; a plain photo fills the box as
+ * before. Frames are pure CSS: no extra images, no extra requests.
+ */
+export function GallerySlide({
+  url,
+  alt,
+  width,
+  sizes,
+  priority = false,
+  eager = false,
+}: {
+  url: string;
+  alt: string;
+  width: number;
+  sizes: string;
+  priority?: boolean;
+  eager?: boolean;
+}) {
+  const { src, device } = parseMedia(url);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [ratio, setRatio] = useState(DEFAULT_RATIO[device]);
+  const measure = useCallback(() => {
+    const img = imgRef.current;
+    if (!img || !img.naturalWidth || device === "photo") return;
+    const [lo, hi] = RATIO_RANGE[device];
+    setRatio(Math.min(hi, Math.max(lo, img.naturalWidth / img.naturalHeight)));
+  }, [device]);
+  // A prerendered image can finish loading before hydration attaches onLoad.
+  useLayoutEffect(() => {
+    if (imgRef.current?.complete) measure();
+  }, [measure]);
+
+  const img = (
+    <Img ref={imgRef} src={src} alt={alt} width={width} sizes={sizes} priority={priority} eager={eager} onLoad={measure} />
+  );
+  if (device === "photo") return img;
+  return (
+    <div className={css.stage}>
+      <div className={css.frame} data-device={device} style={{ ["--r" as string]: ratio }}>
+        {device === "desktop" ? (
+          <div className={css.bar} aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </div>
+        ) : (
+          <span className={css.notch} aria-hidden="true" />
+        )}
+        <div className={css.screen}>{img}</div>
       </div>
     </div>
   );

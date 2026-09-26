@@ -66,3 +66,79 @@
 @media (prefers-reduced-motion: reduce) {
   .track { transition: none; }
 }
+
+/* ---- Device frames for screenshots ---------------------------------------
+   The stage is a size container, so the frame is sized against the box it
+   sits in: as large as fits with a margin, at the screenshot's own ratio
+   (--r = width / height of the screen). */
+.stage {
+  position: absolute;
+  inset: 0;
+  container-type: size;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(120% 90% at 50% 110%, rgba(255, 106, 0, .16), transparent 60%),
+    radial-gradient(90% 70% at 50% -10%, rgba(255, 0, 128, .10), transparent 60%),
+    var(--panel2, #141418);
+}
+.frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 18px 50px -18px rgba(0, 0, 0, .75), 0 0 0 1px rgba(255, 255, 255, .08);
+}
+.frame[data-device="desktop"] {
+  --bar: clamp(12px, 5.5cqh, 26px);
+  width: min(90cqw, calc((86cqh - var(--bar)) * var(--r)));
+  border-radius: clamp(6px, 1.6cqw, 12px);
+  background: #1c1c22;
+}
+.bar {
+  flex: 0 0 var(--bar);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--bar) * .22);
+  padding-inline: calc(var(--bar) * .45);
+}
+.bar i {
+  width: calc(var(--bar) * .3);
+  height: calc(var(--bar) * .3);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .22);
+}
+.frame[data-device="mobile"] {
+  --bezel: clamp(3px, 1.6cqh, 9px);
+  width: min(70cqw, calc((90cqh - 2 * var(--bezel)) * var(--r) + 2 * var(--bezel)));
+  padding: var(--bezel);
+  border-radius: clamp(14px, 7cqh, 40px);
+  background: #0b0b0e;
+}
+.frame[data-device="mobile"] .screen { border-radius: clamp(10px, 5.6cqh, 32px); }
+.notch {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--bezel) + 1.4cqh);
+  left: 50%;
+  width: 26%;
+  height: clamp(4px, 2.4cqh, 14px);
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #0b0b0e;
+}
+.screen {
+  position: relative;
+  aspect-ratio: var(--r);
+  overflow: hidden;
+  background: #0e0e11;
+}
+/* Beats the generic `.slide img` / `.cardMedia img` fill rules. */
+.frame .screen img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}

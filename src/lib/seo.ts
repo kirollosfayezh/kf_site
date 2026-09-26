@@ -845,7 +845,7 @@ export function availableLangs(post: ArticleLike, siteLangs: readonly Lang[] = L
 
 /** The share image for a CMS item: its first photo, cropped to card size. */
 function itemImage(item: ArticleLike, lang: Lang): Pick<PageSeo, "image" | "imageSized" | "imageAlt"> {
-  const { url, sized } = ogImageUrl(item.media?.[0]);
+  const { url, sized } = ogImageUrl(item.media?.[0]?.replace(/#.*$/, ""));
   const alt = typeof item.meta?.alt === "string" && item.meta.alt.trim() ? item.meta.alt : localized(item.title, lang);
   return { image: url, imageSized: sized, imageAlt: url ? alt : undefined };
 }
