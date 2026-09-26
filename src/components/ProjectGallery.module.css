@@ -1,0 +1,68 @@
+/* Fills whatever media box it is placed in (they all carry aspect-ratio). */
+.gallery {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.track {
+  display: flex;
+  height: 100%;
+  transform: translate3d(calc(var(--i, 0) * -100%), 0, 0);
+  transition: transform .7s cubic-bezier(.65, 0, .35, 1);
+  will-change: transform;
+}
+/* RTL lays the slides out right to left, so the track moves the other way. */
+:global([dir="rtl"]) .track { transform: translate3d(calc(var(--i, 0) * 100%), 0, 0); }
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  height: 100%;
+}
+.slide img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+/* A 24px hit area around a 6px dot. */
+.dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.dot span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .55);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .25);
+  transition: width .3s ease, background .3s ease;
+}
+.dot[aria-current="true"] span {
+  width: 18px;
+  background: #fff;
+}
+.dot:focus-visible { outline: 2px solid #ff6a00; outline-offset: -2px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .track { transition: none; }
+}

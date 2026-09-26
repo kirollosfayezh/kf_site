@@ -5,7 +5,7 @@ import { useContentList } from "../hooks/useContent";
 import { FALLBACK_PROJECTS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
-import { Img } from "../components/Img";
+import { ProjectGallery, galleryImages } from "../components/ProjectGallery";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import s from "../styles/sections.module.css";
 
@@ -37,7 +37,7 @@ export function Projects() {
           slug: item.slug || item.id,
           title: pick(item.title, lang),
           desc: pick(item.summary ?? item.body, lang),
-          media: item.media?.[0],
+          images: galleryImages(item.media),
           tag: metaString(item.meta, "tag"),
           tech: metaPoints(item.meta),
           result: metaString(item.meta, "result"),
@@ -47,7 +47,7 @@ export function Projects() {
           slug: undefined as string | undefined,
           title: t(f.title),
           desc: t(f.desc),
-          media: f.img,
+          images: f.img ? [f.img] : [],
           tag: f.tag,
           tech: f.points ?? [],
           result: f.result,
@@ -73,8 +73,15 @@ export function Projects() {
           {items.map((item, i) => (
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
-                {item.media ? (
-                  <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" priority={i < 3} />
+                {item.images.length ? (
+                  <ProjectGallery
+                    images={item.images}
+                    alt={item.title}
+                    width={420}
+                    sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px"
+                    priority={i < 3}
+                    offset={(i % 3) * 350}
+                  />
                 ) : (
                   <div className={s.cardMediaFallback}>{item.title[0]}</div>
                 )}

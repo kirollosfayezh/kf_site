@@ -6,7 +6,7 @@ import { PAGES, projectPageSeo, type PageSeo } from "../lib/seo";
 import { pick, pickPlain, metaString, metaPoints } from "../lib/content-helpers";
 import { useContentItem } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
-import { Img } from "../components/Img";
+import { ProjectGallery, galleryImages } from "../components/ProjectGallery";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import s from "../styles/sections.module.css";
 
@@ -76,6 +76,7 @@ export function ProjectCaseStudy() {
   }
 
   const title = pick(item.title, lang);
+  const images = galleryImages(item.media);
   const summary = pick(item.summary, lang);
   const body = pick(item.body, lang);
   const tag = metaString(item.meta, "tag");
@@ -149,16 +150,23 @@ export function ProjectCaseStudy() {
         </div>
       </section>
 
-      {item.media?.[0] && (
+      {images.length > 0 && (
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 24px" }}>
-          <Img
-            src={item.media[0]}
-            alt={title}
-            width={1200}
-            sizes="(max-width: 1280px) 100vw, 1200px"
-            priority
-            style={{ width: "100%", borderRadius: 16, border: "1px solid var(--border)" }}
-          />
+          {/* A fixed 16:10 box: the slot is reserved before any photo loads,
+              and photos of other shapes are cropped to it rather than making
+              the page jump from one slide to the next. */}
+          <div
+            style={{
+              position: "relative",
+              aspectRatio: "16 / 10",
+              overflow: "hidden",
+              borderRadius: 16,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
+            }}
+          >
+            <ProjectGallery images={images} alt={title} width={1000} sizes="(max-width: 1048px) 100vw, 1000px" priority />
+          </div>
         </div>
       )}
 
