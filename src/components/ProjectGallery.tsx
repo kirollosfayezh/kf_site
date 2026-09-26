@@ -233,7 +233,10 @@ export function ProjectGallery({ images, alt, width, sizes, priority = false, in
 const DEFAULT_RATIO: Record<Device, number> = { photo: 16 / 10, desktop: 16 / 10, mobile: 9 / 19.5 };
 // A screenshot's own shape, within reason: very long full-page captures show
 // their top and are trimmed at the bottom rather than shrinking to a sliver.
-const RATIO_RANGE: Record<Device, [number, number]> = { photo: [0, 99], desktop: [1.2, 2.4], mobile: [0.42, 0.75] };
+// A phone stays phone-shaped even when the image marked Mobile is not a phone
+// screenshot (a wide picture would otherwise stretch it into a tablet); the
+// image then fills the screen from the top instead.
+const RATIO_RANGE: Record<Device, [number, number]> = { photo: [0, 99], desktop: [1.2, 2.4], mobile: [0.42, 0.6] };
 
 /**
  * One photo. A screenshot sits in a device frame sized to the screenshot's

@@ -83,8 +83,13 @@
     var(--panel2, #141418);
 }
 .frame {
-  /* A little lower than centre: clears a card's category label at top-left. */
-  margin-top: 9cqh;
+  /* Room above for a card's category label, below for the slideshow dots —
+     with pixel minimums, since a small box's percentages are too thin. The
+     frame's height is whatever is left between them. */
+  --mt: max(10cqh, 34px);
+  --mb: max(9cqh, 34px);
+  --room: calc(100cqh - var(--mt) - var(--mb));
+  margin-block: var(--mt) var(--mb);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -93,7 +98,7 @@
 }
 .frame[data-device="desktop"] {
   --bar: clamp(12px, 5.5cqh, 26px);
-  width: min(88cqw, calc((78cqh - var(--bar)) * var(--r)));
+  width: min(88cqw, calc((var(--room) - var(--bar)) * var(--r)));
   border-radius: clamp(6px, 1.6cqw, 12px);
   background: #1c1c22;
 }
@@ -112,7 +117,7 @@
 }
 .frame[data-device="mobile"] {
   --bezel: clamp(3px, 1.6cqh, 9px);
-  width: min(70cqw, calc((82cqh - 2 * var(--bezel)) * var(--r) + 2 * var(--bezel)));
+  width: min(70cqw, calc((var(--room) - 2 * var(--bezel)) * var(--r) + 2 * var(--bezel)));
   padding: var(--bezel);
   border-radius: clamp(14px, 7cqh, 40px);
   background: #0b0b0e;
