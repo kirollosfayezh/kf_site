@@ -201,6 +201,9 @@ gone, the chat greeting until the reveal (`src/lib/intro.ts`). To watch it again
 or a check on a real phone) open the homepage with `?kf-intro`: that replays it regardless
 of the once-a-day memory and the lab-tool rules. Timing on a real device:
 `performance.getEntriesByType("mark")` lists `kf-intro-loading/playing/revealed/done`.
+On a phone, where there is no console, `?kf-debug` overlays a live log (`public/kf-debug.js`,
+loaded only then): the intro's states, the body scroll lock, storage, WebGL, and every touch
+with whether anything cancelled it — screenshot it and send it when something misbehaves.
 
 ## Responsive & RTL notes
 
