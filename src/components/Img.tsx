@@ -16,6 +16,12 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "srcSet" | "loadi
    * high priority. Everything else stays lazy, which is the default.
    */
   priority?: boolean;
+  /**
+   * Load now, at normal priority. For a photo that is about to be shown but is
+   * off screen right now (the next slide of a gallery): lazy loading would
+   * wait until it slides in and reveal it half-drawn.
+   */
+  eager?: boolean;
 };
 
 /**
@@ -29,7 +35,7 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "srcSet" | "loadi
  * The media containers in `sections.module.css` already carry `aspect-ratio`,
  * so the slot is reserved before the file arrives and nothing shifts.
  */
-export function Img({ src, alt, width = 1200, sizes, quality, fit, priority = false, ...rest }: Props) {
+export function Img({ src, alt, width = 1200, sizes, quality, fit, priority = false, eager = false, ...rest }: Props) {
   const opts = { width, quality, fit };
   return (
     <img
@@ -37,7 +43,7 @@ export function Img({ src, alt, width = 1200, sizes, quality, fit, priority = fa
       srcSet={imageSrcSet(src, opts)}
       sizes={sizes ?? `(max-width: 700px) 100vw, ${width}px`}
       alt={alt}
-      loading={priority ? "eager" : "lazy"}
+      loading={priority || eager ? "eager" : "lazy"}
       decoding={priority ? "sync" : "async"}
       fetchPriority={priority ? "high" : "low"}
       {...rest}

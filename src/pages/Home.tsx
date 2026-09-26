@@ -8,6 +8,7 @@ import { FALLBACK_FAQS, FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS
 import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
 import { Img } from "../components/Img";
+import { ProjectGallery, galleryImages } from "../components/ProjectGallery";
 import { HeroStage } from "../components/HeroStage";
 import { Testimonials } from "../components/Testimonials";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
@@ -468,13 +469,17 @@ export function Home() {
                 category: metaString(item.meta, "tag") ?? "",
                 title: pick(item.title, lang),
                 desc: pick(item.summary, lang),
-                media: item.media?.[0],
+                images: galleryImages(item.media),
               }))
-            : FALLBACK_PROJECTS.map((f) => ({ key: f.key, slug: undefined as string | undefined, category: f.tag ?? "", title: t(f.title), desc: t(f.desc), media: f.img }))
-          ).map((item) => (
+            : FALLBACK_PROJECTS.map((f) => ({ key: f.key, slug: undefined as string | undefined, category: f.tag ?? "", title: t(f.title), desc: t(f.desc), images: f.img ? [f.img] : [] }))
+          ).map((item, i) => (
             <Reveal key={item.key} as="article" className={s.card} style={{ borderRadius: 20 }}>
               <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
-                {item.media ? <Img src={item.media} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" /> : <div className={s.cardMediaFallback}>{item.title[0]}</div>}
+                {item.images.length ? (
+                  <ProjectGallery images={item.images} alt={item.title} width={420} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px" offset={(i % 2) * 400} />
+                ) : (
+                  <div className={s.cardMediaFallback}>{item.title[0]}</div>
+                )}
                 {item.category && <span className={s.cardTag}>{pickPlain(item.category, lang)}</span>}
               </div>
               <div className={s.cardBody} style={{ padding: 24 }}>
