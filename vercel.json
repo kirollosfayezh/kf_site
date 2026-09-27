@@ -206,6 +206,19 @@
           "value": "noindex"
         }
       ]
+    },
+    {
+      "source": "/seo-defaults.json",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
     }
   ]
 }

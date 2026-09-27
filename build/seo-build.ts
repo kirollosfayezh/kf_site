@@ -900,6 +900,26 @@ const LANGUAGE_NAMES: Record<Lang, string> = { en: "English", ar: "Arabic", de: 
  * Kept generated rather than hand-written so it cannot drift from PAGES and the
  * live article list the sitemap uses.
  */
+/**
+ * `seo-defaults.json` — the built-in title and description of every page the
+ * dashboard's SEO screen can override, per language. The dashboard reads it to
+ * show what a blank field actually falls back to, instead of "Using the site
+ * default". Generated from PAGES, so the site stays the only source of the copy.
+ * Built-ins only: an override is already visible in the field itself.
+ */
+export async function writeSeoDefaults(distDir: string, ctx: BuildContext): Promise<void> {
+  const out: Record<string, { title: Record<string, string>; description: Record<string, string> }> = {};
+  for (const [key, page] of Object.entries(PAGES)) {
+    if (page.path === "/404" || page.path === "/q") continue;
+    out[key] = { title: {}, description: {} };
+    for (const lang of ctx.langs) {
+      out[key].title[lang] = resolveTitle(page, lang);
+      out[key].description[lang] = resolveDesc(page, lang);
+    }
+  }
+  await writeFile(join(distDir, "seo-defaults.json"), JSON.stringify(out), "utf8");
+}
+
 export async function writeLlmsTxt(distDir: string, origin: string, ctx: BuildContext): Promise<void> {
   const page = (key: string) => ctx.pages[key] ?? PAGES[key];
   const line = (p: PageSeo) => `- [${p.title.split(/ [|—] /)[0]}](${absolute(origin, p.path)}): ${p.desc}`;
@@ -1059,6 +1079,7 @@ export async function runSeoBuild(input: {
   const feeds = await writeFeeds(dist, origin, ctx);
   await writeRobots(dist, origin);
   await writeLlmsTxt(dist, origin, ctx);
+  await writeSeoDefaults(dist, ctx);
 
   return {
     summary:
