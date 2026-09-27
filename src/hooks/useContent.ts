@@ -108,7 +108,13 @@ export function useSiteSettings(): FetchState<SiteSettings> {
         if (!cancelled) setState({ data: settings, loading: false, error: null });
       })
       .catch((err: Error) => {
-        if (!cancelled) setState({ data: null, loading: false, error: err.message || "Failed to load settings." });
+        // Same rule as the lists: a failed revalidation keeps the prerendered
+        // settings. Dropping them put the built-in fallback email and WhatsApp
+        // number back on every page whenever the API was slow to wake.
+        if (!cancelled)
+          setState((prev) =>
+            prev.data ? prev : { data: null, loading: false, error: err.message || "Failed to load settings." },
+          );
       });
     return () => {
       cancelled = true;

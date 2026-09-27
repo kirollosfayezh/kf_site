@@ -10,7 +10,7 @@ import type { SiteSettings } from "../services/api-types.ts";
  */
 
 export const DEFAULT_CONTACT = {
-  email: "kirollos.fayez.h@gmail.com",
+  email: "info@kftechsolutions.dev",
   phone: "+20 150 009 9671",
   whatsapp: "201500099671",
 } as const;

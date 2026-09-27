@@ -49,8 +49,8 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
   const tree = useMemo<Branch[]>(() => {
     const serviceLeaves: Leaf[] =
       services.data && services.data.length > 0
-        ? services.data.map((s) => ({ key: s.id, label: pick(s.title, lang), href: `/services#${s.slug || s.id}` }))
-        : FALLBACK_SERVICES.map((f) => ({ key: f.key, label: t(f.title), href: `/services#${f.slug ?? f.key}` }));
+        ? services.data.map((s) => ({ key: s.id, label: pick(s.title, lang), href: `/services/${s.slug || s.id}` }))
+        : FALLBACK_SERVICES.map((f) => ({ key: f.key, label: t(f.title), href: `/services/${f.slug ?? f.key}` }));
 
     const solutionLeaves: Leaf[] =
       solutions.data && solutions.data.length > 0

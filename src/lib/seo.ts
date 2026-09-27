@@ -41,7 +41,7 @@ export const SITE = {
   // logo for the Organization rich result and crops or drops anything else.
   logo: "/icon-512.png",
   phone: "+20-150-009-9671",
-  email: "kirollos.fayez.h@gmail.com",
+  email: "info@kftechsolutions.dev",
   city: "Cairo",
   country: "EG",
   founder: "Kirollos Fayez",
@@ -94,7 +94,7 @@ export interface PageSeo {
   keywords?: string;
   type?: "website" | "article";
   /** What kind of page this is, for the JSON-LD that goes with it. */
-  kind?: "page" | "article" | "project" | "legal";
+  kind?: "page" | "article" | "project" | "legal" | "service";
   /** The CMS item behind an article/project/legal page, for its schema. */
   item?: ArticleLike;
   image?: string;
@@ -104,6 +104,9 @@ export interface PageSeo {
    *  only then, because a wrong claim makes Facebook and LinkedIn drop the card. */
   imageSized?: boolean;
   noindex?: boolean;
+  /** The breadcrumb's last crumb, when the page title is not a good one (an
+   *  SEO title like "X Company in Egypt" reads badly as a trail). */
+  crumb?: string;
   published?: string;
   modified?: string;
   section?: string;
@@ -365,7 +368,10 @@ export function organisationSchema(origin: string, siteLangs: readonly Lang[] = 
   const languages = siteLangs.map((l) => LANGUAGE_NAMES[l]);
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    // Also a LocalBusiness, so "software company in Cairo" style searches and
+    // the Business Profile can tie the site to a place. Locality only: no
+    // street address is claimed, because none is public.
+    "@type": ["Organization", "LocalBusiness"],
     "@id": `${origin}/#organization`,
     name: SITE.name,
     url: `${origin}/`,
@@ -393,11 +399,15 @@ export function organisationSchema(origin: string, siteLangs: readonly Lang[] = 
     address: {
       "@type": "PostalAddress",
       addressLocality: SITE.city,
+      addressRegion: "Cairo Governorate",
       addressCountry: SITE.country,
     },
-    // Based in Egypt, delivering worldwide. Schema.org has no "worldwide" enum,
-    // so the markets actually served are named, with a catch-all Place.
-    areaServed: AREA_SERVED,
+    // The city centre, not an office: enough to place the business in Cairo
+    // without pretending to a street address.
+    geo: { "@type": "GeoCoordinates", latitude: 30.0444, longitude: 31.2357 },
+    // Cairo first — it is where the business is — then the markets served.
+    // Schema.org has no "worldwide" enum, so those are named, with a catch-all Place.
+    areaServed: [{ "@type": "City", name: "Cairo" }, { "@type": "City", name: "Giza" }, ...AREA_SERVED],
     availableLanguage: languages,
     sameAs,
     knowsAbout: [
@@ -448,7 +458,10 @@ export const SERVICES: { slug: string; name: string; desc: string }[] = [
  * blob nested inside an Offer. It is what lets the catalogue, the card on
  * /services and an assistant's knowledge graph all point at the same thing.
  */
-const serviceId = (origin: string, slug: string) => `${origin}/services#${slug}`;
+const serviceId = (origin: string, slug: string) => `${origin}/services/${slug}#service`;
+
+/** A service's own landing page, `/services/<slug>`. */
+export const servicePath = (slug: string) => `/services/${slug}`;
 
 /** The full node for one service, in one language. */
 function serviceNode(origin: string, lang: Lang, svc: (typeof SERVICES)[number]) {
@@ -458,7 +471,7 @@ function serviceNode(origin: string, lang: Lang, svc: (typeof SERVICES)[number])
     name: tr(svc.name, lang),
     description: tr(svc.desc, lang),
     serviceType: svc.name,
-    url: `${absolute(origin, localePath(lang, PAGES.services.path))}#${svc.slug}`,
+    url: absolute(origin, localePath(lang, servicePath(svc.slug))),
     provider: { "@id": `${origin}/#organization` },
     areaServed: AREA_SERVED,
     availableChannel: {
@@ -537,7 +550,7 @@ export function breadcrumbSchema(origin: string, page: PageSeo, lang: Lang, avai
     crumbs.push({ name: tr(SECTION_LABELS[section], lang), item: here(`/${section}`) });
   }
   if (leaf) {
-    crumbs.push({ name: resolveTitle(page, lang).split(" | ")[0], item: here(page.path) });
+    crumbs.push({ name: page.crumb || resolveTitle(page, lang).split(" | ")[0], item: here(page.path) });
   }
 
   return {
@@ -607,7 +620,7 @@ export function faqSchema(items: { q: string; a: string }[]) {
  * That is exactly what happened to every case study and legal page on a
  * client-side navigation.
  */
-const SELF_DESCRIBED = ["/blog/", "/projects/", "/legal/"];
+const SELF_DESCRIBED = ["/blog/", "/projects/", "/legal/", "/services/"];
 
 /** Resolve a pathname to its PAGES entry. Returns null for routes that own
  *  their own metadata (`/blog/:id`, `/projects/:slug`, `/legal/:slug`). */
@@ -759,6 +772,9 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   }
   if (page.kind === "project" && page.item) {
     tags.push({ kind: "jsonld", data: projectSchema(origin, page.item, lang, url) });
+  }
+  if (page.kind === "service" && page.item) {
+    tags.push({ kind: "jsonld", data: servicePageSchema(origin, page, lang, url) });
   }
   const faq = page.faq?.length ? faqSchema(page.faq) : null;
   if (faq) tags.push({ kind: "jsonld", data: faq });
@@ -945,6 +961,103 @@ export function projectSchema(origin: string, item: ArticleLike, lang: Lang, url
     ...(client ? { sourceOrganization: { "@type": "Organization", name: client } } : {}),
     ...(year ? { dateCreated: year } : {}),
     ...(tech.length ? { keywords: tech.join(", ") } : {}),
+  };
+}
+
+/* ------------------------------------------------------------- services */
+
+/** One language of a LocalizedText stored in `meta` (the service landing-page
+ *  fields), with no cross-language fallback — an empty string means absent. */
+function metaText(item: ArticleLike, key: string, lang: Lang): string {
+  const v = item.meta?.[key];
+  if (!v || typeof v !== "object") return "";
+  const s = (v as Partial<Record<Lang, unknown>>)[lang];
+  return typeof s === "string" ? s.trim() : "";
+}
+
+/**
+ * The languages a service landing page exists in: English always, others
+ * once the long-form body is written in them. Unlike articles the title need
+ * not be — the headline falls back to the card title, which translates through
+ * the dictionary — but a page whose body is still English is the duplicate
+ * Google drops the cluster for.
+ */
+export function serviceLangs(item: ArticleLike, siteLangs: readonly Lang[] = LANGS): Lang[] {
+  return LANGS.filter(
+    (l) =>
+      siteLangs.includes(l) &&
+      (l === "en" || (item.body?.[l] ?? "").trim().length > 0),
+  );
+}
+
+/** The page heading: the long headline, else the card title (dictionary-translated). */
+export function serviceHeadline(item: ArticleLike, lang: Lang): string {
+  return metaText(item, "headline", lang) || (item.title?.[lang] || "").trim() || tr(localized(item.title, "en"), lang);
+}
+
+/** The intro under the heading: the landing-page lede, else the card summary. */
+export function serviceLede(item: ArticleLike, lang: Lang): string {
+  return (
+    metaText(item, "lede", lang) || (item.summary?.[lang] || "").trim() || tr(localized(item.summary, "en"), lang)
+  );
+}
+
+/**
+ * The SEO entry for a service landing page. `faq` is the page's own
+ * "Frequently asked questions" section, parsed by the caller (the page at
+ * runtime, the build at prerender) so both emit the same FAQPage.
+ */
+export function servicePageSeo(
+  item: ArticleLike,
+  lang: Lang,
+  siteLangs: readonly Lang[] = LANGS,
+  faq?: { q: string; a: string }[],
+): PageSeo {
+  const brand = PAGES.home.title.split(" — ")[0];
+  const headline = serviceHeadline(item, lang);
+  const lede = serviceLede(item, lang);
+  const seoTitle = metaText(item, "seoTitle", lang);
+  return {
+    path: servicePath(item.slug || item.id || ""),
+    title: seoTitle || `${headline} | ${brand}`,
+    desc: metaText(item, "seoDescription", lang) || lede || PAGES.services.desc,
+    crumb: headline,
+    type: "website",
+    kind: "service",
+    item,
+    ...itemImage(item, lang),
+    modified: item.updatedAt,
+    langs: serviceLangs(item, siteLangs),
+    ...(faq?.length ? { faq } : {}),
+  };
+}
+
+/**
+ * The `Service` entity for a landing page. Same `@id` as the node on
+ * /services, so the listing, the catalogue and this page all describe one
+ * entity.
+ */
+function servicePageSchema(origin: string, page: PageSeo, lang: Lang, url: string) {
+  const item = page.item as ArticleLike;
+  const slug = item.slug || item.id || "";
+  const known = SERVICES.find((s) => s.slug === slug);
+  const { image, imageSized } = itemImage(item, lang);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": serviceId(origin, slug),
+    name: serviceHeadline(item, lang),
+    description: serviceLede(item, lang),
+    ...(known ? { serviceType: known.name } : {}),
+    url,
+    image: imageObject(origin, { path: url, title: "", desc: "", image, imageSized }),
+    inLanguage: lang,
+    provider: { "@id": `${origin}/#organization` },
+    areaServed: AREA_SERVED,
+    availableChannel: {
+      "@type": "ServiceChannel",
+      serviceUrl: absolute(origin, localePath(lang, PAGES.contact.path)),
+    },
   };
 }
 
