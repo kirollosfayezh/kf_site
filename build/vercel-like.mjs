@@ -142,6 +142,18 @@ createServer(async (req, res) => {
     const groups = { ...(m.groups ?? {}) };
     let ok = true;
     for (const has of r.has ?? []) {
+      // A host condition (the vercel.app → custom-domain redirect) never
+      // matches here: this server is localhost. Skipping the condition instead
+      // sent every request to the live domain, so the browser checks were
+      // testing production rather than this build.
+      if (has.type === "host") {
+        const host = (req.headers.host ?? "").split(":")[0];
+        if (!new RegExp(`^(?:${has.value})$`).test(host)) {
+          ok = false;
+          break;
+        }
+        continue;
+      }
       if (has.type !== "query") continue;
       const v = url.searchParams.get(has.key);
       if (v === null) {

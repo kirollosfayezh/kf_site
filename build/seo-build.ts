@@ -21,6 +21,9 @@ import {
   localePath,
   mergeSeoOverrides,
   projectPageSeo,
+  servicePageSeo,
+  servicePath,
+  serviceLangs,
   resolveDesc,
   resolveTitle,
   seoTags,
@@ -36,6 +39,7 @@ import {
 import { LANGS, dirOf, isLang } from "../src/lib/langs.ts";
 import { primeDict, setOverrides, translate } from "../src/lib/dict/index.ts";
 import { FALLBACK_FAQS } from "../src/lib/fallback-content.ts";
+import { extractFaq } from "../src/lib/faq.ts";
 import { identityFromSettings } from "../src/lib/contact.ts";
 import type { SiteSettings } from "../src/services/api-types.ts";
 import { bootScript } from "./boot-script.ts";
@@ -290,6 +294,7 @@ const ITEM_MODULES = {
   article: "src/pages/Article.tsx",
   project: "src/pages/ProjectCaseStudy.tsx",
   legal: "src/pages/Legal.tsx",
+  service: "src/pages/ServiceDetail.tsx",
 } as const;
 
 /** The homepage intro's engine: a lazy chunk the boot script preloads when the show will play. */
@@ -338,8 +343,12 @@ function assetsFor(manifest: Manifest, moduleKey: string, lang: Lang): string {
  */
 function pruneForLang<T extends ArticleLike>(item: T, lang: Lang): T {
   if (!item.body) return item;
-  const keep = new Set<Lang>([lang, "en"]);
-  if (!item.body.en?.trim()) keep.add("ar");
+  // Only the body `pick()` will actually return: this language's when it is
+  // written, else English, else Arabic. Keeping English beside a written
+  // translation doubled every translated post on every non-English page.
+  const keep = new Set<Lang>(
+    item.body[lang]?.trim() ? [lang] : item.body.en?.trim() ? [lang, "en"] : [lang, "en", "ar"],
+  );
   const body: Partial<Record<Lang, string>> = {};
   for (const l of keep) if (item.body[l] !== undefined) body[l] = item.body[l];
   return { ...item, body };
@@ -366,13 +375,21 @@ function listsFor(ctx: BuildContext, lang: Lang): Record<string, unknown> {
   };
   const out: Record<string, unknown> = {};
   for (const [name, items] of Object.entries(lists)) out[`list:${name}`] = items.map((i) => pruneForLang(i, lang));
+  // Service cards show the title, summary and points; the long landing-page
+  // body is only read on the service's own page, via its item entry.
+  out["list:services"] = ctx.services.map((i) => {
+    const { body: _body, ...rest } = i;
+    const meta = { ...(i.meta ?? {}) };
+    for (const k of ["headline", "lede", "seoTitle", "seoDescription"]) delete meta[k];
+    return { ...rest, meta };
+  });
   return out;
 }
 
 /** Items, keyed the way the pages ask for them (by slug, falling back to id). */
 function itemEntries(ctx: BuildContext): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  for (const [name, items] of [["blogPosts", ctx.articles], ["projects", ctx.projects], ["legalPages", ctx.legal]] as const) {
+  for (const [name, items] of [["blogPosts", ctx.articles], ["projects", ctx.projects], ["legalPages", ctx.legal], ["services", ctx.services]] as const) {
     for (const item of items) out[`item:${name}:${item.slug || item.id}`] = item;
   }
   return out;
@@ -513,6 +530,7 @@ export interface PrerenderResult {
   articles: number;
   projects: number;
   legal: number;
+  services: number;
 }
 
 export async function prerenderPages(
@@ -543,6 +561,7 @@ export async function prerenderPages(
   let articleCount = 0;
   let projectCount = 0;
   let legalCount = 0;
+  let serviceCount = 0;
 
   // Every route, in every enabled language, as its own file: `/services` and
   // `/de/services` are separate documents with their own canonical, hreflang
@@ -585,6 +604,17 @@ export async function prerenderPages(
       projectCount++;
     }
 
+    // Service landing pages: English always, other languages once their
+    // long-form body is written. The FAQ section goes into the static head.
+    for (const item of ctx.services) {
+      if (!serviceLangs(item, ctx.langs).includes(lang)) continue;
+      const faq = extractFaq(localized(item.body, lang));
+      const page = servicePageSeo(item, lang, ctx.langs, faq);
+      const body = await bodyFor(page, lang, ITEM_MODULES.service);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      serviceCount++;
+    }
+
     // Legal documents, on the same terms.
     for (const doc of ctx.legal) {
       if (!availableLangs(doc, ctx.langs).includes(lang)) continue;
@@ -621,7 +651,7 @@ export async function prerenderPages(
     "utf8",
   );
 
-  return { routes: pageCount + 1, articles: articleCount, projects: projectCount, legal: legalCount };
+  return { routes: pageCount + 1, articles: articleCount, projects: projectCount, legal: legalCount, services: serviceCount };
 }
 
 /* --------------------------------------------------------------- sitemap */
@@ -699,6 +729,7 @@ export async function writeSitemap(distDir: string, origin: string, ctx: BuildCo
     // One <url> per language the item genuinely exists in — never four URLs
     // that all resolve to the same English document.
     ...[
+      ...ctx.services.map((item) => ({ item, seo: servicePageSeo(item, "en", ctx.langs), priority: "0.8" })),
       ...ctx.projects.map((item) => ({ item, seo: projectPageSeo(item, "en", ctx.langs), priority: "0.7" })),
       ...ctx.articles.map((item) => ({ item, seo: articlePageSeo(item, "en", ctx.langs), priority: "0.6" })),
       ...ctx.legal.map((item) => ({ item, seo: legalPageSeo(item, "en", ctx.langs), priority: "0.3" })),
@@ -897,7 +928,7 @@ ${["home", "services", "solutions", "projects", "about", "blog", "contact", "boo
 
 ## Services
 
-${SERVICES.map((s) => `- ${s.name}: ${s.desc}`).join("\n")}
+${SERVICES.map((s) => `- [${s.name}](${absolute(origin, servicePath(s.slug))}): ${s.desc}`).join("\n")}
 
 ## Case studies
 
@@ -1019,7 +1050,7 @@ export async function runSeoBuild(input: {
   if (displayDrift) warnings.push(displayDrift);
 
   const prerendered =
-    `prerendered ${counts.routes} routes + ${counts.articles} articles + ${counts.projects} case studies + ` +
+    `prerendered ${counts.routes} routes + ${counts.articles} articles + ${counts.projects} case studies + ${counts.services} services + ` +
     `${counts.legal} legal (${ctx.langs.join(", ")}${ssr ? ", full pages" : ", head only"})`;
 
   if (!origin) return { summary: `SEO: ${prerendered} (no origin set)`, warnings };

@@ -22,6 +22,14 @@
       "destination": "/article-shell.html"
     },
     {
+      "source": "/(ar|de|fr)/services/(.*)",
+      "destination": "/article-shell.html"
+    },
+    {
+      "source": "/services/(.*)",
+      "destination": "/article-shell.html"
+    },
+    {
       "source": "/(ar|de|fr)/legal/(.*)",
       "destination": "/article-shell.html"
     },

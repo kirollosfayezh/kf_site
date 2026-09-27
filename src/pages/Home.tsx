@@ -313,9 +313,9 @@ export function Home() {
                 title: pick(item.title, lang),
                 desc: pick(item.summary, lang),
                 media: item.media?.[0],
-                href: "/services",
+                href: `/services/${item.slug || item.id}`,
               }))
-            : FALLBACK_SERVICES.map((f) => ({ key: f.key, title: t(f.title), desc: t(f.desc), media: f.img, href: "/services" }))
+            : FALLBACK_SERVICES.map((f) => ({ key: f.key, title: t(f.title), desc: t(f.desc), media: f.img, href: `/services/${f.slug ?? f.key}` }))
           ).map((item) => (
             <Link key={item.key} to={item.href} className={s.card}>
               <Reveal>

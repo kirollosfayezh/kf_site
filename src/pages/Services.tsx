@@ -77,7 +77,11 @@ export function Services() {
                 </div>
               </div>
               <div className={s.svcBody}>
-                <h2 className={s.svcTitle}>{item.title}</h2>
+                <h2 className={s.svcTitle}>
+                  <Link to={`/services/${item.slug}`} style={{ color: "inherit" }} data-track="services.card.title">
+                    {item.title}
+                  </Link>
+                </h2>
                 <p className={s.svcDesc}>{item.desc}</p>
                 {item.points.length > 0 && (
                   <ul className={s.svcPoints}>
@@ -89,6 +93,9 @@ export function Services() {
                     ))}
                   </ul>
                 )}
+                <Link to={`/services/${item.slug}`} className={s.textLink} style={{ marginTop: 18 }} data-track="services.card.more">
+                  {t("Learn more")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
+                </Link>
               </div>
             </Reveal>
           ))}

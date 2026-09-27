@@ -66,7 +66,7 @@ for (const { file, path } of pages) {
       problems.push("snapshot is not JSON");
     }
   }
-  if (/\/(blog|projects|legal)\/./.test(path) && /Loading…|جارٍ التحميل/.test(html.split('<div id="root">')[1] ?? "")) problems.push("item page shows Loading…");
+  if (/\/(blog|projects|legal|services)\/./.test(path) && /Loading…|جارٍ التحميل/.test(html.split('<div id="root">')[1] ?? "")) problems.push("item page shows Loading…");
   if (!/<script>\(function\(\)\{try\{var d=document\.documentElement/.test(html)) problems.push("no boot script");
   check(`static ${path}`, problems.length === 0, problems.join(", "));
 }
@@ -122,8 +122,8 @@ for (const lang of ["", "/ar", "/de", "/fr"]) {
 }
 
 // ---- 2b. hydration
-const sample = pages.filter((p) => !/\/(blog|projects|legal)\/./.test(p.path)).map((p) => p.path);
-for (const kind of ["blog", "projects", "legal"]) {
+const sample = pages.filter((p) => !/\/(blog|projects|legal|services)\/./.test(p.path)).map((p) => p.path);
+for (const kind of ["blog", "projects", "legal", "services"]) {
   const items = pages.filter((p) => new RegExp(`^/(ar/|de/|fr/)?${kind}/.`).test(p.path)).slice(0, 3);
   sample.push(...items.map((p) => p.path));
 }
@@ -141,7 +141,8 @@ for (const path of sample) {
 
 // ---- 3. CLS
 const article = pages.find((p) => /^\/blog\/./.test(p.path))?.path;
-for (const path of ["/", "/ar", "/blog", article].filter(Boolean)) {
+const service = pages.find((p) => /^\/ar\/services\/./.test(p.path))?.path;
+for (const path of ["/", "/ar", "/blog", article, service].filter(Boolean)) {
   for (const mobile of [false, true]) {
     const { ctx, page } = await open({ mobile });
     await page.goto(ORIGIN + path, { waitUntil: "networkidle0" });

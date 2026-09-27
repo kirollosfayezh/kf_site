@@ -24,6 +24,9 @@ const Projects = lazy(() => import("./pages/Projects").then((m) => ({ default: m
 const ProjectCaseStudy = lazy(() =>
   import("./pages/ProjectCaseStudy").then((m) => ({ default: m.ProjectCaseStudy })),
 );
+const ServiceDetail = lazy(() =>
+  import("./pages/ServiceDetail").then((m) => ({ default: m.ServiceDetail })),
+);
 const Legal = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Legal })));
 const Blog = lazy(() => import("./pages/Blog").then((m) => ({ default: m.Blog })));
 const Article = lazy(() => import("./pages/Article").then((m) => ({ default: m.Article })));
@@ -110,6 +113,14 @@ export default function App({ initialLang }: { initialLang?: Lang } = {}) {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <Projects />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/services/:slug"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <ServiceDetail />
                 </Suspense>
               }
             />
