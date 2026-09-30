@@ -21,9 +21,10 @@ export type SocialKey = "facebook" | "instagram" | "linkedin" | "x" | "github" |
 export const SOCIAL_ORDER: SocialKey[] = ["facebook", "instagram", "linkedin", "x", "github", "youtube", "tiktok"];
 
 export const DEFAULT_SOCIAL: Partial<Record<SocialKey, string>> = {
-  facebook: "https://www.facebook.com/profile.php?id=61584985085435",
-  linkedin: "https://linkedin.com/in/kirollos-fayez-65a33931a",
-  github: "https://github.com/koko619911",
+  facebook: "https://www.facebook.com/KfTechSoltuions/",
+  instagram: "https://www.instagram.com/kf__techsolutions/",
+  linkedin: "https://www.linkedin.com/company/kf-tech-solutions/",
+  tiktok: "https://www.tiktok.com/@kftechsolutions",
 };
 
 export interface ContactInfo {

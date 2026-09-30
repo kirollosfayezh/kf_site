@@ -45,10 +45,14 @@ export const SITE = {
   city: "Cairo",
   country: "EG",
   founder: "Kirollos Fayez",
+  // The company's own profiles, matching DEFAULT_SOCIAL. Personal accounts
+  // (the founder's profile, a personal GitHub) describe a Person, not this
+  // Organization, and muddy the entity Google builds for the brand.
   sameAs: [
-    "https://www.facebook.com/profile.php?id=61584985085435",
-    "https://github.com/koko619911",
-    "https://linkedin.com/in/kirollos-fayez-65a33931a",
+    "https://www.facebook.com/KfTechSoltuions/",
+    "https://www.instagram.com/kf__techsolutions/",
+    "https://www.linkedin.com/company/kf-tech-solutions/",
+    "https://www.tiktok.com/@kftechsolutions",
   ],
 } as const;
 
