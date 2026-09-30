@@ -638,15 +638,21 @@ export async function prerenderPages(
    * carries no canonical and no title of its own: the client fills both in from
    * the API, and a wrong canonical (pointing every new post at /blog, or worse
    * at /) is far more damaging than a page whose tags arrive a moment late.
-   * `vercel.json` sends it with `X-Robots-Tag: noindex`; the client's tags
-   * say index once the real page has loaded.
+   *
+   * It says noindex itself: the `X-Robots-Tag` header in `vercel.json` only
+   * matches a request for `/article-shell.html` by name, never the rewritten
+   * `/blog/<anything>` URLs, so every unknown slug (and every untranslated
+   * `/de/blog/<english-only-post>`) was answering 200 with the blog's title and
+   * an index directive — a soft-404 farm. Every real page is prerendered with
+   * its own tags; the client still flips this to index for a post that is
+   * published after the build and loads.
    */
   await writeFile(
     join(distDir, "article-shell.html"),
     injectHead(
       shell,
       `<title data-kf-seo="1">${(ctx.pages.blog ?? PAGES.blog).title}</title>\n    ` +
-        `<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" data-kf-seo="1" />`,
+        `<meta name="robots" content="noindex,follow" data-kf-seo="1" />`,
     ),
     "utf8",
   );
