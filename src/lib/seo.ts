@@ -293,6 +293,37 @@ export function resolveDesc(page: PageSeo, lang: Lang): string {
   return page.descByLang?.[lang]?.trim() || tr(page.desc, lang);
 }
 
+/** Roughly where Google cuts a title or a description in the results. */
+const TITLE_MAX = 60;
+const DESC_MAX = 160;
+
+/**
+ * A title that fits the results page. Past the limit the trailing brand goes
+ * first: Google shows the site name above the result anyway, and a cut-off
+ * headline ("…how a restaurant owner should actually decide | KF Tec…") reads
+ * worse than a whole one without the suffix. The headline itself is never cut.
+ */
+export function fitTitle(title: string): string {
+  if (title.length <= TITLE_MAX) return title;
+  const m = title.match(/^(.*\S)\s+[|—–-]\s+KF Tech[^|—–]*$/);
+  return m ? m[1] : title;
+}
+
+/**
+ * A description that fits the results page: whole sentences where they fit,
+ * else cut at a word with an ellipsis. Long card summaries (GenTrack's runs to
+ * 280 characters) otherwise end mid-word in the snippet.
+ */
+export function fitDesc(desc: string): string {
+  const d = desc.replace(/\s+/g, " ").trim();
+  if (d.length <= DESC_MAX) return d;
+  const head = d.slice(0, DESC_MAX);
+  const stop = Math.max(...[". ", "! ", "? ", "؟ ", "。"].map((p) => head.lastIndexOf(p)));
+  if (stop >= 90) return head.slice(0, stop + 1);
+  const space = head.lastIndexOf(" ", DESC_MAX - 1);
+  return `${head.slice(0, space > 90 ? space : DESC_MAX - 1).replace(/[,;:—–-]+$/, "")}…`;
+}
+
 /** English names of the languages, for schema `availableLanguage` fields. */
 const LANGUAGE_NAMES: Record<Lang, string> = {
   en: "English",
@@ -680,8 +711,8 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   // Dimensions are claimed for the branded default and for CMS photos that
   // went through `ogImageUrl`; a wrong claim makes the card get dropped.
   const imageSized = !page.image || page.imageSized === true;
-  const title = resolveTitle(page, lang);
-  const desc = resolveDesc(page, lang);
+  const title = fitTitle(resolveTitle(page, lang));
+  const desc = fitDesc(resolveDesc(page, lang));
   const tags: SeoTag[] = [{ kind: "title", text: title }];
 
   const m = (attr: "name" | "property", key: string, content?: string) => {
@@ -915,7 +946,9 @@ export function projectPageSeo(item: ArticleLike, lang: Lang, siteLangs: readonl
 
   return {
     path: `/projects/${item.slug || item.id}`,
-    title: `${title}${tag ? ` — ${tag}` : ""} | ${brand}`,
+    // The tag is English in the CMS; untranslated it made every language's
+    // title identical, which Google reads as duplicates.
+    title: `${title}${tag ? ` — ${tr(tag, lang)}` : ""} | ${brand}`,
     desc:
       summary ||
       localized(item.body, lang).replace(/\s+/g, " ").slice(0, 155) ||
