@@ -192,7 +192,6 @@ export function SamuraiIntro() {
       <canvas ref={canvasRef} className={css.canvas} aria-hidden="true" />
       {phase === "loading" && (
         <div className={css.loader} role="status" aria-label={t("Loading…")}>
-          <span className={css.glyph} aria-hidden="true">斬</span>
           <span className={css.bar} aria-hidden="true" />
         </div>
       )}

@@ -29,17 +29,8 @@
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 18px;
   background: #0a0a0d;
   pointer-events: auto;
-}
-.glyph {
-  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Noto Serif CJK JP", serif;
-  font-size: 44px;
-  line-height: 1;
-  color: #ebe3d4;
-  opacity: .85;
-  animation: kfIntroBreathe 1.8s ease-in-out infinite;
 }
 .bar {
   width: 72px;
@@ -83,6 +74,5 @@
 /* No keyboard on a phone: the hint is noise there. */
 @media (pointer: coarse) { .kbd { display: none; } }
 
-@keyframes kfIntroBreathe { 50% { opacity: .45; } }
 @keyframes kfIntroSweep { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 @keyframes kfIntroFadeIn { to { opacity: 1; } }
