@@ -1,9 +1,12 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { createLamellarTexture } from "./textures";
+import { createArmourTextures } from "./textures";
 
 /**
- * Procedural armoured samurai with a two-bone IK rig.
+ * Procedural armoured samurai with a two-bone IK rig, modelled on a laced
+ * yoroi: lacquered riveted dō, crimson-laced kusazuri, sode and shikoro,
+ * kabuto with kuwagata and menpo, mail-and-splint sleeves, haidate, suneate,
+ * hakama, waraji, and the daishō at the hip.
  * Space conventions (root-local): +Y up, figure faces +Z, HIS right hand is -X.
  * The katana is driven by a single "grip" transform; both arms solve IK to it.
  */
@@ -88,6 +91,170 @@ export function gripForPose(p: SamuraiPose): Grip {
   return lerpGrip(IDLE, RAISED, p.raise);
 }
 
+// ---------- geometry helpers ----------
+
+const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+
+function xf(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) {
+  return new THREE.Matrix4().compose(V(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), V(sx, sy, sz));
+}
+
+/** A frame at `from` whose +Y runs to `to` and whose +Z leans toward `fwd`. */
+function along(from: THREE.Vector3, to: THREE.Vector3, fwd: THREE.Vector3) {
+  const y = to.clone().sub(from).normalize();
+  const z = fwd.clone().sub(y.clone().multiplyScalar(fwd.dot(y))).normalize();
+  const x = new THREE.Vector3().crossVectors(y, z);
+  return new THREE.Matrix4().makeBasis(x, y, z).setPosition(from);
+}
+
+function scaleUV(g: THREE.BufferGeometry, su: number, sv: number) {
+  const uv = g.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * su, uv.getY(i) * sv);
+  return g;
+}
+
+const ell = (rx: number, ry: number, rz: number, w = 16, h = 12) => new THREE.SphereGeometry(1, w, h).scale(rx, ry, rz);
+
+/**
+ * An open band of a cone around +Y, centred on y = 0. θ = 0 faces +Z (front),
+ * θ = π/2 faces +X. UVs are scaled so one texture tile spans `tile` units of arc.
+ */
+function band(rTop: number, rBot: number, h: number, th0: number, thLen: number, tile = 0.16) {
+  const g = new THREE.CylinderGeometry(rTop, rBot, h, Math.max(6, Math.ceil(thLen * 9)), 1, true, th0, thLen);
+  return scaleUV(g, (thLen * (rTop + rBot)) / 2 / tile, 1);
+}
+
+/** A thin gilt (or cord) rim following a band's edge, same θ convention as `band`. */
+function trim(r: number, tube: number, th0: number, thLen: number) {
+  const g = new THREE.TorusGeometry(r, tube, 5, Math.max(8, Math.ceil(thLen * 10)), thLen);
+  g.rotateX(Math.PI / 2);
+  g.rotateY(th0 + thLen - Math.PI / 2);
+  return g;
+}
+
+/** Rows of laced lames hanging down from y = `top`, each tucked under the one above. */
+function lacedRows(n: number, top: number, rowH: number, r0: number, flare: number, th0: number, thLen: number) {
+  const out: THREE.BufferGeometry[] = [];
+  for (let k = 0; k < n; k++) {
+    const rT = r0 + k * flare;
+    out.push(band(rT, rT + flare + 0.006, rowH, th0, thLen).translate(0, top - rowH / 2 - k * (rowH - 0.008), 0));
+  }
+  return out;
+}
+
+/**
+ * A tube swept along a smooth curve through `pts`, with the radius free to vary
+ * along it (t, 0..1) and around it (a, radians from `ref`). Frames are carried
+ * by parallel transport, so the tube never twists.
+ */
+function sweep(pts: THREE.Vector3[], segs: number, radial: number, radius: (t: number, a: number) => number, ref?: THREE.Vector3) {
+  const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
+  const T: THREE.Vector3[] = [];
+  for (let i = 0; i <= segs; i++) T.push(curve.getTangentAt(i / segs).normalize());
+  const n = (ref ?? (Math.abs(T[0].y) < 0.9 ? V(0, 1, 0) : V(1, 0, 0))).clone();
+  n.sub(T[0].clone().multiplyScalar(n.dot(T[0]))).normalize();
+  const pos: number[] = [];
+  const uv: number[] = [];
+  const idx: number[] = [];
+  const axis = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  for (let i = 0; i <= segs; i++) {
+    if (i > 0) {
+      axis.crossVectors(T[i - 1], T[i]);
+      const len = axis.length();
+      if (len > 1e-6) n.applyAxisAngle(axis.divideScalar(len), Math.acos(THREE.MathUtils.clamp(T[i - 1].dot(T[i]), -1, 1)));
+    }
+    const t = i / segs;
+    const p = curve.getPointAt(t);
+    b.crossVectors(T[i], n);
+    for (let j = 0; j <= radial; j++) {
+      const a = (j / radial) * Math.PI * 2;
+      const r = radius(t, a);
+      const c = Math.cos(a) * r;
+      const s = Math.sin(a) * r;
+      pos.push(p.x + c * n.x + s * b.x, p.y + c * n.y + s * b.y, p.z + c * n.z + s * b.z);
+      uv.push(j / radial, t);
+    }
+  }
+  for (let i = 0; i < segs; i++) {
+    for (let j = 0; j < radial; j++) {
+      const a = i * (radial + 1) + j;
+      const c = a + radial + 1;
+      idx.push(a, a + 1, c, a + 1, c + 1, c);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setIndex(idx);
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+  g.computeVertexNormals();
+  // weld the seam's normals so it doesn't show as a crease
+  const nm = g.attributes.normal;
+  const tmp = new THREE.Vector3();
+  for (let i = 0; i <= segs; i++) {
+    const a = i * (radial + 1);
+    const z = a + radial;
+    tmp.set(nm.getX(a) + nm.getX(z), nm.getY(a) + nm.getY(z), nm.getZ(a) + nm.getZ(z)).normalize();
+    nm.setXYZ(a, tmp.x, tmp.y, tmp.z);
+    nm.setXYZ(z, tmp.x, tmp.y, tmp.z);
+  }
+  return g;
+}
+
+function roundRect(w: number, h: number, r: number) {
+  const s = new THREE.Shape();
+  s.moveTo(-w / 2 + r, -h / 2);
+  s.lineTo(w / 2 - r, -h / 2);
+  s.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
+  s.lineTo(w / 2, h / 2 - r);
+  s.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2);
+  s.lineTo(-w / 2 + r, h / 2);
+  s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r);
+  s.lineTo(-w / 2, -h / 2 + r);
+  s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
+  return s;
+}
+
+const plate = (shape: THREE.Shape, depth: number) =>
+  new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.002, bevelSize: 0.002, bevelSegments: 1, curveSegments: 8 });
+
+/**
+ * Collects every static part per (bone, material) and merges each set into a
+ * single mesh: the figure has hundreds of parts but draws in a few dozen calls.
+ */
+class Kit {
+  private bins = new Map<THREE.Object3D, Map<THREE.Material, THREE.BufferGeometry[]>>();
+
+  put(bone: THREE.Object3D, mat: THREE.Material, geo: THREE.BufferGeometry, m?: THREE.Matrix4) {
+    const g = geo.index ? geo.toNonIndexed() : geo;
+    if (g !== geo) geo.dispose();
+    if (m) g.applyMatrix4(m);
+    for (const k of Object.keys(g.attributes)) if (k !== "position" && k !== "normal" && k !== "uv") g.deleteAttribute(k);
+    g.clearGroups();
+    let bin = this.bins.get(bone);
+    if (!bin) this.bins.set(bone, (bin = new Map()));
+    const list = bin.get(mat) ?? [];
+    list.push(g);
+    bin.set(mat, list);
+  }
+
+  build(track: (g: THREE.BufferGeometry) => void) {
+    for (const [bone, bin] of this.bins) {
+      for (const [mat, list] of bin) {
+        const merged = mergeGeometries(list, false)!;
+        list.forEach((g) => g.dispose());
+        track(merged);
+        const mesh = new THREE.Mesh(merged, mat);
+        mesh.castShadow = true;
+        bone.add(mesh);
+      }
+    }
+    this.bins.clear();
+  }
+}
+
+const DO_Z = 0.8; // the cuirass is wider than it is deep
+
 export class Samurai {
   root = new THREE.Group();
   materials: THREE.Material[] = [];
@@ -100,35 +267,45 @@ export class Samurai {
   private katana = new THREE.Group();
   bladeMat!: THREE.MeshStandardMaterial;
 
-  private rUpper!: THREE.Mesh;
-  private rFore!: THREE.Mesh;
-  private lUpper!: THREE.Mesh;
-  private lFore!: THREE.Mesh;
-  private rHand!: THREE.Mesh;
-  private lHand!: THREE.Mesh;
-  private rSode!: THREE.Group;
-  private lSode!: THREE.Group;
-  private rElbow!: THREE.Mesh;
-  private lElbow!: THREE.Mesh;
+  // Arm bones: each segment's +Y runs along the bone, +Z toward the elbow's outside.
+  private rUpper = new THREE.Group();
+  private rFore = new THREE.Group();
+  private lUpper = new THREE.Group();
+  private lFore = new THREE.Group();
+  private rHand = new THREE.Group();
+  private lHand = new THREE.Group();
+  private rSode = new THREE.Group();
+  private lSode = new THREE.Group();
 
   private readonly upperLen = 0.3;
   private readonly foreLen = 0.29;
 
   constructor(envMap: THREE.Texture | null) {
-    const lam = createLamellarTexture();
-    this.textures.push(lam);
+    const tx = createArmourTextures();
+    this.textures.push(...tx.all);
 
+    // urushi: deep black lacquer with a clear coat, so every plate carries a crisp highlight
     const lacquer = this.mat(
-      new THREE.MeshStandardMaterial({ color: 0x141418, roughness: 0.28, metalness: 0.35, envMap, envMapIntensity: 0.25 })
+      new THREE.MeshPhysicalMaterial({ color: 0x0c0c10, roughness: 0.34, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.1, envMap, envMapIntensity: 0.7, side: THREE.DoubleSide })
     );
-    const lamMat = this.mat(
-      new THREE.MeshStandardMaterial({ map: lam, roughness: 0.4, metalness: 0.25, envMap, envMapIntensity: 0.2, side: THREE.DoubleSide })
+    const lames = this.mat(
+      new THREE.MeshStandardMaterial({ map: tx.lames, bumpMap: tx.lamesBump, bumpScale: 2, roughness: 0.45, metalness: 0.15, envMap, envMapIntensity: 0.45, side: THREE.DoubleSide })
     );
-    const gold = this.mat(new THREE.MeshStandardMaterial({ color: 0xc19a4b, roughness: 0.28, metalness: 1, envMap, envMapIntensity: 0.6 }));
-    const crimson = this.mat(new THREE.MeshStandardMaterial({ color: 0x5e0d12, roughness: 0.85 }));
-    const cloth = this.mat(new THREE.MeshStandardMaterial({ color: 0x17171d, roughness: 0.95 }));
-    const leather = this.mat(new THREE.MeshStandardMaterial({ color: 0x1d1512, roughness: 0.7 }));
-    const iron = this.mat(new THREE.MeshStandardMaterial({ color: 0x1b1b1f, roughness: 0.45, metalness: 0.85, envMap, envMapIntensity: 0.35 }));
+    const gold = this.mat(new THREE.MeshStandardMaterial({ color: 0xcfa557, roughness: 0.24, metalness: 1, envMap, envMapIntensity: 1 }));
+    const cord = this.mat(new THREE.MeshStandardMaterial({ color: 0x8e1219, roughness: 0.7, bumpMap: tx.clothBump, bumpScale: 1 }));
+    const cloth = this.mat(
+      new THREE.MeshStandardMaterial({ map: tx.cloth, bumpMap: tx.clothBump, bumpScale: 1, roughness: 0.92, side: THREE.DoubleSide })
+    );
+    const mail = this.mat(
+      new THREE.MeshStandardMaterial({ map: tx.mail, bumpMap: tx.mailBump, bumpScale: 1.5, roughness: 0.42, metalness: 0.85, envMap, envMapIntensity: 0.6 })
+    );
+    const iron = this.mat(new THREE.MeshStandardMaterial({ color: 0x202026, roughness: 0.34, metalness: 0.9, envMap, envMapIntensity: 0.75, side: THREE.DoubleSide }));
+    const glove = this.mat(new THREE.MeshStandardMaterial({ color: 0x2a1c14, roughness: 0.66 }));
+    const shade = this.mat(new THREE.MeshStandardMaterial({ color: 0x050404, roughness: 1 }));
+    const hair = this.mat(new THREE.MeshStandardMaterial({ color: 0xb9b2a6, roughness: 0.8 }));
+    const eyes = this.mat(new THREE.MeshStandardMaterial({ color: 0x1a0600, emissive: new THREE.Color(0xff5a1e), emissiveIntensity: 0.9 }));
+    const straw = this.mat(new THREE.MeshStandardMaterial({ color: 0x8f7546, roughness: 0.95, bumpMap: tx.clothBump, bumpScale: 2 }));
+    const ito = this.mat(new THREE.MeshStandardMaterial({ map: tx.ito, roughness: 0.72 }));
     this.bladeMat = this.mat(
       new THREE.MeshStandardMaterial({
         color: 0xdfe5ec,
@@ -141,175 +318,236 @@ export class Samurai {
       })
     ) as THREE.MeshStandardMaterial;
 
-    const add = (parent: THREE.Object3D, geo: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0) => {
-      this.geos.push(geo);
-      const mesh = new THREE.Mesh(geo, m);
-      mesh.position.set(x, y, z);
-      mesh.castShadow = true;
-      parent.add(mesh);
-      return mesh;
-    };
+    const k = new Kit();
+    const fwd = V(0, 0, 1);
 
-    // ---------- hips, skirt, legs ----------
+    // ---------- hips: hakama, haidate, suneate, waraji, kusazuri, obi, daishō ----------
     this.hips.position.set(0, 0.9, 0);
     this.root.add(this.hips);
-    add(this.hips, new THREE.CylinderGeometry(0.175, 0.18, 0.09, 24), crimson, 0, 0.02, 0);
-    // kusazuri — 5 flaring plates
-    for (let i = 0; i < 5; i++) {
-      const center = -Math.PI * 0.8 + i * (Math.PI * 0.4);
-      const g = new THREE.CylinderGeometry(0.19, 0.3, 0.36, 10, 1, true, center + Math.PI - 0.36, 0.72);
-      const m = add(this.hips, g, lamMat, 0, -0.17, 0);
-      m.rotation.y = Math.PI;
-    }
-    // hakama legs
-    // wide, grounded stance in hakama
-    const legGeo = new THREE.CylinderGeometry(0.1, 0.2, 0.95, 18);
-    legGeo.translate(0, -0.475, 0);
-    const lLeg = add(this.hips, legGeo, cloth, 0.1, -0.02, 0);
-    lLeg.rotation.set(-0.08, 0, 0.26);
-    const rLeg = add(this.hips, legGeo, cloth, -0.1, -0.02, 0.04);
-    rLeg.rotation.set(0.12, 0, -0.24);
-    const footGeo = new THREE.BoxGeometry(0.1, 0.06, 0.26);
-    add(this.hips, footGeo, leather, 0.34, -0.9, -0.05).rotation.y = 0.4;
-    add(this.hips, footGeo, leather, -0.33, -0.9, 0.14).rotation.y = -0.3;
 
-    // ---------- torso ----------
+    // wide, grounded stance; the right foot (-X) a little forward
+    const legs = [
+      { s: -1, hip: V(-0.1, -0.05, 0.03), knee: V(-0.21, -0.47, 0.13), ankle: V(-0.3, -0.83, 0.11), yaw: -0.3 },
+      { s: 1, hip: V(0.1, -0.05, -0.01), knee: V(0.21, -0.47, 0.02), ankle: V(0.31, -0.83, -0.07), yaw: 0.4 },
+    ];
+    // hakama radius from the waist (t = 0) to where it is gathered under the knee guard (t = 1)
+    const prof = [0.12, 0.15, 0.175, 0.185, 0.16, 0.105, 0.072];
+    const hakamaR = (t: number) => {
+      const f = t * (prof.length - 1);
+      const i = Math.min(prof.length - 2, Math.floor(f));
+      const u = f - i;
+      return prof[i] + (prof[i + 1] - prof[i]) * u * u * (3 - 2 * u);
+    };
+    for (const L of legs) {
+      const gather = L.knee.clone().lerp(L.ankle, 0.14);
+      const mid = L.hip.clone().lerp(L.knee, 0.5).add(V(L.s * 0.025, 0, 0.01));
+      k.put(
+        this.hips,
+        cloth,
+        sweep([V(L.s * 0.06, 0.06, 0), L.hip, mid, L.knee, gather], 30, 36, (t, a) => {
+          // deep pleats that fade into the waistband, crumpled where the cloth is gathered
+          const pleats = (0.06 * Math.sin(7 * a + t * 2) + 0.03 * Math.sin(12 * a + 1.3)) * Math.min(1, t * 3);
+          const crumple = t > 0.7 ? ((t - 0.7) / 0.3) * 0.07 * Math.sin(11 * a + 0.5) : 0;
+          return hakamaR(t) * (1 + pleats + crumple);
+        }, fwd)
+      );
+
+      // haidate: laced thigh guards over the front of the hakama
+      const thigh = along(L.knee, L.hip, fwd);
+      const T = L.knee.distanceTo(L.hip);
+      for (const g of lacedRows(4, T * 0.98, 0.085, 0.2, 0.008, -1.15, 2.3)) k.put(this.hips, lames, g, thigh);
+
+      // suneate: three iron splints on a cloth gaiter, gilt hinges, a lacquered knee guard
+      const top = L.knee.clone().lerp(L.ankle, 0.1);
+      const shin = along(L.ankle, top, fwd);
+      const S = top.distanceTo(L.ankle);
+      k.put(this.hips, cloth, new THREE.CylinderGeometry(0.056, 0.047, S, 16, 1, true).translate(0, S / 2, 0), shin);
+      for (const c of [-0.85, 0, 0.85]) k.put(this.hips, iron, band(0.066, 0.058, S * 0.8, c - 0.4, 0.8).translate(0, S * 0.47, 0), shin);
+      for (const c of [-0.425, 0.425]) k.put(this.hips, gold, band(0.067, 0.059, S * 0.8, c - 0.03, 0.06).translate(0, S * 0.47, 0), shin);
+      for (const y of [0.16, 0.8]) k.put(this.hips, cord, trim(0.058, 0.006, 1.2, Math.PI * 2 - 2.4).translate(0, S * y, 0), shin);
+      k.put(this.hips, lacquer, band(0.098, 0.08, 0.14, -0.85, 1.7).translate(0, S + 0.02, 0), shin);
+      k.put(this.hips, gold, trim(0.098, 0.004, -0.85, 1.7).translate(0, S + 0.09, 0), shin);
+
+      // tabi and straw waraji
+      const foot = xf(L.ankle.x + Math.sin(L.yaw) * 0.05, -0.865, L.ankle.z + Math.cos(L.yaw) * 0.05, 0, L.yaw, 0);
+      k.put(this.hips, cloth, ell(0.046, 0.034, 0.115).translate(0, -0.006, 0.01), foot);
+      k.put(this.hips, straw, plate(roundRect(0.095, 0.25, 0.04), 0.008).rotateX(Math.PI / 2).translate(0, -0.03, 0.02), foot);
+      for (const z of [-0.02, 0.05]) k.put(this.hips, cord, new THREE.TorusGeometry(0.043, 0.005, 5, 12, Math.PI).translate(0, -0.03, z), foot);
+    }
+
+    // kusazuri: seven laced panels, the side ones flaring wide over the stance
+    const panels: [number, number, number][] = [
+      [-0.45, 0.86, 0.02],
+      [0.45, 0.86, 0.02],
+      [-1.32, 0.9, 0.03],
+      [1.32, 0.9, 0.03],
+      [-2.25, 0.95, 0.02],
+      [2.25, 0.95, 0.02],
+      [Math.PI, 0.95, 0.018],
+    ];
+    for (const [c, w, flare] of panels) {
+      for (const g of lacedRows(5, 0.04, 0.072, 0.205, flare, c - w / 2, w)) k.put(this.hips, lames, g.scale(1, 1, 0.86));
+    }
+    // uwa-obi with its knot and hanging ends
+    k.put(this.hips, cord, new THREE.TorusGeometry(0.19, 0.016, 8, 48).rotateX(Math.PI / 2).scale(1, 1, 0.84).translate(0, 0.055, 0));
+    k.put(this.hips, cord, ell(0.03, 0.022, 0.02).translate(0.035, 0.05, 0.165));
+    for (const dx of [0.025, 0.05])
+      k.put(this.hips, cord, sweep([V(dx, 0.04, 0.17), V(dx + 0.01, -0.03, 0.19), V(dx + 0.005, -0.1, 0.2)], 8, 6, (t) => 0.008 * (1 - t * 0.4)));
+
+    // daishō on the left hip, edge up: the katana's empty saya and the wakizashi
+    const ellR = (rx: number, ry: number) => (_t: number, a: number) => 1 / Math.hypot(Math.cos(a) / rx, Math.sin(a) / ry);
+    const saya = [V(0.13, 0.07, 0.22), V(0.2, 0.03, 0.02), V(0.26, -0.06, -0.28), V(0.3, -0.16, -0.6)];
+    k.put(this.hips, lacquer, sweep(saya, 20, 10, ellR(0.018, 0.011), V(0, 1, 0)));
+    const sayaCurve = new THREE.CatmullRomCurve3(saya, false, "centripetal");
+    const mouth = sayaCurve.getPointAt(0);
+    k.put(this.hips, gold, new THREE.TorusGeometry(0.017, 0.004, 5, 16).rotateX(Math.PI / 2).scale(1.05, 1, 0.68), along(mouth, mouth.clone().add(sayaCurve.getTangentAt(0)), V(0, 1, 0)));
+    const tip = sayaCurve.getPointAt(1);
+    k.put(this.hips, gold, ell(0.019, 0.026, 0.012), along(tip, tip.clone().add(sayaCurve.getTangentAt(1)), V(0, 1, 0)));
+    k.put(this.hips, cord, sweep([V(0.165, 0.045, 0.13), V(0.205, -0.07, 0.12), V(0.23, -0.1, 0.02), V(0.22, 0.0, -0.07)], 14, 6, () => 0.0055));
+    const waki = [V(0.085, 0.075, 0.2), V(0.15, 0.03, 0.0), V(0.2, -0.04, -0.3)];
+    k.put(this.hips, lacquer, sweep(waki, 14, 10, ellR(0.016, 0.01), V(0, 1, 0)));
+    {
+      const base = V(0.08, 0.078, 0.21);
+      const end = V(0.035, 0.11, 0.34);
+      const m = along(base, end, V(0, 1, 0));
+      const L = base.distanceTo(end);
+      k.put(this.hips, ito, scaleUV(new THREE.CylinderGeometry(0.013, 0.014, L, 12).scale(1, 1, 1.25).translate(0, L / 2, 0), 1, 1.2), m);
+      k.put(this.hips, iron, new THREE.CylinderGeometry(0.034, 0.034, 0.007, 20).scale(0.85, 1, 1), m);
+      k.put(this.hips, gold, new THREE.CylinderGeometry(0.015, 0.013, 0.014, 12).scale(1, 1, 1.25).translate(0, L, 0), m);
+    }
+
+    // ---------- torso: riveted lacquer dō, chest and back plates, straps ----------
     this.torso.position.set(0, 0.06, 0);
     this.hips.add(this.torso);
-    const doPts = [
-      new THREE.Vector2(0.15, 0),
-      new THREE.Vector2(0.16, 0.08),
-      new THREE.Vector2(0.21, 0.24),
-      new THREE.Vector2(0.245, 0.38),
-      new THREE.Vector2(0.235, 0.47),
-      new THREE.Vector2(0.16, 0.54),
-      new THREE.Vector2(0.07, 0.56),
-    ];
-    const doGeo = new THREE.LatheGeometry(doPts, 28);
-    const doMesh = add(this.torso, doGeo, lamMat);
-    doMesh.scale.set(1, 1, 0.78);
-    // chest plate (munaita) + gilt trim
-    add(this.torso, new THREE.BoxGeometry(0.3, 0.07, 0.04), lacquer, 0, 0.44, 0.15);
-    add(this.torso, new THREE.BoxGeometry(0.31, 0.012, 0.045), gold, 0, 0.475, 0.152);
-    // agemaki bow on back
-    add(this.torso, new THREE.TorusGeometry(0.04, 0.012, 8, 16), crimson, 0, 0.32, -0.18);
-    // neck
-    add(this.torso, new THREE.CylinderGeometry(0.055, 0.065, 0.1, 12), leather, 0, 0.58, 0);
+    const doProf = [0.165, 0.18, 0.205, 0.226, 0.238, 0.24];
+    const doR = (y: number) => {
+      const f = THREE.MathUtils.clamp(y / 0.08, 0, doProf.length - 1.001);
+      const i = Math.floor(f);
+      return doProf[i] + (doProf[i + 1] - doProf[i]) * (f - i);
+    };
+    const rivet = new THREE.SphereGeometry(0.0045, 6, 4);
+    for (let i = 0; i < 5; i++) {
+      const yb = i * 0.08;
+      const yt = yb + 0.088;
+      const rB = doR(yb) + 0.013;
+      const rT = doR(yt) - 0.002;
+      k.put(this.torso, lacquer, new THREE.CylinderGeometry(rT, rB, yt - yb, 48, 1, true).translate(0, (yb + yt) / 2, 0).scale(1, 1, DO_Z));
+      k.put(this.torso, gold, trim(rB, 0.0028, 0, Math.PI * 2).translate(0, yb + 0.002, 0).scale(1, 1, DO_Z));
+      for (let j = 0; j < 32; j++) {
+        const th = (j / 32) * Math.PI * 2;
+        k.put(this.torso, gold, rivet.clone().translate(Math.sin(th) * rB, yb + 0.016, Math.cos(th) * rB * DO_Z));
+      }
+    }
+    rivet.dispose();
+    // munaita (chest plate) and oshitsuke (back plate), laced panels under the arms
+    k.put(this.torso, lacquer, band(0.205, 0.244, 0.1, -0.8, 1.6).translate(0, 0.45, 0).scale(1, 1, DO_Z));
+    k.put(this.torso, gold, trim(0.205, 0.0045, -0.8, 1.6).translate(0, 0.5, 0).scale(1, 1, DO_Z));
+    k.put(this.torso, lacquer, band(0.2, 0.244, 0.12, Math.PI - 0.9, 1.8).translate(0, 0.46, 0).scale(1, 1, DO_Z));
+    k.put(this.torso, gold, trim(0.2, 0.0045, Math.PI - 0.9, 1.8).translate(0, 0.52, 0).scale(1, 1, DO_Z));
+    k.put(this.torso, lames, band(0.2, 0.236, 0.1, 0.8, Math.PI - 1.7).translate(0, 0.45, 0).scale(1, 1, DO_Z));
+    k.put(this.torso, lames, band(0.2, 0.236, 0.1, Math.PI + 0.9, Math.PI - 1.7).translate(0, 0.45, 0).scale(1, 1, DO_Z));
+    // padded yoke closing the top of the dō, collar cord, neck
+    k.put(this.torso, glove, new THREE.CylinderGeometry(0.088, 0.215, 0.05, 36, 1, true).translate(0, 0.528, 0).scale(1, 1, DO_Z + 0.05));
+    k.put(this.torso, cord, new THREE.TorusGeometry(0.086, 0.011, 6, 28).rotateX(Math.PI / 2).translate(0, 0.553, 0));
+    k.put(this.torso, shade, new THREE.CylinderGeometry(0.055, 0.065, 0.12, 14).translate(0, 0.6, 0));
+    // agemaki bow on the back
+    k.put(this.torso, cord, ell(0.018, 0.016, 0.014).translate(0, 0.33, -0.203));
+    for (const s of [-1, 1]) {
+      k.put(this.torso, cord, new THREE.TorusGeometry(0.028, 0.0075, 6, 16).scale(1.3, 0.8, 1).translate(s * 0.04, 0.335, -0.205));
+      k.put(this.torso, cord, sweep([V(s * 0.008, 0.32, -0.21), V(s * 0.03, 0.24, -0.216), V(s * 0.045, 0.16, -0.212)], 8, 6, () => 0.0075));
+    }
 
-    // ---------- head & kabuto ----------
+    // ---------- head: kabuto, menpo, shikoro ----------
     this.head.position.set(0, 0.69, 0.0);
     this.torso.add(this.head);
-    add(this.head, new THREE.SphereGeometry(0.095, 20, 16), leather);
-    const bowl = add(this.head, new THREE.SphereGeometry(0.132, 32, 14, 0, Math.PI * 2, 0, Math.PI / 2), lacquer, 0, 0.015, -0.005);
-    bowl.scale.set(1, 0.9, 1.08);
-    // vertical ridges (suji)
-    {
-      // 16 ridges merged into one draw call
-      const parts: THREE.BufferGeometry[] = [];
-      const m4 = new THREE.Matrix4();
-      for (let i = 0; i < 16; i++) {
-        const g = new THREE.TorusGeometry(0.133, 0.0035, 4, 20, Math.PI / 2);
-        m4.compose(
-          new THREE.Vector3(0, 0.015, -0.005),
-          new THREE.Quaternion().setFromEuler(new THREE.Euler(0, (i / 16) * Math.PI * 2, Math.PI / 2)),
-          new THREE.Vector3(0.9, 1, 1.08)
-        );
-        g.applyMatrix4(m4);
-        parts.push(g);
+    k.put(this.head, shade, ell(0.085, 0.1, 0.088, 18, 14)); // the face, lost in the visor's shadow
+    const bowl = xf(0, 0.015, -0.005, 0, 0, 0, 1, 0.92, 1.08);
+    k.put(this.head, lacquer, new THREE.SphereGeometry(0.135, 40, 16, 0, Math.PI * 2, 0, Math.PI / 2), bowl);
+    for (let i = 0; i < 24; i++) {
+      k.put(this.head, iron, new THREE.TorusGeometry(0.1362, 0.0032, 4, 18, Math.PI / 2).rotateZ(Math.PI / 2).rotateY((i / 24) * Math.PI * 2), bowl);
+    }
+    k.put(this.head, gold, new THREE.TorusGeometry(0.136, 0.0065, 6, 48).rotateX(Math.PI / 2), bowl);
+    k.put(this.head, gold, new THREE.CylinderGeometry(0.016, 0.026, 0.022, 16).translate(0, 0.14, -0.005));
+    k.put(this.head, gold, new THREE.TorusGeometry(0.02, 0.004, 5, 16).rotateX(Math.PI / 2).translate(0, 0.142, -0.005));
+    // mabizashi (visor) with a gilt edge
+    const visor = xf(0, 0.012, -0.005, 0, 0, 0, 1, 1, 1.08);
+    k.put(this.head, lacquer, band(0.137, 0.182, 0.032, -1.3, 2.6), visor);
+    k.put(this.head, gold, trim(0.182, 0.0035, -1.3, 2.6).translate(0, -0.016, 0), visor);
+    // kuwagata-dai, the two sweeping kuwagata and a mon between them
+    k.put(this.head, gold, plate(roundRect(0.058, 0.036, 0.01), 0.006), xf(0, 0.052, 0.128, -0.35, 0, 0));
+    for (const s of [-1, 1]) {
+      const h = new THREE.Shape();
+      h.moveTo(s * 0.016, 0);
+      h.quadraticCurveTo(s * 0.105, 0.12, s * 0.09, 0.34); // outer edge, out to the point
+      h.quadraticCurveTo(s * 0.045, 0.15, -s * 0.01, 0); // inner edge, back to the root
+      k.put(this.head, gold, plate(h, 0.004), xf(s * 0.02, 0.065, 0.135, -0.32, 0, 0));
+    }
+    k.put(this.head, gold, new THREE.CylinderGeometry(0.014, 0.014, 0.008, 24).rotateX(Math.PI / 2), xf(0, 0.054, 0.14, -0.35, 0, 0));
+    // shikoro: five laced rows flaring out over the shoulders, open at the face
+    for (const g of lacedRows(5, 0, 0.05, 0.14, 0.026, 0.95, Math.PI * 2 - 1.9)) k.put(this.head, lames, g, xf(0, 0, -0.01, 0, 0, 0, 1, 1, 1.06));
+    // fukigaeshi: the top rows turned back beside the face, each with a gilt mon
+    for (const s of [-1, 1]) {
+      const th0 = s > 0 ? 0.55 : -1.2;
+      const wing = xf(0, -0.03, -0.01, 0, 0, s * -0.18, 1, 1, 1.06);
+      k.put(this.head, lacquer, band(0.15, 0.205, 0.075, th0, 0.65), wing);
+      k.put(this.head, gold, trim(0.15, 0.0035, th0, 0.65).translate(0, 0.0375, 0), wing);
+      const mid = th0 + 0.325;
+      k.put(this.head, gold, new THREE.CylinderGeometry(0.012, 0.012, 0.004, 16).rotateX(Math.PI / 2).translate(0, 0, 0.181).rotateY(mid), wing);
+    }
+    // menpo: lacquered half-mask with a nose, a mouth slit and a white horsehair moustache
+    k.put(this.head, lacquer, new THREE.SphereGeometry(0.1, 28, 14, Math.PI / 2 - 1.2, 2.4, Math.PI * 0.5, Math.PI * 0.38), xf(0, -0.032, 0.006, 0, 0, 0, 1.04, 1.12, 1.12));
+    k.put(this.head, lacquer, ell(0.011, 0.024, 0.016).rotateX(0.4).translate(0, -0.038, 0.106));
+    k.put(this.head, shade, new THREE.BoxGeometry(0.04, 0.009, 0.01).translate(0, -0.088, 0.1));
+    k.put(this.head, gold, new THREE.BoxGeometry(0.032, 0.0035, 0.006).translate(0, -0.0905, 0.103));
+    for (const s of [-1, 1]) {
+      k.put(this.head, hair, sweep([V(s * 0.005, -0.064, 0.114), V(s * 0.028, -0.071, 0.109), V(s * 0.052, -0.071, 0.094), V(s * 0.068, -0.059, 0.077)], 10, 6, (t) => 0.0062 * (1 - 0.7 * t)));
+      k.put(this.head, eyes, ell(0.012, 0.0036, 0.004).rotateZ(s * 0.2).translate(s * 0.032, -0.014, 0.087));
+    }
+    // yodare-kake: laced throat guard under the mask
+    for (const g of lacedRows(2, -0.118, 0.04, 0.074, 0.012, -1.15, 2.3)) k.put(this.head, lames, g, xf(0, 0, 0.004, 0, 0, 0, 1, 1, 1.15));
+
+    // ---------- arms: mail sleeves, splinted forearms, elbow cops, gloved fists ----------
+    const a = this.upperLen;
+    const b = this.foreLen;
+    const arms: [THREE.Group, THREE.Group, THREE.Group, THREE.Group, number][] = [
+      [this.rUpper, this.rFore, this.rHand, this.rSode, -1],
+      [this.lUpper, this.lFore, this.lHand, this.lSode, 1],
+    ];
+    for (const [up, fore, hand, sode, s] of arms) {
+      this.root.add(up, fore, hand, sode);
+      // a pleated cloth sleeve, a little full at the bicep, with mail showing at the inside of the arm
+      k.put(up, cloth, sweep([V(0, 0, 0), V(0, a * 0.5, 0.004), V(0, a, 0)], 10, 18, (t, ang) => (0.05 + 0.012 * Math.sin(t * Math.PI)) * (1 + 0.07 * Math.sin(6 * ang + t * 3)), V(0, 0, 1)));
+      k.put(up, mail, band(0.06, 0.06, a * 0.7, Math.PI - 0.7, 1.4, 0.06).translate(0, a * 0.5, 0));
+      // hiji-gane: a shallow iron cup over the point of the elbow
+      k.put(up, iron, new THREE.SphereGeometry(0.04, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.32).rotateX(Math.PI / 2).translate(0, a, 0.012));
+
+      k.put(fore, mail, scaleUV(new THREE.CylinderGeometry(0.037, 0.045, b, 14, 1, true).translate(0, b / 2, 0), 4.5, 4.8));
+      for (const c of [-0.95, 0, 0.95]) k.put(fore, iron, band(0.044, 0.052, b * 0.72, c - 0.33, 0.66).translate(0, b * 0.5, 0));
+      for (const c of [-0.95, 0, 0.95]) {
+        for (const e of [-0.33, 0.3]) k.put(fore, gold, band(0.0445, 0.0525, b * 0.72, c + e, 0.03).translate(0, b * 0.5, 0));
       }
-      const merged = mergeGeometries(parts)!;
-      parts.forEach((g) => g.dispose());
-      add(this.head, merged, iron).castShadow = false;
-    }
-    add(this.head, new THREE.TorusGeometry(0.134, 0.006, 6, 40), gold, 0, 0.016, -0.005).rotation.x = Math.PI / 2;
-    add(this.head, new THREE.CylinderGeometry(0.018, 0.024, 0.02, 12), gold, 0, 0.135, -0.005);
-    // visor
-    const visor = add(this.head, new THREE.CylinderGeometry(0.14, 0.17, 0.012, 28, 1, false, -1.25, 2.5), lacquer, 0, 0.012, 0.012);
-    visor.rotation.x = 0.18;
-    // shikoro (neck guard) — three flaring rows
-    for (let i = 0; i < 3; i++) {
-      const g = new THREE.CylinderGeometry(0.135 + i * 0.035, 0.175 + i * 0.04, 0.06, 26, 1, true, Math.PI - 2.15, 4.3);
-      add(this.head, g, lamMat, 0, -0.02 - i * 0.052, -0.012);
-    }
-    // fukigaeshi (turned-back wings)
-    const wingGeo = new THREE.BoxGeometry(0.09, 0.07, 0.012);
-    const wl = add(this.head, wingGeo, lacquer, 0.16, -0.01, 0.07);
-    wl.rotation.set(0, -1.0, 0.1);
-    const wr = add(this.head, wingGeo, lacquer, -0.16, -0.01, 0.07);
-    wr.rotation.set(0, 1.0, -0.1);
-    // kuwagata (twin horns)
-    const horn = new THREE.Shape();
-    horn.moveTo(0, 0);
-    horn.quadraticCurveTo(0.05, 0.12, 0.03, 0.3);
-    horn.quadraticCurveTo(0.016, 0.14, -0.014, 0.0);
-    horn.lineTo(0, 0);
-    const hornGeo = new THREE.ExtrudeGeometry(horn, { depth: 0.006, bevelEnabled: true, bevelSize: 0.002, bevelThickness: 0.002, bevelSegments: 1, curveSegments: 16 });
-    const hl = add(this.head, hornGeo, gold, 0.03, 0.06, 0.13);
-    hl.rotation.set(-0.12, 0, -0.18);
-    const hr = add(this.head, hornGeo, gold, -0.03, 0.06, 0.13);
-    hr.rotation.set(-0.12, Math.PI, 0.18);
-    hr.position.z = 0.136;
-    // menpo (face mask) + throat guard
-    const menpo = add(this.head, new THREE.SphereGeometry(0.1, 24, 12, -Math.PI * 0.35 + Math.PI / 2, Math.PI * 0.7, Math.PI * 0.45, Math.PI * 0.4), iron, 0, 0, 0.012);
-    menpo.scale.set(1.05, 1.1, 1.1);
-    menpo.rotation.y = Math.PI;
-    add(this.head, new THREE.CylinderGeometry(0.075, 0.13, 0.12, 22, 1, true, -1.3, 2.6), lamMat, 0, -0.13, 0.015);
+      k.put(fore, cord, new THREE.TorusGeometry(0.04, 0.006, 6, 20).rotateX(Math.PI / 2).translate(0, b * 0.9, 0));
 
-    // ---------- arms (root space, IK) ----------
-    const upperGeo = new THREE.CylinderGeometry(0.055, 0.047, 1, 12);
-    upperGeo.translate(0, 0.5, 0);
-    const foreGeo = new THREE.CylinderGeometry(0.047, 0.038, 1, 12);
-    foreGeo.translate(0, 0.5, 0);
-    this.geos.push(upperGeo, foreGeo);
-    const mk = (g: THREE.BufferGeometry, m: THREE.Material) => {
-      const mesh = new THREE.Mesh(g, m);
-      mesh.castShadow = true;
-      this.root.add(mesh);
-      return mesh;
-    };
-    this.rUpper = mk(upperGeo, cloth);
-    this.lUpper = mk(upperGeo, cloth);
-    this.rFore = mk(foreGeo, lamMat);
-    this.lFore = mk(foreGeo, lamMat);
-    const elbowGeo = new THREE.SphereGeometry(0.05, 12, 10);
-    this.geos.push(elbowGeo);
-    this.rElbow = mk(elbowGeo, iron);
-    this.lElbow = mk(elbowGeo, iron);
-    const handGeo = new THREE.BoxGeometry(0.075, 0.085, 0.06);
-    this.geos.push(handGeo);
-    this.rHand = mk(handGeo, leather);
-    this.lHand = mk(handGeo, leather);
+      // fist around the tsuka (katana frame: +Y along the blade, +Z the edge); the
+      // fingers wrap the edge side, the lacquered tekko covers the back of the hand
+      const hy = s < 0 ? -0.03 : -0.02;
+      k.put(hand, glove, ell(0.045, 0.05, 0.046, 14, 10).translate(0, hy, -0.012));
+      for (let f = 0; f < 4; f++) k.put(hand, glove, trim(0.026, 0.0105, -0.625 * Math.PI, 1.25 * Math.PI).translate(0, hy - 0.033 + f * 0.022, 0.002));
+      k.put(hand, lacquer, band(0.05, 0.052, 0.07, Math.PI - 0.8, 1.6).translate(0, hy, -0.008));
+      k.put(hand, gold, trim(0.05, 0.0025, Math.PI - 0.8, 1.6).translate(0, hy + 0.035, -0.008));
 
-    // sode (large shoulder guards)
-    const mkSode = (side: 1 | -1) => {
-      const g = new THREE.Group();
-      const center = side === -1 ? -Math.PI / 2 : Math.PI / 2;
-      const geo = new THREE.CylinderGeometry(0.13, 0.17, 0.3, 12, 1, true, center - 0.85, 1.7);
-      geo.translate(0, -0.15, 0);
-      this.geos.push(geo);
-      const m = new THREE.Mesh(geo, lamMat);
-      m.castShadow = true;
-      g.add(m);
-      const trim = new THREE.Mesh(new THREE.CylinderGeometry(0.131, 0.131, 0.014, 12, 1, true, center - 0.85, 1.7), gold);
-      this.geos.push(trim.geometry);
-      g.add(trim);
-      this.root.add(g);
-      return g;
-    };
-    this.rSode = mkSode(-1);
-    this.lSode = mkSode(1);
+      // sode: a lacquered top plate and six laced rows hanging from the shoulder
+      const c = (s * Math.PI) / 2;
+      k.put(sode, lacquer, band(0.124, 0.132, 0.034, c - 0.85, 1.7).translate(0, -0.012, 0));
+      k.put(sode, gold, trim(0.124, 0.004, c - 0.85, 1.7).translate(0, 0.005, 0));
+      for (const g of lacedRows(6, -0.025, 0.056, 0.13, 0.008, c - 0.82, 1.64)) k.put(sode, lames, g);
+    }
 
     // ---------- katana ----------
-    this.buildKatana(add, gold, iron, leather);
+    this.buildKatana(k, gold, iron, ito);
     this.root.add(this.katana);
 
-    // Only large silhouettes cast shadows; tiny parts cost a shadow draw for no visible gain.
-    this.root.traverse((o) => {
-      const m = o as THREE.Mesh;
-      if (!m.isMesh) return;
-      m.geometry.computeBoundingSphere();
-      if ((m.geometry.boundingSphere?.radius ?? 1) < 0.06) m.castShadow = false;
-    });
+    k.build((g) => this.geos.push(g));
 
     // slight contrapposto stance
     this.root.rotation.order = "YXZ";
@@ -317,22 +555,24 @@ export class Samurai {
 
   private mat<T extends THREE.Material>(m: T): T {
     m.transparent = true;
+    // Double-sided transparent materials otherwise draw twice (back, then front).
+    m.forceSinglePass = true;
     this.materials.push(m);
     return m;
   }
 
-  private buildKatana(
-    add: (p: THREE.Object3D, g: THREE.BufferGeometry, m: THREE.Material, x?: number, y?: number, z?: number) => THREE.Mesh,
-    gold: THREE.Material,
-    iron: THREE.Material,
-    leather: THREE.Material
-  ) {
-    const k = this.katana;
-    add(k, new THREE.BoxGeometry(0.03, 0.27, 0.036), leather, 0, -0.115, 0); // tsuka
-    add(k, new THREE.BoxGeometry(0.034, 0.02, 0.04), gold, 0, -0.255, 0); // kashira
-    const tsuba = add(k, new THREE.CylinderGeometry(0.048, 0.048, 0.009, 20), iron, 0, 0.03, 0);
-    tsuba.scale.set(0.85, 1, 1);
-    add(k, new THREE.BoxGeometry(0.012, 0.03, 0.036), gold, 0, 0.05, 0); // habaki
+  private buildKatana(k: Kit, gold: THREE.Material, iron: THREE.Material, ito: THREE.Material) {
+    const kt = this.katana;
+    // tsuka: oval, wrapped in black ito over white same, with gilt fuchi, kashira and menuki
+    k.put(kt, ito, scaleUV(new THREE.CylinderGeometry(0.0155, 0.0165, 0.25, 14).scale(1, 1, 1.25).translate(0, -0.115, 0), 1, 2));
+    k.put(kt, gold, new THREE.CylinderGeometry(0.018, 0.018, 0.014, 16).scale(1, 1, 1.25).translate(0, 0.012, 0));
+    k.put(kt, gold, new THREE.CylinderGeometry(0.0175, 0.0155, 0.018, 16).scale(1, 1, 1.25).translate(0, -0.248, 0));
+    for (const s of [-1, 1]) k.put(kt, gold, ell(0.004, 0.018, 0.007).translate(s * 0.016, -0.1, 0));
+    // tsuba with a gilt rim, seppa either side, habaki
+    k.put(kt, iron, new THREE.CylinderGeometry(0.046, 0.046, 0.008, 28).scale(0.85, 1, 1).translate(0, 0.03, 0));
+    k.put(kt, gold, trim(0.046, 0.0028, 0, Math.PI * 2).scale(0.85, 1, 1).translate(0, 0.03, 0));
+    for (const y of [0.023, 0.037]) k.put(kt, gold, new THREE.CylinderGeometry(0.02, 0.02, 0.004, 16).scale(1, 1, 1.25).translate(0, y, 0));
+    k.put(kt, gold, new THREE.BoxGeometry(0.012, 0.03, 0.036).translate(0, 0.052, 0));
 
     // curved blade: shape in (edge=z, length=y), extruded in x
     const L = BLADE_LEN;
@@ -354,18 +594,11 @@ export class Samurai {
     const bladeGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.006, bevelEnabled: true, bevelThickness: 0.0025, bevelSize: 0.003, bevelSegments: 2 });
     bladeGeo.translate(0, 0, -0.003);
     bladeGeo.rotateY(-Math.PI / 2); // shape x (edge side) → local +z
-    const blade = add(k, bladeGeo, this.bladeMat, 0, 0.065, 0);
-    blade.castShadow = true;
+    k.put(kt, this.bladeMat, bladeGeo.translate(0, 0.065, 0));
   }
 
-  private solveArm(
-    shoulder: THREE.Vector3,
-    target: THREE.Vector3,
-    pole: THREE.Vector3,
-    upper: THREE.Mesh,
-    fore: THREE.Mesh,
-    elbowMesh: THREE.Mesh
-  ) {
+  /** Two-bone IK: places the upper arm and forearm so the hand reaches `target`, elbow toward `pole`. */
+  private solveArm(shoulder: THREE.Vector3, target: THREE.Vector3, pole: THREE.Vector3, upper: THREE.Object3D, fore: THREE.Object3D) {
     const a = this.upperLen;
     const b = this.foreLen;
     const toT = target.clone().sub(shoulder);
@@ -379,17 +612,14 @@ export class Samurai {
     const elbow = shoulder
       .clone()
       .add(dir.clone().multiplyScalar(Math.cos(angA) * a))
-      .add(perp.multiplyScalar(Math.sin(angA) * a));
+      .add(perp.clone().multiplyScalar(Math.sin(angA) * a));
     const hand = shoulder.clone().add(dir.clone().multiplyScalar(d));
-    const place = (m: THREE.Mesh, p: THREE.Vector3, q: THREE.Vector3) => {
-      const v = q.clone().sub(p);
-      m.position.copy(p);
-      m.scale.set(1, v.length(), 1);
-      m.quaternion.setFromUnitVectors(UP, v.normalize());
+    const place = (o: THREE.Object3D, p: THREE.Vector3, q: THREE.Vector3) => {
+      o.position.copy(p);
+      o.quaternion.setFromRotationMatrix(along(p, q, perp));
     };
     place(upper, shoulder, elbow);
     place(fore, elbow, hand);
-    elbowMesh.position.copy(elbow);
     return hand;
   }
 
@@ -425,15 +655,15 @@ export class Samurai {
     const lTarget = g.pos.clone().sub(g.dir.clone().multiplyScalar(0.14));
     const rPole = rShoulder.clone().add(new THREE.Vector3(-0.35, -0.45, -0.25));
     const lPole = lShoulder.clone().add(new THREE.Vector3(0.35, -0.45, -0.25));
-    this.solveArm(rShoulder, g.pos, rPole, this.rUpper, this.rFore, this.rElbow);
-    this.solveArm(lShoulder, lTarget, lPole, this.lUpper, this.lFore, this.lElbow);
+    this.solveArm(rShoulder, g.pos, rPole, this.rUpper, this.rFore);
+    this.solveArm(lShoulder, lTarget, lPole, this.lUpper, this.lFore);
     this.rHand.position.copy(g.pos);
     this.rHand.quaternion.copy(q);
     this.lHand.position.copy(lTarget);
     this.lHand.quaternion.copy(q);
 
     // sode hang between gravity and upper arm direction
-    const orientSode = (s: THREE.Group, sh: THREE.Vector3, upper: THREE.Mesh) => {
+    const orientSode = (s: THREE.Group, sh: THREE.Vector3, upper: THREE.Object3D) => {
       const armDir = UP.clone().applyQuaternion(upper.quaternion);
       const hang = DOWN.clone().lerp(armDir, 0.45).normalize();
       s.position.copy(sh).add(new THREE.Vector3(0, 0.035, 0));
