@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { gsap } from "gsap";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { createScreenTexture, createSoftSprite, setBrushFont } from "./textures";
+import { createScreenTexture, createSoftSprite } from "./textures";
 import { Samurai, type SamuraiPose, PHI0, PHI1 } from "./samurai";
 import { PaperSheet } from "./paper";
 import { CutGlow, Dust, Shreds, Smoke, Sparks, SwordTrail } from "./effects";
@@ -21,8 +21,6 @@ export interface IntroOptions {
    */
   speed?: number;
   impactSpeed?: number;
-  /** CSS font-family for the brush glyphs on the paper (e.g. next/font's variable value). */
-  brushFont?: string;
 }
 
 export interface IntroHandle {
@@ -37,18 +35,6 @@ const SAM_Z = 5.6;
 const FOV = 32;
 
 export async function createSamuraiIntro(canvas: HTMLCanvasElement, opts: IntroOptions = {}): Promise<IntroHandle> {
-  // Give the paper's brush glyphs a moment to use the web font (never block for long).
-  setBrushFont(opts.brushFont);
-  const family = opts.brushFont?.split(",")[0]?.trim() || '"Shippori Mincho"';
-  try {
-    await Promise.race([
-      document.fonts?.load(`40px ${family}`, "一閃真剣勝負") ?? Promise.resolve(),
-      new Promise((r) => setTimeout(r, 700)),
-    ]);
-  } catch {
-    /* ignore */
-  }
-
   const w0 = canvas.clientWidth || window.innerWidth;
   const h0 = canvas.clientHeight || window.innerHeight;
   const low =
