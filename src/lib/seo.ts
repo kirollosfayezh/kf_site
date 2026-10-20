@@ -54,6 +54,11 @@ export const SITE = {
     "https://www.linkedin.com/company/kf-tech-solutions/",
     "https://www.tiktok.com/@kftechsolutions",
   ],
+  // Profiles that have no footer icon (so no SocialKey) but are the company's own.
+  extraSameAs: ["https://www.snapchat.com/add/kftechsolutions"],
+  // How people actually type the brand. Searches for "kf tech" were landing on
+  // other companies; alternateName ties the short forms to this entity.
+  alternateName: ["KF Tech", "KFTech"],
 } as const;
 
 /**
@@ -409,6 +414,7 @@ export function organisationSchema(origin: string, siteLangs: readonly Lang[] = 
     "@type": ["Organization", "LocalBusiness"],
     "@id": `${origin}/#organization`,
     name: SITE.name,
+    alternateName: [...SITE.alternateName],
     url: `${origin}/`,
     // Google wants the logo as an ImageObject with its real dimensions; the
     // 512 icon is square, which is the one shape it never crops.
@@ -444,7 +450,7 @@ export function organisationSchema(origin: string, siteLangs: readonly Lang[] = 
     // Schema.org has no "worldwide" enum, so those are named, with a catch-all Place.
     areaServed: [{ "@type": "City", name: "Cairo" }, { "@type": "City", name: "Giza" }, ...AREA_SERVED],
     availableLanguage: languages,
-    sameAs,
+    sameAs: [...new Set([...sameAs, ...SITE.extraSameAs])],
     knowsAbout: [
       "Custom software development",
       "AI automation",
@@ -463,6 +469,8 @@ export function websiteSchema(origin: string, siteLangs: readonly Lang[] = LANGS
     "@id": `${origin}/#website`,
     url: `${origin}/`,
     name: SITE.name,
+    // Google's site-name feature reads WebSite.alternateName.
+    alternateName: [...SITE.alternateName],
     publisher: { "@id": `${origin}/#organization` },
     inLanguage: [...siteLangs],
   };

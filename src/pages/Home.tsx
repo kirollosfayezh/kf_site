@@ -254,7 +254,7 @@ export function Home() {
           <div className={h.heroRow}>
             <p className={`up ${h.heroLede}`}>
               {t(
-                "Custom platforms, POS systems, dashboards and AI automation — engineered around how your business actually operates, then supported long after launch.",
+                "KF Tech Solutions is a software company in Cairo: custom platforms, POS systems, dashboards and AI automation — engineered around how your business actually operates, then supported long after launch.",
               )}
             </p>
             <div className={`up ${h.heroActions}`}>
