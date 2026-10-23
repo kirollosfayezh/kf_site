@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
+import { submitIndexNow } from './build/indexnow.ts'
 import { SeoFetchError, runSeoBuild, type SsrModule } from './build/seo-build.ts'
 
 /**
@@ -156,6 +157,11 @@ export default defineConfig(({ command, mode }) => {
             )
           }
           logger.info(`[kf-seo-prerender] ${summary}`)
+          // Production deploys only: a preview or a local build must never
+          // announce URLs that are not (or not yet) the live site.
+          if (origin && process.env.VERCEL_ENV === 'production') {
+            logger.info(`[kf-seo-prerender] ${await submitIndexNow('dist', origin)}`)
+          }
         } catch (err) {
           // A cold backend once made the build ship a sitemap with no articles,
           // no case studies and no legal pages — silently. Never again: if the
