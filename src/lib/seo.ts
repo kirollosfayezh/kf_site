@@ -49,7 +49,7 @@ export const SITE = {
   // (the founder's profile, a personal GitHub) describe a Person, not this
   // Organization, and muddy the entity Google builds for the brand.
   sameAs: [
-    "https://www.facebook.com/KfTechSoltuions/",
+    "https://www.facebook.com/KFTechSolutionsEG/",
     "https://www.instagram.com/kf__techsolutions/",
     "https://www.linkedin.com/company/kf-tech-solutions/",
     "https://www.tiktok.com/@kftechsolutions",
