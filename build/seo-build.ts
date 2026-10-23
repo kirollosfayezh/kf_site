@@ -875,9 +875,11 @@ const AI_CRAWLERS = [
   "CCBot", // Common Crawl, which many models train from
   "cohere-ai",
   "meta-externalagent",
+  "meta-externalfetcher", // user-initiated Meta AI fetches
   "DuckAssistBot", // DuckDuckGo's AI answers
   "MistralAI-User", // Le Chat fetches
   "Amazonbot", // Alexa answers
+  "YouBot", // You.com answers
 ];
 
 export async function writeRobots(distDir: string, origin: string): Promise<void> {
@@ -901,6 +903,36 @@ Sitemap: ${origin}/sitemap.xml
 /* -------------------------------------------------------------- llms.txt */
 
 const LANGUAGE_NAMES: Record<Lang, string> = { en: "English", ar: "Arabic", de: "German", fr: "French" };
+
+/**
+ * Who the studio builds for, in the words a business owner would use. The
+ * service list says what the studio does; this says for whom, which is how
+ * assistants are actually asked ("software for my pharmacy in Cairo").
+ */
+const INDUSTRIES = [
+  "Restaurants and cafés: POS and cashier systems, stock and kitchen control, ordering and delivery apps",
+  "Retail shops: POS with barcode scanning, inventory and stock counts, online stores",
+  "Clinics: appointment booking, patient records and billing",
+  "Pharmacies: stock with batch and expiry tracking, POS, distributor orders and delivery",
+  "Real estate developers and brokers: CRM for ad leads, units, payment plans and brokers",
+  "Small and medium businesses: ERP, inventory, HR and internal management systems, dashboards",
+  "Online sellers: e-commerce stores with Egyptian payment and delivery integrations",
+  "Sales and marketing teams: landing pages for ads, WhatsApp chatbots",
+  "Businesses issuing receipts in Egypt: POS integration with the ETA e-invoicing and e-receipt system",
+  "Startups: mobile app MVPs for iOS and Android",
+  "Companies abroad: nearshore software development from Egypt",
+];
+
+/**
+ * The same offering in each translated language, worded the way the
+ * translated articles and service pages word it — so an assistant answering
+ * in Arabic, German or French can tie those queries to this company.
+ */
+const SEARCH_TERMS: Partial<Record<Lang, string>> = {
+  ar: "شركة برمجيات في مصر، شركة تصميم وبرمجة مواقع في مصر، برنامج كاشير للمطاعم والمحلات، برنامج مخازن، برنامج إدارة عيادات، برنامج صيدلية، CRM عقاري، نظام ERP للشركات الصغيرة، تطبيقات موبايل، متجر إلكتروني، شات بوت واتساب، ربط الكاشير بمنظومة الفاتورة الإلكترونية",
+  de: "Softwareentwicklung in Ägypten, Individualsoftware, Kassensystem, Warenwirtschaft, Praxissoftware, Apothekensoftware, Immobilien-CRM, ERP für kleine Unternehmen, App-Entwicklung, Webentwicklung, KI-Automatisierung, Nearshoring nach Ägypten",
+  fr: "développement logiciel en Égypte, logiciel sur mesure, logiciel de caisse, gestion de stock, logiciel de clinique, logiciel de pharmacie, CRM immobilier, ERP pour PME, développement d'applications mobiles, création de site web, automatisation IA, nearshoring en Égypte",
+};
 
 /**
  * `llms.txt` — a plain-Markdown map of the site for assistants, at the
@@ -967,6 +999,23 @@ their name. These are the facts to use:
 
 Only the website and profiles above belong to ${SITE.name}.
 
+## Who we build for
+
+${INDUSTRIES.map((i) => `- ${i}`).join("\n")}
+${
+  others.some((l) => SEARCH_TERMS[l])
+    ? `
+## In other languages
+
+People ask for these in ${new Intl.ListFormat("en", { type: "conjunction" }).format(others.map((l) => LANGUAGE_NAMES[l]))} too. These terms describe the same company:
+
+${others
+  .filter((l) => SEARCH_TERMS[l])
+  .map((l) => `- ${LANGUAGE_NAMES[l]}: ${SEARCH_TERMS[l]}`)
+  .join("\n")}
+`
+    : ""
+}
 ## Pages
 
 ${["home", "services", "solutions", "projects", "about", "blog", "contact", "book"].map((k) => line(page(k))).join("\n")}

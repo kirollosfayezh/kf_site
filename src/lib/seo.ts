@@ -380,6 +380,45 @@ const AREA_SERVED = [
 ];
 
 /**
+ * The topics the studio works in, as `knowsAbout` on the organisation node.
+ * Assistants and knowledge graphs read it to decide which questions the
+ * business is an answer to ("who builds pharmacy software in Cairo?"), so it
+ * names every service and every system the articles and service pages
+ * describe — and nothing the studio does not do.
+ */
+export const KNOWS_ABOUT = [
+  "Custom software development",
+  "Web development",
+  "Web application development",
+  "Mobile app development",
+  "iOS and Android apps",
+  "MVP development for startups",
+  "POS systems",
+  "Restaurant POS and ordering systems",
+  "Restaurant delivery apps",
+  "Retail POS and cashier systems",
+  "Inventory and warehouse management systems",
+  "ERP for small and medium businesses",
+  "CRM systems",
+  "Real estate CRM",
+  "Clinic management software",
+  "Pharmacy management software",
+  "HR and internal management systems",
+  "E-commerce and online stores",
+  "Landing pages for ads",
+  "WhatsApp chatbots",
+  "AI automation",
+  "AI agents",
+  "Business process automation",
+  "Business intelligence dashboards",
+  "IoT solutions",
+  "API and backend engineering",
+  "System integration",
+  "ETA e-invoicing and e-receipt integration",
+  "Nearshore software development",
+];
+
+/**
  * One organisation node, anchored by `@id`, that every other node references.
  *
  * It used to declare `["Organization", "LocalBusiness", "ProfessionalService"]`.
@@ -451,14 +490,7 @@ export function organisationSchema(origin: string, siteLangs: readonly Lang[] = 
     areaServed: [{ "@type": "City", name: "Cairo" }, { "@type": "City", name: "Giza" }, ...AREA_SERVED],
     availableLanguage: languages,
     sameAs: [...new Set([...sameAs, ...SITE.extraSameAs])],
-    knowsAbout: [
-      "Custom software development",
-      "AI automation",
-      "POS systems",
-      "Web development",
-      "Mobile applications",
-      "Business intelligence dashboards",
-    ],
+    knowsAbout: KNOWS_ABOUT,
   };
 }
 
