@@ -4,7 +4,8 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { createScreenTexture, createSoftSprite } from "./textures";
 import { Samurai, type SamuraiPose, PHI0, PHI1 } from "./samurai";
 import { PaperSheet } from "./paper";
-import { CutGlow, Dust, Shreds, Smoke, Sparks, SwordTrail } from "./effects";
+import { CutGlow, SwordTrail } from "./trail";
+import { Dust, Shreds, Smoke, Sparks } from "./particles";
 
 export interface IntroOptions {
   /** Called when the paper starts to separate — start the hero's entrance here. */

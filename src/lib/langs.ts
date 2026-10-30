@@ -1,7 +1,7 @@
 /**
  * Language primitives, deliberately free of React.
  *
- * `lib/seo.ts` is imported by the Vite build script (`build/seo-build.ts`) in
+ * `lib/seo/` is imported by the Vite build script (`build/seo-build.ts`) in
  * plain Node to prerender pages and write the sitemap. If these lived in
  * `lib/i18n.tsx` that import would drag React and JSX into the config load and
  * break the build, so the plain values live here and both sides import them.

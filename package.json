@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "oxlint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview",
     "serve:dist": "node build/vercel-like.mjs",
     "og:image": "bash build/make-og-image.sh",
@@ -32,6 +35,7 @@
     "oxlint": "^1.81.0",
     "puppeteer-core": "^25.12.0",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "vitest": "^5.0.5"
   }
 }
