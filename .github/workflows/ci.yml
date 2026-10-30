@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # The build prerenders every page from the CMS, so it reads the public
+      # production API (GET requests only; IndexNow only runs on Vercel
+      # production deploys). No secrets are involved.
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://kf-backend-tv5l.onrender.com
+          VITE_SITE_URL: https://kftechsolutions.dev
