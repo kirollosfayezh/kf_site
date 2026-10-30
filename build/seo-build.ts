@@ -36,7 +36,7 @@ import {
   type PageSeo,
   type SeoOptions,
   type SeoOverride,
-} from "../src/lib/seo.ts";
+} from "../src/lib/seo/index.ts";
 import { LANGS, dirOf, isLang } from "../src/lib/langs.ts";
 import { primeDict, setOverrides, translate } from "../src/lib/dict/index.ts";
 import { FALLBACK_FAQS } from "../src/lib/fallback-content.ts";
