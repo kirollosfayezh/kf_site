@@ -1,5 +1,7 @@
 # KF Tech Solutions — Site
 
+[![CI](https://github.com/kirollosfayezh/kf_site/actions/workflows/ci.yml/badge.svg)](https://github.com/kirollosfayezh/kf_site/actions/workflows/ci.yml)
+
 Public marketing site for KF Tech Solutions. Vite + React + TypeScript, talking to the
 `kf_backend` Express + MongoDB server (deployed on Render) for content, leads and live
 chat. Content and leads go over REST under `/api`; the chat widget uses REST plus a
@@ -51,7 +53,7 @@ the build fails rather than shipping a site that calls its own static host.
 
 ## SEO
 
-`src/lib/seo.ts` is the React port of `kf-seo.js` from the design export, and is
+`src/lib/seo/` is the React port of `kf-seo.js` from the design export, and is
 the single source of truth: one `PAGES` table drives titles, meta descriptions,
 canonicals, hreflang, Open Graph, Twitter cards and JSON-LD.
 
@@ -61,7 +63,8 @@ crawler that runs no JavaScript and a browser that does can never disagree:
 - **Runtime** — `components/Seo.tsx`. `RouteSeo` (mounted in the Layout) applies
   the entry for the current route; `Article.tsx` calls `useSeo()` with the
   fetched post, because CMS content isn't known until it arrives.
-- **Build** — `build/seo-build.ts` (`runSeoBuild`), run from the `builder`
+- **Build** — `build/seo-build.ts` (`runSeoBuild`, with the work split across
+  `build/seo/`), run from the `builder`
   hook in `vite.config.ts` after two bundles are built: the browser bundle and
   a Node bundle of the same app (`src/entry-server.tsx`, in `dist-ssr/`). Every
   route is rendered to a real HTML file — head tags *and* body — with the CMS
@@ -125,7 +128,9 @@ settings; English is always on.
 
 ```bash
 npm run dev         # local dev server
-npm run build       # type-check (tsc -b) + production build to dist/
+npm run build       # type-check (tsc -b) + production build + prerender to dist/
+npm run typecheck   # tsc -b (app, build scripts and tests)
+npm test            # Vitest, once (npm run test:watch to keep it running)
 npm run preview     # preview the production build locally (SPA fallback only)
 npm run serve:dist  # serve dist/ with vercel.json's rewrites, redirects and headers
 npm run verify:prerender  # crawler + browser checks of a built dist/ (needs Chrome)
@@ -165,19 +170,49 @@ Writes always go over REST; the socket is a push channel only. It emits:
 Because the socket echoes back messages the visitor just posted over REST, incoming
 messages are deduplicated by `id`.
 
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph build["npm run build (Vite builder)"]
+    client["client bundle<br/>dist/"] --> ssr["server bundle<br/>dist-ssr/entry-server"]
+    ssr --> prerender["build/seo-build.ts<br/>prerender every route × language"]
+  end
+  cms[("kf_backend<br/>REST /api")] -- "GET content, settings,<br/>SEO overrides, translations" --> prerender
+  prerender --> files["HTML + content snapshot per page,<br/>sitemap, feeds, robots, llms.txt"]
+  files --> vercel["Vercel (static)"]
+  vercel --> browser["Browser: hydrateRoot<br/>primes the content cache"]
+  browser -- "REST + Socket.io<br/>(leads, chat, analytics)" --> cms
+  seo["src/lib/seo/<br/>PAGES + seoTags()"] --- prerender
+  seo --- browser
+```
+
+One SEO engine (`src/lib/seo/`) feeds both the build and the running site, so the
+static `<head>` a crawler reads and the one the browser maintains are produced by
+the same `seoTags()` call.
+
 ## Structure
 
 ```
 src/
-  pages/        one component per route (Home, Contact, About, Services, Solutions,
-                 Projects, Blog, Article, Campaign)
-  components/   Nav, Footer, Layout, Reveal (scroll-reveal wrapper), chat/ChatWidget
-  services/     http.ts (API_ORIGIN/API_BASE + fetch wrapper around the envelope),
-                 content.ts, leads.ts, chat.ts (REST + Socket.io)
-  hooks/        useContent.ts (list/item/settings fetch hooks), useReveal.ts
-  lib/          i18n.tsx (EN/AR context + t()), i18n-dict.json, theme.tsx (dark/light),
-                 fallback-content.ts (static copy used when the API is empty or down)
-  styles/       sections.module.css — shared section/card/FAQ patterns reused by pages
+  pages/          one component per route; the homepage's sections live in pages/home/
+  components/     shared UI (Nav, Footer, Layout, PhoneField, Seo, …)
+    chat/         ChatWidget (session, socket) + header/log/composer views + storage
+    hero/         the hand-written WebGL hero: shaders, geometry, mat4, render loop
+  intro/engine/   the homepage's three.js intro (lazy chunk)
+  lib/
+    seo/          PAGES table, URLs/hreflang, JSON-LD, head-tag descriptors, overrides
+    pixels/       consent-gated marketing tags and the data layer
+    dict/         ar/de/fr dictionaries keyed by the exact English string
+    i18n.tsx      language context and t(); langs.ts holds the React-free primitives
+    content-helpers.ts  pick()/pickPlain(): CMS text with dictionary fallback
+  services/       http.ts (envelope-aware fetch), content, leads, chat (REST + Socket.io)
+  hooks/          useContent (cache-seeded list/item hooks), useHydrated, useReveal
+  entry-server.tsx  the Node render entry the prerender uses
+build/
+  seo-build.ts    post-build entry (runSeoBuild), called from vite.config.ts
+  seo/            fetch (with retries), prerender, sitemap, feeds, robots, llms.txt
+  verify-prerender.mjs, vercel-like.mjs  local checks of a built dist/
 ```
 
 Design tokens (colors, fonts, spacing) are defined once as CSS custom properties in
@@ -218,3 +253,63 @@ The layout is checked at 375px, 768px and 1280px in both `dir="ltr"` and `dir="r
   `padding-inline-start`, `border-inline-start`) so RTL mirrors correctly.
 - The chat widget is a sheet above the launcher on small screens — never full-screen —
   and is dismissible with the header close button or `Escape`.
+
+## Testing
+
+```bash
+npm test               # 132 Vitest tests, node environment, ~1 s
+npm run typecheck      # strict TypeScript across src/, build/ and the tests
+npm run lint           # oxlint
+npm run verify:prerender   # after a build: crawler + real-Chrome checks of dist/
+```
+
+Unit tests sit next to the code they cover (`*.test.ts`) and target the logic a
+regression would hurt most:
+
+- **SEO engine** — title/description fitting, per-language canonicals and
+  hreflang, noindex handling, dashboard override merging, JSON-LD graph, and
+  escaping of everything written into the static HTML.
+- **i18n** — `pick()` falling back from the CMS to the dictionary to English,
+  dashboard wording overrides, and a completeness check of the shipped
+  dictionaries.
+- **Build** — CMS fetch retries and fail-loud behaviour with a mocked `fetch`,
+  sitemap and robots.txt output written to a temp directory.
+- **Behaviour helpers** — consent gating and the marketing data layer, phone
+  parsing, image URLs, FAQ extraction, chat message merging, and the hero's
+  colour ramp, geometry and matrices.
+
+`verify:prerender` is the end-to-end gate (needs a local Chrome, so it is not
+part of CI): every prerendered page has its body and snapshot without
+JavaScript, sampled pages hydrate with zero React mismatches, and layout shift
+stays under 0.05 on phone and desktop.
+
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests and the full build on
+every push and pull request. The build prerenders from the public production
+API with read-only requests; it needs no secrets.
+
+## Design decisions
+
+- **Prerender instead of an SSR server.** The site is static on Vercel; every
+  route is rendered at build time with the CMS content embedded and then
+  hydrated. Crawlers and link previews get real pages with no server to run.
+  The cost is that content edits need a redeploy (the dashboard triggers one).
+- **One SEO source for build and runtime.** `seoTags()` returns descriptors that
+  the build turns into HTML and the browser turns into DOM nodes, so the two
+  cannot drift apart.
+- **Dictionary keyed by the English string.** Copy stays readable in the JSX
+  and the dashboard can override any string; the trade-off is that every
+  visible string must pass through `t()` at render time (data arrays included)
+  or it silently stays English.
+- **Hand-written WebGL for the hero.** The terrain animation runs in the vertex
+  shader, so each frame uploads one float and two matrices instead of
+  re-uploading the mesh, and the hero no longer ships three.js.
+- **Fail the build when the CMS cannot be read.** A deploy that silently ships
+  without articles is worse than a red one, so build-time fetches retry with
+  backoff and then throw.
+- **Consent before any marketing tag.** Nothing third-party loads unless an id
+  is configured and, with consent mode on, the visitor accepts. The first-party
+  data layer is always published so a tag manager can be added later.
+
+## License
+
+[MIT](LICENSE)

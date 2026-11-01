@@ -20,66 +20,14 @@ import { afterIntroReveal } from "../../lib/intro";
 import { guessCountry, readPhone, rememberCountry, switchCountry } from "../../lib/phone";
 import { ChatAvatar } from "./ChatAvatar";
 import { PhoneField } from "../PhoneField";
+import { ChatComposer } from "./ChatComposer";
+import { ChatHeader } from "./ChatHeader";
+import { ChatLog } from "./ChatLog";
+import { mergeMessage } from "./messages";
+import { AUTO_OPEN_DELAY, GREETED_KEY, SEEN_KEY, readNum, readPhoneKey, writeNum, writePhoneKey } from "./storage";
 import styles from "./ChatWidget.module.css";
 
 const QUICK = ["I need a POS system", "Website or web app", "AI automation", "How much does it cost?"];
-
-const GREETING = "Hi! You're through to KF Tech Solutions. What are you trying to build?";
-
-/** Auto-open once per visitor, after the page has settled. */
-const GREETED_KEY = "kf-chat-greeted";
-/** How many agent messages this visitor has already read. */
-const SEEN_KEY = "kf-chat-seen";
-const AUTO_OPEN_DELAY = 4200;
-/** The E.164 number this browser last chatted with — prefills the field, and
- *  lets a returning visitor skip the phone step before the server confirms it. */
-const PHONE_KEY = "kf-chat-phone";
-
-function readPhoneKey(): string {
-  try {
-    return localStorage.getItem(PHONE_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
-function writePhoneKey(value: string) {
-  try {
-    if (value) localStorage.setItem(PHONE_KEY, value);
-    else localStorage.removeItem(PHONE_KEY);
-  } catch {
-    /* private mode */
-  }
-}
-
-function readNum(key: string): number {
-  try {
-    return Number(localStorage.getItem(key)) || 0;
-  } catch {
-    return 0;
-  }
-}
-function writeNum(key: string, value: number) {
-  try {
-    localStorage.setItem(key, String(value));
-  } catch {
-    /* private mode — the widget still works, it just forgets */
-  }
-}
-
-/** Server timestamps are epoch milliseconds (see kf_backend chat.repo.ts). */
-function clock(ts: number | undefined) {
-  if (!ts) return "";
-  const d = new Date(ts);
-  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-}
-
-function mergeMessage(list: ChatMessage[], incoming: ChatMessage): ChatMessage[] {
-  // The socket echoes back messages we just sent over REST, so dedupe by id.
-  if (list.some((m) => m.id === incoming.id)) return list;
-  const next = [...list, incoming];
-  next.sort((a, b) => (a.ts ?? 0) - (b.ts ?? 0));
-  return next;
-}
 
 export function ChatWidget() {
   const { t, lang } = useI18n();
@@ -393,48 +341,15 @@ export function ChatWidget() {
 
       {open && (
         <section className={styles.panel} role="dialog" aria-label={t("Chat with KF Tech Solutions")}>
-          <header className={styles.hd}>
-            <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={40} className={styles.hdAvatar} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h2>{agentJoined ? "KF Tech Solutions" : t("KF Assistant")}</h2>
-              <div className={styles.st}>
-                <span className={styles.live} />{" "}
-                {agentJoined ? t("A person is with you now") : t("Usually replies within minutes")}
-              </div>
-            </div>
-            {/* Minimise, not close: the conversation stays exactly where it was
-                and the launcher keeps the unread badge. */}
-            <button className={styles.x} aria-label={t("Minimise chat")} onClick={() => setOpen(false)}>
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" strokeWidth="2.2" strokeLinecap="round">
-                <path d="M6 14l6 6 6-6" />
-              </svg>
-            </button>
-          </header>
+          <ChatHeader agentJoined={agentJoined} onMinimise={() => setOpen(false)} />
 
-          <div className={styles.log} ref={logRef}>
-            {/* The greeting is presentational only — it is never written to the thread. */}
-            <div className={`${styles.row} ${styles.rowThem}`}>
-              <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
-              <div className={styles.bub}>{t(GREETING)}</div>
-            </div>
-            {resumed && <div className={styles.resumed}>{t("Welcome back — here's your previous conversation.")}</div>}
-            {messages.map((m) => (
-              <div key={m.id} className={`${styles.row} ${m.from === "visitor" ? styles.rowMe : styles.rowThem}`}>
-                {m.from !== "visitor" && (
-                  <ChatAvatar kind={agentJoined ? "agent" : "bot"} size={26} className={styles.rowAvatar} />
-                )}
-                <div className={styles.bub}>{m.text}</div>
-                <span className={styles.ts}>{clock(m.ts)}</span>
-              </div>
-            ))}
-            {agentTyping && (
-              <div className={styles.typing}>
-                <i />
-                <i />
-                <i />
-              </div>
-            )}
-          </div>
+          <ChatLog
+            logRef={logRef}
+            messages={messages}
+            resumed={resumed}
+            agentJoined={agentJoined}
+            agentTyping={agentTyping}
+          />
 
           {!hasPhone ? (
             <>
@@ -497,26 +412,7 @@ export function ChatWidget() {
             <>
               {error && <p className={styles.errorNote}>{t(error)}</p>}
               <div className={styles.form}>
-                <div className={styles.comp}>
-                  <textarea
-                    rows={1}
-                    value={draft}
-                    placeholder={t("Type a message…")}
-                    onChange={(e) => handleDraftChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSend();
-                      }
-                    }}
-                  />
-                  <button className={styles.send} type="button" disabled={!draft.trim()} onClick={handleSend} aria-label={t("Send message")}>
-                    <svg viewBox="0 0 24 24">
-                      <path d="M22 2L11 13" />
-                      <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-                    </svg>
-                  </button>
-                </div>
+                <ChatComposer draft={draft} onDraftChange={handleDraftChange} onSend={handleSend} />
               </div>
             </>
           )}
