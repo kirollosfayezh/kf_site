@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { LANG_META, useI18n, type Lang } from "../lib/i18n";
 import { localePath } from "../lib/seo";
 import { useTheme } from "../lib/theme";
-import { pick } from "../lib/content-helpers";
+import { pick, isConcept } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_PROJECTS, FALLBACK_SERVICES, FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { FlagIcon } from "./FlagIcon";
@@ -59,9 +59,17 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
 
     // The static fallback projects have no case-study page, so they point at
     // the gallery rather than at a URL that would 404.
+    // The concept demos share one entry rather than adding a row each.
     const projectLeaves: Leaf[] =
       projects.data && projects.data.length > 0
-        ? projects.data.map((p) => ({ key: p.id, label: pick(p.title, lang), href: `/projects/${p.slug || p.id}` }))
+        ? [
+            ...projects.data
+              .filter((p) => !isConcept(p.meta))
+              .map((p) => ({ key: p.id, label: pick(p.title, lang), href: `/projects/${p.slug || p.id}` })),
+            ...(projects.data.some((p) => isConcept(p.meta))
+              ? [{ key: "concepts", label: t("Concept demos"), href: "/projects#concepts" }]
+              : []),
+          ]
         : FALLBACK_PROJECTS.map((f) => ({ key: f.key, label: t(f.title), href: "/projects" }));
 
     return [

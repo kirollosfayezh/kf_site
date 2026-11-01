@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
-import { pick, pickPlain, metaString } from "../../lib/content-helpers";
+import { pick, pickPlain, metaString, isConcept } from "../../lib/content-helpers";
 import { FALLBACK_PROJECTS } from "../../lib/fallback-content";
 import { Reveal } from "../../components/Reveal";
 import { BalancedGrid } from "../../components/BalancedGrid";
@@ -23,8 +23,9 @@ export function HomeProjects({ projects }: { projects: ContentItem[] | null }) {
         </Link>
       </Reveal>
       <BalancedGrid preset="wide">
-        {(projects && projects.length > 0
-          ? projects.slice(0, 4).map((item) => ({
+        {/* Client work only: the concept demos have their own section on /projects. */}
+        {(projects && projects.some((p) => !isConcept(p.meta))
+          ? projects.filter((p) => !isConcept(p.meta)).slice(0, 4).map((item) => ({
               key: item.id,
               slug: item.slug || item.id,
               // `tag`, not `category` — the seeder writes `meta.tag`, so this

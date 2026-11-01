@@ -48,6 +48,11 @@ export function metaString(meta: Record<string, unknown> | undefined, key: strin
   return typeof v === "string" && v.trim() ? v : undefined;
 }
 
+/** A concept demo (a made-up business we designed) rather than client work. */
+export function isConcept(meta: Record<string, unknown> | undefined): boolean {
+  return meta?.concept === true;
+}
+
 export function metaPoints(meta: Record<string, unknown> | undefined, key = "points"): string[] {
   const v = meta?.[key];
   if (!Array.isArray(v)) return [];
