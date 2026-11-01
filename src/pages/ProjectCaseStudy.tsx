@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
 import { useSeo } from "../components/Seo";
 import { PAGES, projectPageSeo, type PageSeo } from "../lib/seo";
-import { pick, pickPlain, metaString, metaPoints } from "../lib/content-helpers";
+import { pick, pickPlain, metaString, metaPoints, isConcept } from "../lib/content-helpers";
 import { useContentItem } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { ProjectGallery, galleryImages } from "../components/ProjectGallery";
@@ -84,6 +84,7 @@ export function ProjectCaseStudy() {
   const result = metaString(item.meta, "result");
   const demoUrl = metaString(item.meta, "demoUrl");
   const repoUrl = metaString(item.meta, "repoUrl");
+  const concept = isConcept(item.meta);
 
   // Only the facts that were actually filled in — an empty "Client —" row reads
   // as a gap in the work rather than as a detail withheld.
@@ -128,6 +129,12 @@ export function ProjectCaseStudy() {
               </dl>
             )}
 
+            {concept && (
+              <p className={s.caseNote} style={{ marginTop: 18 }}>
+                {t("Concept demo: a made-up business we designed to show what we can build. Not a client project.")}
+              </p>
+            )}
+
             {(demoUrl || repoUrl) && (
               <div className={s.caseActions}>
                 {demoUrl && (
@@ -135,7 +142,7 @@ export function ProjectCaseStudy() {
                   // typed, which are by definition outside our control.
                   <a href={demoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                     <ExternalLinkIcon />
-                    {t("Live demo")}
+                    {t(concept ? "Try the live demo" : "Live demo")}
                   </a>
                 )}
                 {repoUrl && (

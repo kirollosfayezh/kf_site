@@ -71,6 +71,9 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       strictPort: true,
+      // Demo websites are served by the backend; production reaches them
+      // through the /demos rewrite in vercel.json, dev through this proxy.
+      ...(apiBase ? { proxy: { '/demos': { target: apiBase, changeOrigin: true } } } : {}),
     },
     build: {
       // Every browser this site supports has had these for years; targeting them

@@ -44,6 +44,10 @@
     {
       "source": "/q/(.*)",
       "destination": "/article-shell.html"
+    },
+    {
+      "source": "/demos/:slug",
+      "destination": "https://kf-backend-tv5l.onrender.com/demos/:slug"
     }
   ],
   "redirects": [
