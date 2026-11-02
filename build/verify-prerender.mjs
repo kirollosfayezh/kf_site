@@ -65,6 +65,16 @@ for (const { file, path } of pages) {
     } catch {
       problems.push("snapshot is not JSON");
     }
+    // Inline in the page, so it is paid for on every visit: blog pages once
+    // carried every post's full text here (≈ 400 kB each).
+    if (snap.length > 200_000) problems.push(`snapshot is ${Math.round(snap.length / 1024)} kB`);
+  }
+  // A share image on our own host must exist, or the link preview is blank.
+  const canonicalHost = /<link rel="canonical" href="(https?:\/\/[^/"]+)/.exec(html)?.[1];
+  const og = /<meta property="og:image" content="([^"]+)"/.exec(html)?.[1];
+  if (og && canonicalHost && og.startsWith(`${canonicalHost}/`)) {
+    const local = decodeURIComponent(og.slice(canonicalHost.length).split(/[?#]/)[0]);
+    if (!(await stat(join(root, local)).catch(() => null))) problems.push(`og:image ${local} missing`);
   }
   if (/\/(blog|projects|legal|services)\/./.test(path) && /Loading…|جارٍ التحميل/.test(html.split('<div id="root">')[1] ?? "")) problems.push("item page shows Loading…");
   if (!/<script>\(function\(\)\{try\{var d=document\.documentElement/.test(html)) problems.push("no boot script");

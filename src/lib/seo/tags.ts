@@ -80,7 +80,8 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   m("name", "geo.region", "EG-C");
   m("name", "geo.placename", SITE.city);
 
-  if (origin) tags.push({ kind: "link", rel: "canonical", href: url });
+  // The not-found page has no URL of its own to name: `/404` is itself a 404.
+  if (origin && page.path !== PAGES.notFound.path) tags.push({ kind: "link", rel: "canonical", href: url });
   // A single-language page advertises nothing: a cluster of one is noise, and
   // `x-default` on its own says less than the canonical already does.
   if (origin && !page.noindex && available.length > 1) {

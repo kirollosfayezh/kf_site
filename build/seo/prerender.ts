@@ -19,6 +19,7 @@ import {
 } from "../../src/lib/seo/index.ts";
 import { dirOf } from "../../src/lib/langs.ts";
 import { translate } from "../../src/lib/dict/index.ts";
+import { cardView } from "../../src/lib/reading-time.ts";
 import { FALLBACK_FAQS } from "../../src/lib/fallback-content.ts";
 import { extractFaq } from "../../src/lib/faq.ts";
 import { bootScript } from "../boot-script.ts";
@@ -75,6 +76,13 @@ export function listsFor(ctx: BuildContext, lang: Lang): Record<string, unknown>
   };
   const out: Record<string, unknown> = {};
   for (const [name, items] of Object.entries(lists)) out[`list:${name}`] = items.map((i) => pruneForLang(i, lang));
+  // The blog list goes out as cards, exactly as the client fetches it
+  // (`?view=card`): with bodies it was every post's full text, ~300 kB inline
+  // on each of the 120 blog pages, for titles and a "N min read".
+  out["list:blogPosts"] = ctx.articles.map((i) => cardView(i));
+  // Project cards read the summary; the body only matters on the case study,
+  // which has its own item entry. Kept where there is no summary to show.
+  out["list:projects"] = ctx.projects.map((i) => (hasText(i.summary) ? withoutBody(i) : pruneForLang(i, lang)));
   // Service cards show the title, summary and points; the long landing-page
   // body is only read on the service's own page, via its item entry.
   out["list:services"] = ctx.services.map((i) => {
@@ -84,6 +92,15 @@ export function listsFor(ctx: BuildContext, lang: Lang): Record<string, unknown>
     return { ...rest, meta };
   });
   return out;
+}
+
+function hasText(text: ArticleLike["summary"]): boolean {
+  return Object.values(text ?? {}).some((v) => typeof v === "string" && v.trim() !== "");
+}
+
+function withoutBody<T extends ArticleLike>(item: T): T {
+  const { body: _body, ...rest } = item;
+  return rest as T;
 }
 
 /** Items, keyed the way the pages ask for them (by slug, falling back to id). */
@@ -334,7 +351,11 @@ export async function prerenderPages(
   await writePage(distDir, shell, ctx.pages.notFound ?? PAGES.notFound, origin, "404.html", "en", opts);
 
   /**
-   * The fallback for articles published after this build. It deliberately
+   * The shell for client quote pages (`/q/<token>`), which are never
+   * prerendered. Content URLs no longer fall back to it: an unknown
+   * `/blog|projects|services|legal/<slug>` gets `404.html` with a real 404
+   * status (which still renders a post published after this build, client
+   * side, until the deploy hook's rebuild prerenders it). It deliberately
    * carries no canonical and no title of its own: the client fills both in from
    * the API, and a wrong canonical (pointing every new post at /blog, or worse
    * at /) is far more damaging than a page whose tags arrive a moment late.

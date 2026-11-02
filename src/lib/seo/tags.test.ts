@@ -12,6 +12,13 @@ const jsonld = (tags: SeoTag[]) =>
   tags.flatMap((t) => (t.kind === "jsonld" ? [t.data as Record<string, unknown>] : []));
 
 describe("seoTags", () => {
+  it("gives the not-found page no canonical (its /404 path is itself a 404)", () => {
+    const tags = seoTags(PAGES.notFound, "en", ORIGIN);
+    expect(links(tags, "canonical")).toEqual([]);
+    expect(meta(tags, "robots")).toBe("noindex,follow");
+    expect(links(seoTags(PAGES.home, "en", ORIGIN), "canonical")).toHaveLength(1);
+  });
+
   it("omits everything that needs an absolute origin when none is configured", () => {
     const tags = seoTags(PAGES.services, "en", "");
     expect(links(tags, "canonical")).toHaveLength(0);

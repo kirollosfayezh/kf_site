@@ -257,15 +257,4 @@ export function renderRichText(source: string): { blocks: ReactNode[]; headings:
   return { blocks, headings };
 }
 
-/**
- * Reading time in minutes, from the body rather than a field an editor has to
- * keep in step with their own edits.
- *
- * 200 wpm is the usual English figure. Arabic is counted the same way: word
- * counts run lower for the same content, which offsets the slower per-word
- * rate closely enough for a rounded "N min read".
- */
-export function readingMinutes(source: string): number {
-  const words = (source || "").trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 200));
-}
+export { readingMinutes } from "./reading-time.ts";

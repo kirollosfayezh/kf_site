@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
 import { pick, metaString, pickPlain } from "../lib/content-helpers";
-import { readingMinutes } from "../lib/rich-text";
+import { cardMinutes } from "../lib/reading-time";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { Img } from "../components/Img";
@@ -132,7 +132,7 @@ export function Blog() {
                 <span className={s.featuredBadge}>{t("FEATURED")}</span>
               </div>
               <div className={s.featuredBody}>
-                <div className={s.featuredMeta} suppressHydrationWarning>{metaLine(featured.createdAt, pickPlain(metaString(featured.meta, "tag") ?? "", lang), lang, readingMinutes(pick(featured.body, lang)), t("min read"))}</div>
+                <div className={s.featuredMeta} suppressHydrationWarning>{metaLine(featured.createdAt, pickPlain(metaString(featured.meta, "tag") ?? "", lang), lang, cardMinutes(featured, lang, (body) => pick(body, lang)), t("min read"))}</div>
                 <h2 className={s.featuredTitle}>{pick(featured.title, lang)}</h2>
                 <p className={s.featuredDesc}>{pick(featured.summary, lang)}</p>
                 <div className={s.featuredByline}>
@@ -159,7 +159,7 @@ export function Blog() {
                     {tag && <span className={s.cardTag}>{pickPlain(tag, lang)}</span>}
                   </div>
                   <div className={s.cardBody}>
-                    <div className={s.cardMetaLine} suppressHydrationWarning>{metaLine(post.createdAt, pickPlain(metaString(post.meta, "tag") ?? "", lang), lang, readingMinutes(pick(post.body, lang)), t("min read"))}</div>
+                    <div className={s.cardMetaLine} suppressHydrationWarning>{metaLine(post.createdAt, pickPlain(metaString(post.meta, "tag") ?? "", lang), lang, cardMinutes(post, lang, (body) => pick(body, lang)), t("min read"))}</div>
                     <h2 className={s.cardTitle} style={{ marginTop: 10 }}>{pick(post.title, lang)}</h2>
                     <p className={s.cardDesc}>{pick(post.summary, lang)}</p>
                     <span className={s.cardRead}>
