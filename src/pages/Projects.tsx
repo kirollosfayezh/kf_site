@@ -32,7 +32,8 @@ interface ProjectCardItem {
 function ProjectCard({ item, i, Heading = "h2" }: { item: ProjectCardItem; i: number; Heading?: "h2" | "h3" }) {
   const { t, lang } = useI18n();
   return (
-    <Reveal as="article" className={s.card} style={{ borderRadius: 20 }}>
+    // A concept card is the anchor its demo's "Back" button returns to.
+    <Reveal as="article" id={item.concept ? item.slug : undefined} className={s.card} style={{ borderRadius: 20, scrollMarginTop: 88 }}>
       <div className={s.cardMedia} style={{ aspectRatio: "16/10" }}>
         {item.images.length ? (
           <ProjectGallery
@@ -66,8 +67,8 @@ function ProjectCard({ item, i, Heading = "h2" }: { item: ProjectCardItem; i: nu
           {/* A concept's demo is the point of the card, so it takes the slot
               a client project uses for its result. */}
           {item.concept && item.demoUrl ? (
-            <a href={item.demoUrl} target="_blank" rel="noopener" className={s.projView} data-track="projects.concept.demo">
-              {t("Try the live demo")} <span aria-hidden="true">&#8599;</span>
+            <a href={item.demoUrl} className={s.projView} data-track="projects.concept.demo">
+              {t("Try the live demo")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </a>
           ) : (
             <span className={s.projResult}>{pickPlain(item.result ?? "", lang)}</span>
@@ -165,7 +166,7 @@ export function Projects() {
       </section>
 
       {concepts.length > 0 && (
-        <section id="concepts" className={s.section} style={{ paddingTop: 40, paddingBottom: 40 }}>
+        <section id="concepts" className={s.section} style={{ paddingTop: 40, paddingBottom: 40, scrollMarginTop: 88 }}>
           <Reveal>
             <span className={s.eyebrowPink}>{t("// CONCEPT DEMOS")}</span>
             <h2 className={s.h2}>{t("Try a demo yourself.")}</h2>

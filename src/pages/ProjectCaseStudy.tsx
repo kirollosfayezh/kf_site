@@ -140,7 +140,9 @@ export function ProjectCaseStudy() {
                 {demoUrl && (
                   // `noopener` matters on both: these point at URLs an editor
                   // typed, which are by definition outside our control.
-                  <a href={demoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                  // A concept demo lives on our own domain and carries a way
+                  // back, so it opens in this tab and the Back button works.
+                  <a href={demoUrl} {...(concept ? {} : { target: "_blank", rel: "noopener noreferrer" })} className="btn btn-primary">
                     <ExternalLinkIcon />
                     {t(concept ? "Try the live demo" : "Live demo")}
                   </a>
