@@ -86,19 +86,41 @@ export function useSmoothScroll() {
 
     toTop();
     let raf = 0;
-    const deadline = performance.now() + 2500;
+    let target = NaN;
+    let userMoved = false;
+    const stop = () => (userMoved = true);
+    const deadline = performance.now() + 3000;
+    // The card keeps following its target for the whole window: content above
+    // it (the rest of the list, images) can still arrive and push it down
+    // after the first scroll, and Lenis clamps to the page height it last
+    // measured, so a scroll asked for while the page was short stops early.
+    // The visitor scrolling themselves ends that.
     const seek = () => {
+      if (userMoved) return;
       const el = document.getElementById(id);
       if (el) {
-        const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-        if (lenis) lenis.scrollTo(top, { force: true });
-        else window.scrollTo({ top, behavior: "smooth" });
-        return;
+        const top = Math.round(el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET);
+        const settled = !lenis?.isScrolling;
+        if (Math.abs(top - target) > 2 || (settled && Math.abs(window.scrollY - top) > 2)) {
+          target = top;
+          lenis?.resize();
+          if (lenis) lenis.scrollTo(top, { force: true });
+          else window.scrollTo({ top, behavior: "smooth" });
+        }
       }
       if (performance.now() < deadline) raf = requestAnimationFrame(seek);
     };
     raf = requestAnimationFrame(seek);
-    return () => cancelAnimationFrame(raf);
+    const opts = { passive: true, once: true } as const;
+    window.addEventListener("wheel", stop, opts);
+    window.addEventListener("touchstart", stop, opts);
+    window.addEventListener("keydown", stop, opts);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("wheel", stop);
+      window.removeEventListener("touchstart", stop);
+      window.removeEventListener("keydown", stop);
+    };
   }, [pathname, hash]);
 }
 
