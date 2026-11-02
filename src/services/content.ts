@@ -17,8 +17,16 @@ export function cachedSettings(): SiteSettings | null {
   return cached<SiteSettings>("settings");
 }
 
+/**
+ * Lists fetched as cards: no bodies, reading time in `meta.readingMinutes`.
+ * A blog list with bodies is every post's full text (~900 kB) for a page of
+ * titles. The prerender builds the same shape (`cardView` in build/seo).
+ */
+export const CARD_LISTS: ReadonlySet<ContentCollection> = new Set(["blogPosts"]);
+
 export function getContentList(collection: ContentCollection): Promise<ContentItem[]> {
-  return fetchCached<ContentItem[]>(`list:${collection}`, `/content/${collection}`);
+  const view = CARD_LISTS.has(collection) ? "?view=card" : "";
+  return fetchCached<ContentItem[]>(`list:${collection}`, `/content/${collection}${view}`);
 }
 
 export function cachedContentList(collection: ContentCollection): ContentItem[] | null {

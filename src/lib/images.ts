@@ -80,6 +80,10 @@ export function imageUrl(src: string | undefined, opts: ImageOptions = {}): stri
  */
 export function ogImageUrl(src: string | undefined): { url?: string; sized: boolean } {
   if (!src) return { url: undefined, sized: false };
+  // Project screenshots shipped with the site are WebP, which some link
+  // previews (LinkedIn, older WhatsApp) show without a picture. Each one used
+  // as a share image has a JPEG twin beside it; `verify:prerender` checks it.
+  if (/^\/projects\/[^?#]+\.webp$/.test(src)) return { url: src.replace(/\.webp$/, ".jpg"), sized: false };
   if (!proxyable(src)) return { url: src, sized: false };
   return { url: unsplashDirect(src, 1200, 80, "cover", 630), sized: true };
 }

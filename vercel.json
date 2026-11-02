@@ -6,38 +6,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(ar|de|fr)/blog/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/blog/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/(ar|de|fr)/projects/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/projects/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/(ar|de|fr)/services/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/services/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/(ar|de|fr)/legal/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
-      "source": "/legal/(.*)",
-      "destination": "/article-shell.html"
-    },
-    {
       "source": "/(ar|de|fr)/q/(.*)",
       "destination": "/article-shell.html"
     },

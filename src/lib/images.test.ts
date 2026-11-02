@@ -35,6 +35,14 @@ describe("ogImageUrl", () => {
     expect(ogImageUrl("https://cdn.test/upload.png")).toEqual({ url: "https://cdn.test/upload.png", sized: false });
     expect(ogImageUrl(undefined)).toEqual({ url: undefined, sized: false });
   });
+
+  it("swaps a shipped project WebP for its JPEG twin, which every link preview shows", () => {
+    expect(ogImageUrl("/projects/concepts/gym-class-booking-desktop.webp")).toEqual({
+      url: "/projects/concepts/gym-class-booking-desktop.jpg",
+      sized: false,
+    });
+    expect(ogImageUrl("https://media.test/upload.webp").url).toBe("https://media.test/upload.webp");
+  });
 });
 
 describe("imageSrcSet", () => {
