@@ -47,7 +47,7 @@ export function ChatAvatar({
         {/* Brand sphere the character sits in. */}
         <radialGradient id={id("disc")} cx="34%" cy="26%" r="78%">
           <stop offset="0%" stopColor="#FF9A4D" />
-          <stop offset="52%" stopColor="#FF6A00" />
+          <stop offset="52%" stopColor="#FC6D3A" />
           <stop offset="100%" stopColor="#C4008F" />
         </radialGradient>
         {/* Top-left key light, the main cue that the surface is curved. */}

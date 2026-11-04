@@ -61,7 +61,7 @@
   width: 18px;
   background: #fff;
 }
-.dot:focus-visible { outline: 2px solid #ff6a00; outline-offset: -2px; border-radius: 6px; }
+.dot:focus-visible { outline: 2px solid #FC6D3A; outline-offset: -2px; border-radius: 6px; }
 
 @media (prefers-reduced-motion: reduce) {
   .track { transition: none; }
@@ -78,8 +78,8 @@
   display: grid;
   place-items: center;
   background:
-    radial-gradient(120% 90% at 50% 110%, rgba(255, 106, 0, .16), transparent 60%),
-    radial-gradient(90% 70% at 50% -10%, rgba(255, 0, 128, .10), transparent 60%),
+    radial-gradient(120% 90% at 50% 110%, rgba(252, 109, 58, .16), transparent 60%),
+    radial-gradient(90% 70% at 50% -10%, rgba(248, 15, 133, .10), transparent 60%),
     var(--panel2, #141418);
 }
 .frame {

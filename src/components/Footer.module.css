@@ -1,5 +1,16 @@
 .footer { border-top: 1px solid var(--border); background: var(--bg); }
-.inner { max-width: 1280px; margin: 0 auto; padding: 64px 24px 40px; }
+.inner { max-width: 1280px; margin: 0 auto; padding: clamp(56px, 8vw, 96px) 24px 40px; }
+.tagline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(36px, 6.4vw, 84px);
+  line-height: 1;
+  letter-spacing: -.04em;
+  padding-bottom: clamp(40px, 6vw, 72px);
+  margin-bottom: clamp(40px, 6vw, 64px);
+  border-bottom: 1px solid var(--border);
+  text-wrap: balance;
+}
 /*
  * Four blocks — brand, Company, Legal, Get in touch — in an explicit layout.
  *
@@ -22,7 +33,7 @@
 .brandCol { max-width: 320px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--text); }
 .logo { width: 38px; height: 38px; object-fit: contain; display: block; flex-shrink: 0; }
-.brandTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-body); }
+.brandTitle { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-body); letter-spacing: -.015em; }
 .desc { margin-top: 16px; color: var(--text2); font-size: var(--fs-ui); line-height: 1.55; }
 .social { display: flex; gap: 9px; margin-top: 20px; }
 .socialBtn {
@@ -32,11 +43,12 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r-full);
   color: var(--text2);
+  transition: border-color .2s, color .2s, transform .25s cubic-bezier(.22, 1, .36, 1);
 }
-.socialBtn:hover { border-color: rgba(255, 106, 0, .5); color: var(--text); }
-.colTitle { font-size: var(--fs-ui); text-transform: uppercase; letter-spacing: .08em; color: var(--text3); font-family: var(--font-mono); font-weight: 500; }
+.socialBtn:hover { border-color: var(--bstrong); color: var(--text); transform: translateY(-2px); }
+.colTitle { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: .14em; color: var(--text3); font-family: var(--font-mono); font-weight: 500; }
 .colLinks { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
 /* The cookie-settings control is a <button> because it opens the banner rather
    than navigating; it is styled with the anchors so the column reads as one

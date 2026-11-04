@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import type { Socket } from "socket.io-client";
 import { Link } from "react-router-dom";
 import type { CountryCode } from "libphonenumber-js/max";
@@ -16,9 +16,8 @@ import {
 import { ApiError } from "../../services/http";
 import { trackConversion } from "../../lib/conversions";
 import { useI18n } from "../../lib/i18n";
-import { guessCountry, readPhone, rememberCountry, switchCountry } from "../../lib/phone";
+import type { PhoneState } from "../../lib/phone";
 import { ChatAvatar } from "./ChatAvatar";
-import { PhoneField } from "../PhoneField";
 import { ChatComposer } from "./ChatComposer";
 import { ChatHeader } from "./ChatHeader";
 import { ChatLog } from "./ChatLog";
@@ -27,6 +26,17 @@ import { AUTO_OPEN_DELAY, GREETED_KEY, SEEN_KEY, readNum, readPhoneKey, writeNum
 import styles from "./ChatWidget.module.css";
 
 const QUICK = ["I need a POS system", "Website or web app", "AI automation", "How much does it cost?"];
+
+/**
+ * The phone helpers carry libphonenumber's full metadata and a time-zone table —
+ * about 260 kB of script. Only the phone step needs them, so they load when the
+ * panel first opens rather than with the page.
+ */
+type PhoneLib = typeof import("../../lib/phone");
+let phoneLibPromise: Promise<PhoneLib> | null = null;
+const loadPhoneLib = () => (phoneLibPromise ??= import("../../lib/phone"));
+const PhoneField = lazy(() => import("../PhoneField").then((m) => ({ default: m.PhoneField })));
+const NO_PHONE: PhoneState = { display: "", valid: false, complete: false };
 
 export function ChatWidget() {
   const { t, lang } = useI18n();
@@ -40,7 +50,9 @@ export function ChatWidget() {
   /** Adopts the thread the server finds for the visitor's phone number. */
   const [visitorId, setVisitorIdState] = useState<string>(() => getVisitorId());
   const [phone, setPhone] = useState(() => readPhoneKey());
-  const [country, setCountry] = useState<CountryCode>(() => guessCountry(lang));
+  const [phoneLib, setPhoneLib] = useState<PhoneLib | null>(null);
+  // Egypt until the phone helpers arrive and can guess from the time zone.
+  const [country, setCountry] = useState<CountryCode>("EG");
   /** Left the field with something in it — only then may a complete-but-wrong number be flagged. */
   const [phoneTouched, setPhoneTouched] = useState(false);
   /** Tried to start: from here any invalid number, or none, is flagged. */
@@ -49,7 +61,19 @@ export function ChatWidget() {
   /** A quick reply tapped before the phone step, sent once the chat starts. */
   const pending = useRef<string | null>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
-  const phoneState = useMemo(() => readPhone(phone, country), [phone, country]);
+  const phoneState = useMemo(() => (phoneLib ? phoneLib.readPhone(phone, country) : { ...NO_PHONE, display: phone }), [phoneLib, phone, country]);
+  useEffect(() => {
+    if (!open || phoneLib) return;
+    let live = true;
+    loadPhoneLib().then((lib) => {
+      if (!live) return;
+      setPhoneLib(lib);
+      setCountry(lib.guessCountry(lang));
+    });
+    return () => {
+      live = false;
+    };
+  }, [open, phoneLib, lang]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [agentTyping, setAgentTyping] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -233,7 +257,7 @@ export function ChatWidget() {
         setVisitorId(id);
         setVisitorIdState(id);
       }
-      if (phoneState.country) rememberCountry(phoneState.country);
+      if (phoneState.country) phoneLib?.rememberCountry(phoneState.country);
       writePhoneKey(session.phone.e164);
       setPhone(session.phone.international);
       setMessages(session.messages);
@@ -297,7 +321,8 @@ export function ChatWidget() {
   function handlePhoneChange(value: string) {
     setPhone(value);
     // A number typed with its country code picks its own country.
-    const next = readPhone(value, country);
+    if (!phoneLib) return;
+    const next = phoneLib.readPhone(value, country);
     if (next.country && next.country !== country && (value.trim().startsWith("+") || value.trim().startsWith("00") || next.valid)) {
       setCountry(next.country);
     }
@@ -362,6 +387,7 @@ export function ChatWidget() {
                   begin();
                 }}
               >
+                <Suspense fallback={<div className={styles.fld} style={{ height: 76 }} aria-hidden="true" />}>
                 <PhoneField
                   id="kf-chat-phone"
                   value={phone}
@@ -374,7 +400,7 @@ export function ChatWidget() {
                   onChange={handlePhoneChange}
                   onCountryChange={(c) => {
                     setCountry(c);
-                    setPhone((cur) => switchCountry(cur, c));
+                    setPhone((cur) => (phoneLib ? phoneLib.switchCountry(cur, c) : cur));
                     phoneRef.current?.focus();
                   }}
                   onBlur={() => {
@@ -384,6 +410,7 @@ export function ChatWidget() {
                   }}
                   onEnter={() => begin()}
                 />
+                </Suspense>
                 <label className={styles.fld}>
                   <span>{t("Your name")}</span>
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Optional")} autoComplete="name" />

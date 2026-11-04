@@ -57,7 +57,7 @@
   padding: 7px 12px;
   border-radius: var(--r-full);
   background: var(--brand-gradient);
-  color: #fff;
+  color: var(--on-brand);
 }
 
 .body { padding: 30px 28px; display: flex; flex-direction: column; gap: 14px; }

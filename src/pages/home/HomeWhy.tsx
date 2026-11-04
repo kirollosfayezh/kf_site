@@ -1,33 +1,63 @@
+import { Link } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
 import { Reveal } from "../../components/Reveal";
-import { BalancedGrid } from "../../components/BalancedGrid";
 import s from "../../styles/sections.module.css";
-import { WHY } from "./data";
+import h from "../Home.module.css";
+import { VALUES } from "./data";
 
-/** Why work with the studio: six short reasons. */
-export function HomeWhy() {
+/**
+ * Who builds it, and what they hold to: the founder's real photo beside the
+ * brand book's four values.
+ */
+export function HomeWhy({ waLink }: { waLink: string }) {
   const { t } = useI18n();
   return (
-    <section className={s.section}>
-      <Reveal style={{ maxWidth: 640 }}>
-        <span className={s.eyebrow}>{t("// WHY KF TECH")}</span>
-        <h2 className={s.h2sm}>{t("A partner, not just a developer.")}</h2>
-      </Reveal>
-      <BalancedGrid preset="cards">
-        {WHY.map((w) => (
-          <Reveal key={w.title} className={s.whyCard}>
-            <span className={s.whyIcon}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            </span>
-            <div>
-              <h3 className={s.whyTitle}>{t(w.title)}</h3>
-              <p className={s.whyDesc}>{t(w.desc)}</p>
-            </div>
+    <section className={s.section} id="why">
+      <div className={h.why}>
+        <Reveal className={h.founder}>
+          <img
+            className={h.founderImg}
+            src="/founder.jpg"
+            alt={t("Kirollos Fayez, founder of KF Tech Solutions")}
+            width={1402}
+            height={1122}
+            loading="lazy"
+            decoding="async"
+          />
+          <span className={h.founderCaption}>
+            <b>Kirollos Fayez</b>
+            <span>{t("Founder & lead engineer")}</span>
+          </span>
+        </Reveal>
+        <div>
+          <Reveal>
+            <span className="kf-label">{t("Why KF Tech")}</span>
+            <h2 className={s.h2}>{t("We don't just write code. We build products.")}</h2>
+            <p className={s.lede}>
+              {t("An independent software studio in Cairo. You talk to the people who build your product — from the first call to support after launch.")}
+            </p>
           </Reveal>
-        ))}
-      </BalancedGrid>
+          <ul className={h.values}>
+            {VALUES.map((v, i) => (
+              <Reveal as="li" key={v.n} className={h.value} style={{ animationDelay: `${i * 80}ms` }}>
+                <span className={h.valueNo}>{v.n}</span>
+                <span>
+                  <b className={h.valueTitle}>{t(v.title)}</b>
+                  <span className={h.valueDesc}>{t(v.desc)}</span>
+                </span>
+              </Reveal>
+            ))}
+          </ul>
+          <Reveal className={h.whyActions}>
+            <Link to="/about" className="btn btn-outline">
+              {t("More about us")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
+            </Link>
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className={s.textLink} data-track="home.about.whatsapp">
+              {t("Chat on WhatsApp")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
+            </a>
+          </Reveal>
+        </div>
+      </div>
     </section>
   );
 }

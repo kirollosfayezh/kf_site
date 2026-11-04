@@ -194,7 +194,7 @@ export function Book() {
           <Reveal>
             <nav aria-label={t("Breadcrumb")} className={s.breadcrumb}>
               <Link to="/" style={{ color: "var(--text3)" }}>{t("Home")}</Link> /{" "}
-              <span style={{ color: "var(--brand-orange)" }}>{t("Book a call")}</span>
+              <span style={{ color: "var(--brand-text)" }}>{t("Book a call")}</span>
             </nav>
             <h1 className={s.pageTitle}>{t("Book a free call.")}</h1>
             <p className={s.pageLede}>
@@ -325,7 +325,7 @@ export function Book() {
                   <div className={b.chosen} aria-live="polite">
                     {slot ? (
                       <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-text)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                           <rect x="3" y="4" width="18" height="18" rx="2" />
                           <path d="M16 2v4M8 2v4M3 10h18" />
                         </svg>

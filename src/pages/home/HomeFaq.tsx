@@ -30,7 +30,7 @@ export function HomeFaq({ items }: { items: { q: string; a: string }[] }) {
             >
               <span>{f.q}</span>
               <span className={`${s.faqChevron} ${openFaq === i ? s.faqChevronOpen : ""}`} aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-text)" strokeWidth="2" strokeLinecap="round">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </span>

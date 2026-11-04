@@ -31,7 +31,7 @@ export function NotFound() {
           <p
             style={{
               fontFamily: "var(--font-mono, monospace)",
-              color: "var(--brand-orange)",
+              color: "var(--brand-text)",
               letterSpacing: "0.12em",
               fontSize: "var(--fs-ui)",
               marginBottom: 18,

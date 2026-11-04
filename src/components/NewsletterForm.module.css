@@ -42,7 +42,7 @@
 }
 
 .error {
-  color: var(--brand-orange);
+  color: var(--brand-text);
 }
 
 .status {

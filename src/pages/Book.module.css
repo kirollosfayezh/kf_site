@@ -24,7 +24,7 @@
   display: grid;
   place-items: center;
   background: var(--brand-gradient);
-  color: #fff;
+  color: var(--on-brand);
   font-size: var(--fs-label);
   font-weight: 700;
 }
@@ -81,8 +81,8 @@
   font-variant-numeric: tabular-nums;
   transition: border-color .15s, background .15s;
 }
-.time:hover { border-color: rgba(255, 106, 0, .5); }
-.timeOn { background: var(--brand-gradient); border-color: transparent; color: #fff; }
+.time:hover { border-color: rgba(252, 109, 58, .5); }
+.timeOn { background: var(--brand-gradient); border-color: transparent; color: var(--on-brand); }
 .time:focus-visible { outline: 2px solid var(--brand-orange); outline-offset: 2px; }
 
 .chosen {

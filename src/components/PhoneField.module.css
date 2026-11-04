@@ -2,7 +2,7 @@
    widget and the booking page. */
 .fld > label > span { display: block; font-size: var(--fs-label); font-weight: 600; color: var(--text2); margin-bottom: 5px; }
 .lg > label > span { font-size: var(--fs-ui); font-weight: 500; margin-bottom: 7px; }
-.req { color: var(--brand-orange); font-weight: 700; }
+.req { color: var(--brand-text); font-weight: 700; }
 .phoneRow {
   display: flex;
   align-items: stretch;
@@ -13,7 +13,7 @@
   /* Numbers read left-to-right in every language, Arabic included. */
   direction: ltr;
 }
-.phoneRow:focus-within { border-color: rgba(255, 106, 0, .6); box-shadow: 0 0 0 3px rgba(255, 106, 0, .14); }
+.phoneRow:focus-within { border-color: rgba(252, 109, 58, .6); box-shadow: 0 0 0 3px rgba(252, 109, 58, .14); }
 .phoneRowOk { border-color: color-mix(in srgb, var(--success) 55%, transparent); }
 .phoneRowBad { border-color: var(--danger); }
 .countryPick {

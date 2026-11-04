@@ -35,7 +35,7 @@ export const ARABIC_FONT_PRELOAD = `<link rel="preload" href="${ARABIC_FONT_URL}
 export const DISPLAY_FONT_URL = "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2";
 export const DISPLAY_FONT_PRELOAD = `<link rel="preload" href="${DISPLAY_FONT_URL}" as="font" type="font/woff2" crossorigin />`;
 export const GOOGLE_FONTS_CSS =
-  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap";
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap";
 
 /** Asks Google for the stylesheet as Chrome would and checks the preloaded
  *  file is still what it serves. Network trouble is not a build failure. */

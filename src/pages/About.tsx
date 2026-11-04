@@ -4,17 +4,10 @@ import { pick, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
-import { Img } from "../components/Img";
 import { Testimonials } from "../components/Testimonials";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import s from "../styles/sections.module.css";
 
-/** The three workspace shots the original About page shows under the portrait. */
-const WORKSPACE = [
-  { src: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1000&q=80&auto=format&fit=crop", alt: "Code on a developer workstation" },
-  { src: "https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=1000&q=80&auto=format&fit=crop", alt: "Two developers reviewing work together" },
-  { src: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1000&q=80&auto=format&fit=crop", alt: "Team planning session around a table" },
-];
 
 const WHY = [
   { title: "Built For Your Business", desc: "Every solution is customized around your workflow." },
@@ -80,13 +73,6 @@ export function About() {
               decoding="async"
             />
             <div className={s.portraitCaption}>{t("Kirollos Fayez \u00B7 Founder")}</div>
-            <div className={s.workspaceGrid}>
-              {WORKSPACE.map((w) => (
-                <div key={w.src} className={s.workspaceCell}>
-                  <Img src={w.src} alt={t(w.alt)} width={320} sizes="(max-width: 700px) 45vw, 320px" />
-                </div>
-              ))}
-            </div>
           </Reveal>
         </div>
       </section>
@@ -101,7 +87,7 @@ export function About() {
             {whyItems.map((w) => (
               <Reveal key={w.key} className={s.whyCard}>
                 <span className={s.whyIcon}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-text)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 6L9 17l-5-5" />
                   </svg>
                 </span>

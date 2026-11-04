@@ -94,7 +94,7 @@
 .daySelected:hover {
   background: var(--brand-gradient);
   border-color: transparent;
-  color: #fff;
+  color: var(--on-brand);
 }
 .daySelected .dot { background: #fff; }
 .day:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }

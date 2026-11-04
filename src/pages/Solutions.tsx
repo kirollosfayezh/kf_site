@@ -4,7 +4,6 @@ import { pick, metaString, metaPoints, pickPlain } from "../lib/content-helpers"
 import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
-import { Img } from "../components/Img";
 import { CheckIcon } from "../components/CheckIcon";
 import s from "../styles/sections.module.css";
 
@@ -69,21 +68,9 @@ export function Solutions() {
           "WHAT WE BUILD" checklist — the layout from Solutions.dc.html. */}
       <section className={s.solutionList}>
         {
-          items.map((item, i) => (
+          items.map((item) => (
             <Reveal key={item.key} as="article" id={item.slug} className={s.solutionRow}>
-              {item.img && (
-                <div className={s.solutionBanner}>
-                  <Img
-                    src={item.img}
-                    alt={item.alt}
-                    width={1200}
-                    sizes="(max-width: 1280px) 100vw, 1200px"
-                    /* The first banner is the page's LCP candidate, as in the original. */
-                    priority={i === 0}
-                  />
-                  <div className={s.solutionScrim} aria-hidden="true" />
-                </div>
-              )}
+              {/* No banner photo: the industry is described by what we build for it. */}
               <div>
                 {item.tag && <span className={s.solutionTag}>{pickPlain(item.tag, lang)}</span>}
                 <h2 className={s.solutionTitle}>{item.title}</h2>

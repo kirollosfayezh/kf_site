@@ -68,7 +68,7 @@ export function ProjectCaseStudy() {
     return (
       <div className={s.state} style={{ paddingTop: 160 }}>
         <p>{t("We couldn't load this project. It may have been unpublished, or the connection dropped.")}</p>
-        <Link to="/projects" style={{ color: "var(--brand-orange)", display: "inline-block", marginTop: 14 }}>
+        <Link to="/projects" style={{ color: "var(--brand-text)", display: "inline-block", marginTop: 14 }}>
           <span className="kf-arrow" aria-hidden="true">&larr;</span> {t("Our Work")}
         </Link>
       </div>

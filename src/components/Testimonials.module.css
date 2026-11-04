@@ -9,7 +9,7 @@
 .stars {
   display: block;
   margin-top: 4px;
-  color: var(--brand-orange);
+  color: var(--brand-text);
   letter-spacing: 0.08em;
   font-size: var(--fs-label);
   line-height: 1.2;
@@ -19,5 +19,5 @@
   display: inline-block;
   margin-top: 4px;
   font-size: var(--fs-label);
-  color: var(--brand-orange);
+  color: var(--brand-text);
 }

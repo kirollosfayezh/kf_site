@@ -7,14 +7,13 @@ import { FALLBACK_FAQS } from "../lib/fallback-content";
 import { Testimonials } from "../components/Testimonials";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import { HomeHero } from "./home/HomeHero";
-import { HomeValues } from "./home/HomeValues";
+import { HomeClients } from "./home/HomeClients";
 import { HomeServices } from "./home/HomeServices";
 import { HomeAiAutomation } from "./home/HomeAiAutomation";
 import { HomeSolutions } from "./home/HomeSolutions";
 import { HomeProjects } from "./home/HomeProjects";
 import { HomeProcess } from "./home/HomeProcess";
 import { HomeWhy } from "./home/HomeWhy";
-import { HomeAbout } from "./home/HomeAbout";
 import { HomeFaq } from "./home/HomeFaq";
 import { HomeFinalCta } from "./home/HomeFinalCta";
 
@@ -45,14 +44,13 @@ export function Home() {
   return (
     <div>
       <HomeHero />
-      <HomeValues />
+      <HomeClients projects={projects.data} />
       <HomeServices services={services.data} />
-      <HomeAiAutomation />
-      <HomeSolutions solutions={solutions.data} />
       <HomeProjects projects={projects.data} />
+      <HomeAiAutomation />
       <HomeProcess />
-      <HomeWhy />
-      <HomeAbout waLink={waLink} />
+      <HomeWhy waLink={waLink} />
+      <HomeSolutions solutions={solutions.data} />
 
       {/* CLIENTS — from the dashboard's Testimonials collection; renders
           nothing until at least one is published. */}

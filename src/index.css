@@ -34,38 +34,47 @@ html { scroll-behavior: smooth; }
 html.lenis-smooth { scroll-behavior: auto; }
 
 :root {
+  /* ----------------------------------------------------------- colour --
+   * The brand book (KF/brand, build/lib/tokens.mjs) is the source: Ink
+   * surfaces, the logo gradient magenta → orange → amber, Signal Cyan for
+   * links/data/focus. 60 / 30 / 10 — mostly ink, some mist, a little colour. */
   --bg: #0A0A0D;
-  --bg2: #0C0C10;
-  --panel: #111116;
-  --panel2: #131318;
-  --border: rgba(255, 255, 255, .08);
-  --bstrong: rgba(255, 255, 255, .14);
+  --bg2: #0E0E12;
+  --panel: #15151B;
+  --panel2: #1B1B22;
+  --raised: #22222A;
+  --border: #23232B;
+  --bstrong: #33333D;
   --text: #fff;
-  --text2: rgba(255, 255, 255, .66);
-  --text3: rgba(255, 255, 255, .46);
-  --hover: rgba(255, 255, 255, .06);
-  --grid: rgba(255, 255, 255, .03);
-  /* .55, matching the design export exactly — the rebuild had drifted to .72,
-     which made the scrolled nav noticeably more opaque than the original. */
-  --navbg: rgba(10, 10, 13, .55);
-  --field: #0C0C10;
+  /* Grey 400 / 500 lifted a step: both read as text on Ink at ≥ 5:1. */
+  --text2: #A2A2AE;
+  --text3: #85858F;
+  --hover: rgba(255, 255, 255, .05);
+  --grid: rgba(255, 255, 255, .035);
+  --navbg: rgba(10, 10, 13, .72);
+  --field: #101015;
 
-  --brand-orange: #FF6A00;
-  --brand-pink: #FF0080;
-  --brand-gradient: linear-gradient(135deg, var(--brand-orange), var(--brand-pink));
-  --brand-gradient-text: linear-gradient(100deg, var(--brand-orange), var(--brand-pink));
-  --danger: #FF5470;
-  --success: #4ADE80;
-  --warning: #FF9A4D;
-  --info: #7B9BFF;
-  /* Keyboard focus ring: 6.9:1 on --bg. */
-  --focus: #FF6A00;
+  --brand-orange: #FC6D3A;
+  --brand-pink: #F80F85;
+  --brand-amber: #FFCA4D;
+  --brand-text: #FC6D3A;
+  --accent: #22C7E8;
+  /* The logo gradient, 37° from horizontal. Text on it is Ink, never white. */
+  --brand-gradient: linear-gradient(53deg, #F80F85 0%, #F81085 10%, #FC6C3B 50%, #FFCE4E 100%);
+  --brand-gradient-text: linear-gradient(53deg, #F80F85 0%, #FC6C3B 55%, #FFCE4E 100%);
+  --on-brand: #0A0A0D;
+  --glow: rgba(252, 109, 58, .28);
+  --danger: #EF4444;
+  --success: #22C55E;
+  --warning: #F5A524;
+  --info: #3B82F6;
+  --focus: #22C7E8;
 
-  /* Alexandria second in every stack: the Latin faces win for Latin text,
-     and Arabic glyphs — which none of them have — fall through to it. */
+  /* Space Grotesk carries everything Latin (the brand's only text face);
+     Alexandria takes over for Arabic glyphs, which Space Grotesk lacks. */
   --font-display: 'Space Grotesk', 'Alexandria', system-ui, sans-serif;
-  --font-body: 'Instrument Sans', 'Alexandria', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Alexandria', monospace;
+  --font-body: 'Space Grotesk', 'Alexandria', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Alexandria', ui-monospace, monospace;
 
   /* ---------------------------------------------------------------- type --
    *
@@ -83,11 +92,12 @@ html.lenis-smooth { scroll-behavior: auto; }
    * at the edge of readable on a 375px screen — and worse in Arabic, whose
    * letterforms carry meaning in small marks.
    */
-  --fs-display: clamp(34px, 6vw, 58px);
-  --fs-title: clamp(27px, 4vw, 40px);
-  --fs-section: clamp(20px, 2.4vw, 24px);
-  --fs-lead: 17px;
-  --fs-body: 15px;
+  --fs-hero: clamp(42px, 6.2vw, 86px);
+  --fs-display: clamp(36px, 5.6vw, 64px);
+  --fs-title: clamp(30px, 4.2vw, 48px);
+  --fs-section: clamp(20px, 2.2vw, 24px);
+  --fs-lead: 18px;
+  --fs-body: 16px;
   --fs-ui: 14px;
   --fs-label: 12px;
 
@@ -108,7 +118,7 @@ html.lenis-smooth { scroll-behavior: auto; }
    * 16 to 20: the site's cards are large, and 16 read tight at that size. */
   --r-xs: 8px;
   --r-control: 12px;
-  --r-card: 20px;
+  --r-card: 18px;
   --r-full: 999px;
 
   /* --------------------------------------------------------------- sizing --
@@ -139,21 +149,26 @@ html.lenis-smooth { scroll-behavior: auto; }
 }
 
 :root[data-kf-theme="light"] {
-  --bg: #fff;
-  --bg2: #F7F7F8;
-  --panel: #fff;
-  --panel2: #F7F7F8;
-  --border: rgba(0, 0, 0, .09);
-  --bstrong: rgba(0, 0, 0, .16);
-  --text: #111;
-  --text2: rgba(17, 17, 17, .66);
-  --text3: rgba(17, 17, 17, .5);
-  --hover: rgba(0, 0, 0, .05);
-  --grid: rgba(0, 0, 0, .04);
+  --bg: #FFFFFF;
+  --bg2: #F6F6F8;
+  --panel: #FFFFFF;
+  --panel2: #F6F6F8;
+  --raised: #EDEDF1;
+  --border: #E7E7EC;
+  --bstrong: #D4D4DC;
+  --text: #0A0A0D;
+  --text2: #55555F;
+  --text3: #6C6C79;
+  --hover: rgba(10, 10, 13, .04);
+  --grid: rgba(10, 10, 13, .045);
   --navbg: rgba(255, 255, 255, .82);
-  --field: #fff;
-  /* Brand orange is 2.9:1 on white — under the 3:1 a focus indicator needs. */
-  --focus: #C24E00;
+  --field: #FFFFFF;
+  /* Amber is 1.5:1 on white, so text uses the deep gradient and Orange Deep. */
+  --brand-text: #C2410C;
+  --accent: #0E7490;
+  --brand-gradient-text: linear-gradient(53deg, #BE185D 0%, #C2410C 55%, #B45309 100%);
+  --glow: rgba(252, 109, 58, .16);
+  --focus: #0E7490;
 }
 
 body {
@@ -168,11 +183,11 @@ body {
   transition: background .4s, color .4s;
 }
 
-a { color: var(--brand-orange); text-decoration: none; transition: color .2s; }
-a:hover { color: var(--brand-pink); }
-::selection { background: rgba(255, 106, 0, .3); }
+a { color: var(--brand-text); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--text); }
+::selection { background: rgba(252, 109, 58, .32); }
 input, textarea, select, button { font-family: inherit; }
-input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-orange) !important; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brand-text) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-orange) 18%, transparent); }
 button { cursor: pointer; }
 /* One focus ring for everything a keyboard can reach. There was none: every
    control showed the browser's default blue, and only the language menu had
@@ -212,30 +227,51 @@ img { max-width: 100%; display: block; }
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  font-weight: 600;
-  border-radius: var(--r-control);
-  border: none;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: transform .25s, background .25s, color .2s;
   font-size: var(--fs-body);
-  /* Not `normal`: that follows the font's metrics, so every button changed
-     height by a pixel when the webfont replaced the fallback. */
+  /* Fixed line-height: the fallback-to-webfont swap can't grow the button. */
   line-height: 1.25;
-  padding: 14px 24px;
+  padding: 15px 26px;
+  transition: transform .25s cubic-bezier(.22, 1, .36, 1), box-shadow .25s, background .25s, color .2s, border-color .2s;
 }
+.btn:active { transform: translateY(0) scale(.98); }
+.btn .kf-arrow { transition: transform .25s cubic-bezier(.22, 1, .36, 1); }
+.btn:hover .kf-arrow { transform: translateX(3px); }
+html[dir="rtl"] .btn:hover .kf-arrow { transform: scaleX(-1) translateX(3px); }
 .btn-primary {
   background: var(--brand-gradient);
-  color: #fff;
-  box-shadow: 0 14px 40px -14px rgba(255, 0, 128, .6);
+  color: var(--on-brand);
+  box-shadow: 0 12px 34px -14px rgba(248, 15, 133, .55);
 }
-.btn-primary:hover { color: #fff; transform: translateY(-2px); }
+.btn-primary:hover { color: var(--on-brand); transform: translateY(-2px); box-shadow: 0 18px 40px -14px rgba(252, 109, 58, .6); }
+/* The brand book's second button: solid text colour on the page colour. */
+.btn-inverse { background: var(--text); color: var(--bg); }
+.btn-inverse:hover { color: var(--bg); transform: translateY(-2px); }
 .btn-outline {
-  border: 1px solid var(--bstrong);
-  background: var(--hover);
+  border-color: var(--bstrong);
+  background: transparent;
   color: var(--text);
 }
-.btn-outline:hover { background: var(--hover); color: var(--text); }
+.btn-outline:hover { background: var(--hover); color: var(--text); border-color: var(--text3); }
+
+/* The brand's mono label: JetBrains Mono, tracked caps, brand colour. */
+.kf-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--brand-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.kf-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; box-shadow: 0 0 0 0 currentColor; animation: kfPing 2.4s ease-out infinite; }
+@keyframes kfPing { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); } 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
 
 @keyframes kfUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
 @keyframes kfFadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
@@ -257,7 +293,8 @@ img { max-width: 100%; display: block; }
 .fade { animation: kfFadeIn 1.4s ease both; }
 
 .kf-reveal { opacity: 0; }
-.kf-reveal.kf-in { animation: kfRise .8s cubic-bezier(.22, 1, .36, 1) forwards; opacity: 1; }
+.kf-reveal.kf-in { animation: kfReveal .7s cubic-bezier(.22, 1, .36, 1) forwards; opacity: 1; }
+@keyframes kfReveal { 0% { opacity: 0; transform: translateY(22px); } 100% { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .kf-reveal, .kf-reveal.kf-in { opacity: 1 !important; animation: none !important; }
@@ -296,7 +333,7 @@ img { max-width: 100%; display: block; }
   width: min(220px, 50vw);
   height: 2px;
   border-radius: var(--r-xs);
-  background: linear-gradient(90deg, transparent, var(--brand-orange), var(--brand-pink), transparent);
+  background: linear-gradient(90deg, transparent, var(--brand-pink), var(--brand-orange), var(--brand-amber), transparent);
   background-size: 200% 100%;
   animation: kfBarSweep 1.1s ease-in-out infinite;
 }
@@ -313,13 +350,13 @@ img { max-width: 100%; display: block; }
   padding: 12px 18px;
   border-radius: var(--r-control);
   background: var(--brand-gradient);
-  color: #fff;
+  color: var(--on-brand);
   font-weight: 600;
   font-size: var(--fs-ui);
   transform: translateY(-200%);
   transition: transform .2s;
 }
-.skip-link:focus { transform: none; color: #fff; }
+.skip-link:focus { transform: none; color: var(--on-brand); }
 /* Focused programmatically by the skip link; it isn't a control. */
 #main:focus { outline: none; }
 
@@ -410,7 +447,7 @@ html[dir="rtl"] .kf-arrow { transform: scaleX(-1); display: inline-block; }
   scroll-margin-top: 96px;
 }
 
-.kf-prose a { color: var(--brand-orange); text-underline-offset: 3px; }
+.kf-prose a { color: var(--brand-text); text-underline-offset: 3px; }
 .kf-prose strong { color: var(--text); font-weight: 650; }
 .kf-prose code {
   font-family: var(--font-mono);
@@ -434,10 +471,10 @@ html[dir="rtl"] .kf-arrow { transform: scaleX(-1); display: inline-block; }
 .kf-prose ul { list-style: disc; }
 .kf-prose ol { list-style: decimal; }
 .kf-prose li + li { margin-top: .5em; }
-.kf-prose li::marker { color: var(--brand-orange); }
+.kf-prose li::marker { color: var(--brand-text); }
 
 .kf-prose blockquote {
-  border-inline-start: 3px solid var(--brand-orange);
+  border-inline-start: 3px solid var(--brand-text);
   padding: 4px 0 4px 20px;
   padding-inline-start: 20px;
   font-size: var(--fs-lead);

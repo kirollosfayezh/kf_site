@@ -145,9 +145,9 @@
 .toggle:hover { color: var(--text); }
 .toggle:focus-visible,
 .rowLink:focus-visible,
-.leaf:focus-visible { outline: 2px solid var(--brand-orange); outline-offset: -2px; border-radius: var(--r-control); }
+.leaf:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--r-control); }
 .chevron { transition: transform .22s ease; }
-.chevronOpen { transform: rotate(180deg); color: var(--brand-orange); }
+.chevronOpen { transform: rotate(180deg); color: var(--brand-text); }
 
 /* Collapsible body: animating grid rows from 0fr to 1fr gives a height
    transition without measuring the list. */
@@ -188,9 +188,9 @@
   background: var(--bstrong);
 }
 .leaf:hover { background: var(--hover); color: var(--text); }
-.leafActive { color: var(--text); font-weight: 600; background: rgba(255, 106, 0, .1); }
-.leafAll { color: var(--brand-orange); font-weight: 600; }
-.leafAll:hover { color: var(--brand-orange); }
+.leafActive { color: var(--text); font-weight: 600; background: rgba(252, 109, 58, .1); }
+.leafAll { color: var(--brand-text); font-weight: 600; }
+.leafAll:hover { color: var(--brand-text); }
 
 .footer {
   flex-shrink: 0;
@@ -227,7 +227,7 @@
 .langChipOn {
   color: var(--text);
   border-color: var(--brand-orange);
-  background: rgba(255, 106, 0, .12);
+  background: rgba(252, 109, 58, .12);
 }
 
 .themeRow {
@@ -251,13 +251,13 @@
   justify-content: center;
   gap: 8px;
   min-height: 48px;
-  border-radius: var(--r-control);
+  border-radius: var(--r-full);
   background: var(--brand-gradient);
-  color: #fff;
+  color: var(--on-brand);
   font-weight: 600;
   font-size: var(--fs-body);
 }
-.cta:hover { color: #fff; }
+.cta:hover { color: var(--on-brand); }
 .wa {
   width: 48px;
   height: 48px;

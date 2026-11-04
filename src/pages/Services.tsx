@@ -5,7 +5,6 @@ import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SERVICES } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
-import { Img } from "../components/Img";
 import { CheckIcon } from "../components/CheckIcon";
 import { ServiceIcon } from "../components/ServiceIcon";
 import s from "../styles/sections.module.css";
@@ -58,25 +57,14 @@ export function Services() {
         <BalancedGrid preset="detail" style={{ marginTop: 0 }}>
           {items.map((item, i) => (
             <Reveal key={item.key} as="article" id={item.slug} className={s.svcCard}>
-              <div className={s.svcMedia}>
-                {item.media ? (
-                  <Img
-                    src={item.media}
-                    alt={item.title}
-                    width={420}
-                    sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 420px"
-                    /* The first row is above the fold on a desktop viewport. */
-                    priority={i < 3}
-                  />
-                ) : (
-                  <div className={s.cardMediaFallback}>{item.title[0]}</div>
-                )}
-                <div className={s.svcScrim} aria-hidden="true" />
-                <div className={s.svcIconBadge}>
-                  <ServiceIcon slug={item.slug} />
-                </div>
-              </div>
               <div className={s.svcBody}>
+                {/* An icon, not a stock photo: the work is the picture. */}
+                <div className={s.svcHead}>
+                  <span className={s.svcIconBadge}>
+                    <ServiceIcon slug={item.slug} />
+                  </span>
+                  <span className={s.svcNo}>{String(i + 1).padStart(2, "0")}</span>
+                </div>
                 <h2 className={s.svcTitle}>
                   <Link to={`/services/${item.slug}`} style={{ color: "inherit" }} data-track="services.card.title">
                     {item.title}

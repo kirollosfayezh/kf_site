@@ -107,7 +107,7 @@ export function Contact() {
         <div className={`${s.pageHeroInner} ${c.grid}`}>
           <Reveal>
             <nav aria-label={t("Breadcrumb")} className={s.breadcrumb}>
-              <Link to="/" style={{ color: "var(--text3)" }}>{t("Home")}</Link> / <span style={{ color: "var(--brand-orange)" }}>{t("Contact")}</span>
+              <Link to="/" style={{ color: "var(--text3)" }}>{t("Home")}</Link> / <span style={{ color: "var(--brand-text)" }}>{t("Contact")}</span>
             </nav>
             <h1 className={s.pageTitle}>{t("Tell us about your project.")}</h1>
             <p className={s.pageLede}>{t("Share a few details and we'll get back to you with next steps — usually within one business day. Prefer to talk now? Reach us directly.")}</p>
@@ -137,8 +137,8 @@ export function Contact() {
                 </span>
               </Link>
               <a href={`mailto:${email}`} className={c.contactCard} data-track="contact.email">
-                <span className={c.contactIcon} style={{ background: "rgba(255,106,0,.1)" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <span className={c.contactIcon} style={{ background: "rgba(252, 109, 58,.1)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="5" width="18" height="14" rx="2" />
                     <path d="M3 7l9 6 9-6" />
                   </svg>
@@ -149,7 +149,7 @@ export function Contact() {
                 </span>
               </a>
               <div className={c.contactCard}>
-                <span className={c.contactIcon} style={{ background: "rgba(255,0,128,.1)" }}>
+                <span className={c.contactIcon} style={{ background: "rgba(248, 15, 133,.1)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-pink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z" />
                     <circle cx="12" cy="10" r="3" />
@@ -289,7 +289,7 @@ export function Contact() {
               >
                 <span>{f.q}</span>
                 <span className={`${s.faqChevron} ${openFaq === i ? s.faqChevronOpen : ""}`} aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" strokeWidth="2" strokeLinecap="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-text)" strokeWidth="2" strokeLinecap="round">
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </span>

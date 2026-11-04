@@ -1,7 +1,7 @@
 .grid { position: relative; max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: clamp(32px, 5vw, 72px); }
 .contactCards { margin-top: 32px; display: flex; flex-direction: column; gap: 14px; }
 .contactCard { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--panel); color: var(--text); }
-.contactCard:hover { border-color: rgba(255, 106, 0, .4); color: var(--text); }
+.contactCard:hover { border-color: rgba(252, 109, 58, .4); color: var(--text); }
 .contactIcon { width: 40px; height: 40px; border-radius: var(--r-control); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .contactLabel { display: block; font-size: var(--fs-label); color: var(--text3); }
 .contactValue { font-weight: 600; }
