@@ -25,6 +25,15 @@ import Lenis from "lenis";
  * down and rebuild it, which used to leave the wheel handler detached for a
  * frame and made the first scroll after a navigation feel stuck.
  */
+/** Fired on `window` to glide back to the top of the current page. */
+export const SCROLL_TOP_EVENT = "kf:scroll-top";
+
+/** Back to the top, smoothly: through Lenis when it runs, natively otherwise. */
+export function scrollToTop(): void {
+  if (document.documentElement.classList.contains("lenis")) window.dispatchEvent(new Event(SCROLL_TOP_EVENT));
+  else window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 export function useSmoothScroll() {
   const lenisRef = useRef<Lenis | null>(null);
   const firstRun = useRef(true);
@@ -50,7 +59,12 @@ export function useSmoothScroll() {
     };
     raf = requestAnimationFrame(loop);
 
+    // The logo asks for this when it is clicked on the page it links to.
+    const toTop = () => lenis.scrollTo(0, { force: true });
+    window.addEventListener(SCROLL_TOP_EVENT, toTop);
+
     return () => {
+      window.removeEventListener(SCROLL_TOP_EVENT, toTop);
       cancelAnimationFrame(raf);
       lenis.destroy();
       lenisRef.current = null;

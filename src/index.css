@@ -28,7 +28,10 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+/* The root paints the page colour itself, so nothing (an overscroll, a frame
+   before body styles apply) ever shows the browser's own canvas colour. */
+html { scroll-behavior: smooth; background: var(--bg); color-scheme: dark; }
+:root[data-kf-theme="light"] { color-scheme: light; }
 /* While Lenis drives the scroll it owns the interpolation; the native smooth
    behaviour on top of it makes programmatic jumps crawl. */
 html.lenis-smooth { scroll-behavior: auto; }
@@ -51,7 +54,7 @@ html.lenis-smooth { scroll-behavior: auto; }
   --text3: #85858F;
   --hover: rgba(255, 255, 255, .05);
   --grid: rgba(255, 255, 255, .035);
-  --navbg: rgba(10, 10, 13, .72);
+  --navbg: rgba(10, 10, 13, .94);
   --field: #101015;
 
   --brand-orange: #FC6D3A;
@@ -64,6 +67,21 @@ html.lenis-smooth { scroll-behavior: auto; }
   --brand-gradient-text: linear-gradient(53deg, #F80F85 0%, #FC6C3B 55%, #FFCE4E 100%);
   --on-brand: #0A0A0D;
   --glow: rgba(252, 109, 58, .28);
+  /*
+   * The page surface: --bg with a one-step gradient nobody can see.
+   *
+   * A perfectly flat background lets Chrome hand the empty stretches of the
+   * page to macOS as solid-colour blocks, which go through a different colour
+   * conversion from the tiles that hold content. On near-black the two came
+   * out visibly different (#050409 against #0A0A0D on the owner's Mac): grey
+   * blocks with hard edges wherever a stretch had content. A gradient is never
+   * "solid", so every tile is drawn the same way.
+   */
+  --page-bg: linear-gradient(#0A0A0D, #0B0B0E);
+  /* The hover lift on anything clickable: a soft shadow in the logo's own
+     magenta → orange, so a card picks up the brand as it rises. */
+  --chip-shadow: 0 14px 30px -18px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .04);
+  --card-glow: 0 28px 64px -28px rgba(248, 15, 133, .55), 0 14px 40px -22px rgba(252, 109, 58, .6);
   --danger: #EF4444;
   --success: #22C55E;
   --warning: #F5A524;
@@ -161,18 +179,21 @@ html.lenis-smooth { scroll-behavior: auto; }
   --text3: #6C6C79;
   --hover: rgba(10, 10, 13, .04);
   --grid: rgba(10, 10, 13, .045);
-  --navbg: rgba(255, 255, 255, .82);
+  --navbg: rgba(255, 255, 255, .95);
   --field: #FFFFFF;
   /* Amber is 1.5:1 on white, so text uses the deep gradient and Orange Deep. */
   --brand-text: #C2410C;
   --accent: #0E7490;
   --brand-gradient-text: linear-gradient(53deg, #BE185D 0%, #C2410C 55%, #B45309 100%);
   --glow: rgba(252, 109, 58, .16);
+  --page-bg: linear-gradient(#FFFFFF, #FEFEFE);
+  --chip-shadow: 0 12px 26px -18px rgba(10, 10, 13, .28);
+  --card-glow: 0 26px 56px -30px rgba(248, 15, 133, .38), 0 14px 34px -22px rgba(252, 109, 58, .42);
   --focus: #0E7490;
 }
 
 body {
-  background: var(--bg);
+  background: var(--page-bg) var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;

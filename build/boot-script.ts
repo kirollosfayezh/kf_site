@@ -1,4 +1,3 @@
-import { ZONE_LANG } from "../src/lib/auto-language.ts";
 import type { Lang } from "../src/lib/langs.ts";
 
 /**
@@ -7,10 +6,10 @@ import type { Lang } from "../src/lib/langs.ts";
  * Two jobs, both of which must happen before the first paint now that pages
  * arrive with a real body:
  *
- * 1. Theme — a light-mode visitor gets `data-kf-theme="light"` on `<html>`
- *    before any of the dark page shows.
- * 2. Language — the same decision `applyAutoLanguage()` makes (a stored
- *    choice, then the browser language, then the time zone), taken before
+ * 1. Theme — light is the default, so `<html>` gets `data-kf-theme="light"`
+ *    before the first paint unless the visitor picked dark.
+ * 2. Language — the same decision `applyAutoLanguage()` makes (only a
+ *    language chosen with the switcher; English otherwise), taken before
  *    the English page is visible rather than after React has mounted it.
  *
  * Only languages switched on in the dashboard are redirect targets: the
@@ -19,12 +18,11 @@ import type { Lang } from "../src/lib/langs.ts";
  */
 export function bootScript(enabled: readonly Lang[]): string {
   const langs = JSON.stringify(enabled.filter((l) => l !== "en"));
-  const zones = JSON.stringify(ZONE_LANG);
   // `?kf-debug` loads an on-screen diagnostics overlay (public/kf-debug.js)
   // for phones, where there is no console; not part of the bundle.
   const debug = `if(/[?&]kf-debug(=|&|$)/.test(location.search)){var g=document.createElement("script");g.src="/kf-debug.js";document.head.appendChild(g)}`;
   // The opening `(function(){try{var d=document.documentElement` is what
   // verify:prerender recognises the script by; keep it first.
-  const js = `(function(){try{var d=document.documentElement,ls=localStorage;${debug}if(ls.getItem("kf-theme")==="light")d.setAttribute("data-kf-theme","light");var L=${langs},Z=${zones},p=location.pathname,f=p.split("/").filter(Boolean)[0];if(f==="en"||f==="ar"||f==="de"||f==="fr")return;var go=function(l){location.replace("/"+l+(p==="/"?"":p)+location.search+location.hash)};var s=ls.getItem("kf-lang");if(s){if(L.indexOf(s)>=0)go(s);return}if(ls.getItem("kf-lang-auto"))return;var b=null,tags=navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language];for(var i=0;i<tags.length;i++){var t=(tags[i]||"").toLowerCase().split("-")[0];if(t==="en"||L.indexOf(t)>=0){b=t;break}}var z=null;try{z=Z[Intl.DateTimeFormat().resolvedOptions().timeZone]||null}catch(e){}if(z&&L.indexOf(z)<0)z=null;var det=b&&b!=="en"?b:(z||b);ls.setItem("kf-lang-auto",det||"en");if(det&&det!=="en")go(det)}catch(e){}})();`;
+  const js = `(function(){try{var d=document.documentElement,ls=localStorage;${debug}if(ls.getItem("kf-theme")!=="dark")d.setAttribute("data-kf-theme","light");var L=${langs},p=location.pathname,f=p.split("/").filter(Boolean)[0];if(f==="en"||f==="ar"||f==="de"||f==="fr")return;var s=ls.getItem("kf-lang");if(s&&L.indexOf(s)>=0)location.replace("/"+s+(p==="/"?"":p)+location.search+location.hash)}catch(e){}})();`;
   return `<script>${js}</script>`;
 }

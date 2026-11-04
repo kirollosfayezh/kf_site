@@ -7,12 +7,13 @@ import { FALLBACK_FAQS } from "../lib/fallback-content";
 import { Testimonials } from "../components/Testimonials";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import { HomeHero } from "./home/HomeHero";
-import { HomeClients } from "./home/HomeClients";
+import { HomeRibbons } from "./home/HomeRibbons";
 import { HomeServices } from "./home/HomeServices";
 import { HomeAiAutomation } from "./home/HomeAiAutomation";
 import { HomeSolutions } from "./home/HomeSolutions";
 import { HomeProjects } from "./home/HomeProjects";
 import { HomeProcess } from "./home/HomeProcess";
+import { HomeIncluded } from "./home/HomeIncluded";
 import { HomeWhy } from "./home/HomeWhy";
 import { HomeFaq } from "./home/HomeFaq";
 import { HomeFinalCta } from "./home/HomeFinalCta";
@@ -44,11 +45,12 @@ export function Home() {
   return (
     <div>
       <HomeHero />
-      <HomeClients projects={projects.data} />
+      <HomeRibbons projects={projects.data} />
       <HomeServices services={services.data} />
       <HomeProjects projects={projects.data} />
       <HomeAiAutomation />
       <HomeProcess />
+      <HomeIncluded />
       <HomeWhy waLink={waLink} />
       <HomeSolutions solutions={solutions.data} />
 

@@ -5,17 +5,12 @@
   right: 0;
   z-index: 50;
   height: 76px;
-  transition: background .35s, border-color .35s, backdrop-filter .35s, height .35s;
+  transition: background .35s, border-color .35s, height .35s;
   border-bottom: 1px solid transparent;
 }
 .headerScrolled {
   border-bottom: 1px solid var(--border);
   background: var(--navbg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  /* The bar is fixed over scrolling content, so the blur is re-sampled on
-     every scrolled frame. Its own layer keeps that off the page's paint. */
-  will-change: backdrop-filter;
   /* `layout` only — NOT `paint`.
      `contain: paint` clips every descendant to the bar's 72px box, so the
      language dropdown was cut off and unclickable the moment the page was
@@ -24,17 +19,10 @@
      layout work from the page without clipping anything. */
   contain: layout;
 }
-/* Phones and tablets pay the most for a full-width backdrop blur and have the
-   least GPU headroom, and `--navbg` is already opaque enough to carry the bar
-   on its own. Below the desktop breakpoint it is a solid translucent fill. */
-@media (max-width: 1010px) {
-  .headerScrolled {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--bg);
-    will-change: auto;
-  }
-}
+/* No backdrop blur, at any width: the bar is fixed over scrolling content, so
+   a blur behind it is re-sampled on every scrolled frame — the single most
+   expensive thing on the scroll path, and a visible stutter on laptops with
+   integrated graphics. `--navbg` is near-opaque and carries the bar alone. */
 .inner {
   max-width: 1280px;
   margin: 0 auto;
@@ -53,9 +41,11 @@
 .logo { width: 40px; height: 40px; object-fit: contain; display: block; flex-shrink: 0; }
 
 .navLinks { display: flex; align-items: center; gap: 2px; }
-.navLink { position: relative; padding: 8px 13px; font-size: var(--fs-ui); font-weight: 500; border-radius: var(--r-full); transition: color .2s, background .2s; color: var(--text2); }
+.navLink { position: relative; white-space: nowrap; padding: 8px 13px; font-size: var(--fs-ui); font-weight: 500; border-radius: var(--r-full); transition: color .2s, background .2s; color: var(--text2); }
 .navLink:hover { color: var(--text); background: var(--hover); }
 .navLinkActive { color: var(--text); font-weight: 600; }
+/* Just above the mobile breakpoint seven links (longer in Arabic) are tight. */
+@media (max-width: 1200px) { .navLink { padding-inline: 9px; } }
 /* The current page: a short gradient bar under the word. */
 .navLinkActive::after { content: ""; position: absolute; left: 50%; bottom: 1px; width: 16px; height: 2px; margin-left: -8px; border-radius: 2px; background: var(--brand-gradient); }
 

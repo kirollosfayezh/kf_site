@@ -1,28 +1,27 @@
 /** Static copy for the homepage sections. English keys: every render site passes them through t(). */
 
-export const HERO_STATS = [
-  { l: "PROJECTS", v: "40+" },
-  { l: "YEARS", v: "6" },
-  { l: "LANGUAGES", v: "4" },
+/** The strip under the hero; each one opens its service page. */
+export const HERO_MARQUEE = [
+  { label: "CUSTOM SOFTWARE", slug: "custom-software" },
+  { label: "WEB PLATFORMS", slug: "web-development" },
+  { label: "DASHBOARDS", slug: "business-systems" },
+  { label: "MOBILE APPS", slug: "mobile-applications" },
+  { label: "POS SYSTEMS", slug: "business-systems" },
+  { label: "IOT SYSTEMS", slug: "iot-solutions" },
+  { label: "AI AUTOMATION", slug: "automation" },
 ];
-export const HERO_MARQUEE = ["CUSTOM SOFTWARE", "WEB PLATFORMS", "DASHBOARDS", "MOBILE APPS", "POS SYSTEMS", "IOT SYSTEMS", "AI AUTOMATION"];
 
 /**
- * The hero's code card, token by token: [class, text]. The class names map to
- * the syntax colours in Home.module.css. A real kind of project, in the stack
- * the studio actually ships with.
+ * The hero showreel: delivered client projects with a desktop and (where we
+ * have one) a phone screenshot, resized for the hero in public/hero/. Slugs
+ * are the case-study URLs; tag and title are dictionary keys.
  */
-type Tok = [string, string];
-export const HERO_CODE: Tok[][] = [
-  [["tkKey", "const"], ["", " project = {"]],
-  [["", "  client: "], ["tkStr", "\"Retail, 4 branches\""], ["", ","]],
-  [["", "  builds: ["], ["tkStr", "\"POS\""], ["", ", "], ["tkStr", "\"Dashboard\""], ["", ", "], ["tkStr", "\"App\""], ["", "],"]],
-  [["", "  stack: ["], ["tkStr", "\"Next.js\""], ["", ", "], ["tkStr", "\"Node.js\""], ["", ","]],
-  [["", "    "], ["tkStr", "\"PostgreSQL\""], ["", ", "], ["tkStr", "\"Docker\""], ["", "],"]],
-  [["", "  ships: "], ["tkKey", "\"in stages\""], ["", ","]],
-  [["", "  status: "], ["tkOk", "\"live\""], ["", ","]],
-  [["", "};"]],
-];
+export const SHOWREEL = [
+  { slug: "solana-red-sea", title: "Solana Red Sea", tag: "Luxury real estate", desktop: "solana-red-sea", mobile: "solana-red-sea-mobile" },
+  { slug: "gentrack", title: "GenTrack", tag: "IoT generator SaaS", desktop: "gentrack", mobile: "gentrack-mobile" },
+  { slug: "alkhameesi", title: "Alkhameesi", tag: "Vegetable export", desktop: "alkhameesi", mobile: "alkhameesi-mobile" },
+  { slug: "eltayib", title: "Eltayib", tag: "Car towing & roadside", desktop: "eltayib-desktop", mobile: "eltayib-mobile" },
+] as const;
 
 /** The brand book's four values, with the same wording as the guidelines. */
 export const VALUES = [
@@ -39,3 +38,18 @@ export const STEPS = [
   { n: "04", title: "Build", desc: "Develop, integrate and thoroughly test the product." },
   { n: "05", title: "Launch", desc: "Deploy, monitor and continuously improve." },
 ];
+
+/**
+ * What every build comes with, in the words a client would ask about it. The
+ * icon key picks one of the stroke icons in HomeIncluded.
+ */
+export const INCLUDED = [
+  { icon: "dashboard", title: "A dashboard you control", desc: "Edit content, prices, users and orders yourself — no developer needed for daily changes." },
+  { icon: "language", title: "Arabic and English, done right", desc: "Right-to-left layouts designed in from the start, not flipped at the end." },
+  { icon: "devices", title: "Works on every screen", desc: "Phones, tablets and desktops, tested on real devices before launch." },
+  { icon: "search", title: "Fast, and found on Google", desc: "Speed, SEO and analytics set up before launch, not added later." },
+  { icon: "shield", title: "Secure by default", desc: "HTTPS, roles and permissions, and protected data from day one." },
+  { icon: "key", title: "Yours to keep", desc: "The domain, accounts and data are registered in your name." },
+  { icon: "training", title: "Training and hand-over", desc: "Your team learns to run it before we step back." },
+  { icon: "support", title: "Support after launch", desc: "Fixes, updates and new features on a clear monthly plan." },
+] as const;

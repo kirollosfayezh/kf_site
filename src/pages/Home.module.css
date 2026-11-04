@@ -13,40 +13,41 @@
   /* The nav floats over the hero; this clears it. */
   padding-top: clamp(112px, 14vh, 150px);
 }
-.heroGrid {
+/*
+ * The hero's decoration is one static gradient, painted with the page.
+ *
+ * It used to be a masked grid, a masked clip and a drifting glow: three
+ * full-width GPU layers. On macOS (Chrome and Safari alike) a separately
+ * composited layer over near-black comes out a shade lighter than the page
+ * around it, so each one showed as a grey block with hard edges. Nothing
+ * here is masked, filtered or animated any more.
+ */
+.heroGlowClip {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 56px 56px;
-  background-position: center top;
-  mask-image: radial-gradient(80% 70% at 60% 35%, #000 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(80% 70% at 60% 35%, #000 30%, transparent 75%);
+  overflow: hidden;
+  pointer-events: none;
 }
 .heroGlow {
   position: absolute;
-  z-index: -1;
   width: min(900px, 110vw);
   aspect-ratio: 1;
   inset-inline-end: -14%;
   top: -8%;
   border-radius: 50%;
-  /* A gradient, not a blur filter: nothing for the GPU to re-filter each frame. */
+  /* Fully transparent well inside its own box, so the clip never shows. */
   background: radial-gradient(closest-side, var(--glow), transparent 72%);
-  animation: glowDrift 16s ease-in-out infinite alternate;
 }
-@keyframes glowDrift {
-  0% { transform: translate3d(0, 0, 0) scale(1); }
-  100% { transform: translate3d(-6%, 8%, 0) scale(1.08); }
-}
+
 
 .heroInner {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 24px;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, .8fr);
-  gap: clamp(32px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(32px, 4vw, 64px);
   align-items: center;
 }
 .heroCopy { min-width: 0; }
@@ -55,8 +56,8 @@
   margin-top: 22px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--fs-hero);
-  line-height: .98;
+  font-size: clamp(40px, 4.6vw, 64px);
+  line-height: 1;
   letter-spacing: -.035em;
 }
 /* Transform only — the headline is the page's largest paint, and an element
@@ -71,7 +72,9 @@
   font-size: clamp(17px, 1.5vw, 20px);
   line-height: 1.55;
   color: var(--text2);
-  animation: kfUp .9s .25s cubic-bezier(.22, 1, .36, 1) both;
+  /* Transform only, like the headline: on phones this paragraph is the
+     page's largest paint, and an opacity fade would hold that back. */
+  animation: heroLine .9s .2s cubic-bezier(.22, 1, .36, 1) both;
 }
 .heroActions {
   margin-top: 34px;
@@ -80,129 +83,186 @@
   gap: 12px;
   animation: kfUp .9s .35s cubic-bezier(.22, 1, .36, 1) both;
 }
-.heroPromises {
-  list-style: none;
-  margin-top: 30px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
-  color: var(--text2);
-  font-size: var(--fs-ui);
-  animation: kfFadeIn 1s .55s ease both;
-}
-.heroPromises li { display: inline-flex; align-items: center; gap: 8px; }
-.heroPromises svg { color: var(--success); flex: none; }
-
-/* The code card. */
-.codeCard {
-  position: relative;
-  border-radius: 24px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .04);
-  padding: 22px 24px 24px;
-  animation: cardIn 1s .3s cubic-bezier(.22, 1, .36, 1) both;
-}
-:global(html[data-kf-theme="light"]) .codeCard { box-shadow: 0 30px 70px -30px rgba(10, 10, 13, .22); }
-/* A 1px gradient edge, masked to the border only. */
-.codeCard::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(140deg, rgba(248, 15, 133, .55), transparent 35%, transparent 65%, rgba(255, 202, 77, .45));
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
-  pointer-events: none;
-}
+/* ------------------------------------------------------------- showreel -- */
+.reel { position: relative; min-width: 0; animation: cardIn 1s .3s cubic-bezier(.22, 1, .36, 1) both; }
 @keyframes cardIn { 0% { opacity: 0; transform: translateY(24px) scale(.98); } 100% { opacity: 1; transform: none; } }
-.codeBar { display: flex; align-items: center; gap: 7px; }
-.codeBar i { width: 11px; height: 11px; border-radius: 50%; background: #EF4444; }
-.codeBar i:nth-child(2) { background: #F5A524; }
-.codeBar i:nth-child(3) { background: #22C55E; }
-.codeBar span { margin-inline-start: auto; font-family: var(--font-mono); font-size: var(--fs-label); color: var(--text3); }
-.code {
-  margin-top: 20px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: clamp(13px, 1.15vw, 15.5px);
-  line-height: 1.9;
-  color: var(--text2);
-  white-space: pre;
+.reelGlow {
+  position: absolute;
+  inset: -12% -10% -16%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--brand-pink) 20%, transparent), transparent 70%);
+}
+.reelBrowser {
+  position: relative;
+  display: block;
+  margin-inline-end: 12%;
+  border-radius: 18px;
+  border: 1px solid var(--bstrong);
+  background: var(--panel);
+  color: var(--text);
   overflow: hidden;
-  text-align: left;
+  box-shadow: 0 50px 100px -40px rgba(0, 0, 0, .75);
+  transition: transform .5s cubic-bezier(.22, 1, .36, 1), box-shadow .5s;
 }
-/* Each line types in: revealed left to right with a stepped clip. */
-.codeLine { display: block; clip-path: inset(0 100% 0 0); animation: typeLine .5s steps(22, end) both; }
-@keyframes typeLine { to { clip-path: inset(0 0 0 0); } }
-.caret {
-  display: inline-block;
-  width: .55em;
-  height: 1.1em;
-  vertical-align: -.2em;
-  background: var(--brand-orange);
-  opacity: 0;
-  animation: caretOn 0s both, caretBlink 1.05s steps(1) infinite;
-}
-@keyframes caretOn { to { opacity: 1; } }
-@keyframes caretBlink { 50% { opacity: 0; } }
-.tkKey { color: var(--brand-text); }
-.tkStr { color: var(--accent); }
-.tkOk { color: var(--success); }
-.codeStats { margin-top: 22px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.codeStats > div { border: 1px solid var(--border); border-radius: 14px; padding: 14px; background: var(--bg2); }
-.codeStats dd { font-family: var(--font-display); font-weight: 700; font-size: clamp(22px, 2.2vw, 30px); letter-spacing: -.02em; }
-.codeStats dt { margin-top: 2px; font-size: var(--fs-label); color: var(--text3); letter-spacing: .06em; }
-
-/* The services strip under the hero. */
-.marquee {
-  margin-top: clamp(56px, 8vh, 88px);
-  border-block: 1px solid var(--border);
-  overflow: hidden;
-  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-}
-.marqueeTrack { display: flex; width: max-content; animation: marquee 38s linear infinite; }
-.marqueeTrack span {
-  display: inline-flex;
-  align-items: center;
-  gap: 28px;
-  padding: 18px 14px;
+:global(html[data-kf-theme="light"]) .reelBrowser { box-shadow: 0 40px 80px -36px rgba(10, 10, 13, .35); }
+.reelBrowser:hover { color: var(--text); transform: translateY(-4px); box-shadow: var(--card-glow); }
+.reelBar { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.reelBar > i { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; flex: none; }
+.reelBar > i:nth-child(2) { background: #F5A524; }
+.reelBar > i:nth-child(3) { background: #22C55E; }
+.reelUrl {
+  flex: 1;
+  min-width: 0;
+  margin-inline-start: 8px;
+  padding: 5px 12px;
+  border-radius: var(--r-full);
+  background: var(--bg2);
   font-family: var(--font-mono);
-  font-size: var(--fs-ui);
-  letter-spacing: .14em;
+  font-size: var(--fs-label);
   color: var(--text3);
   white-space: nowrap;
-}
-.marqueeTrack i { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-gradient); margin-inline-start: 14px; }
-@keyframes marquee { to { transform: translateX(-50%); } }
-:global(html[dir="rtl"]) .marqueeTrack { animation-name: marqueeRtl; }
-@keyframes marqueeRtl { to { transform: translateX(50%); } }
-
-/* --------------------------------------------------------------- clients -- */
-.clients { max-width: 1280px; margin: 0 auto; padding: 56px 24px 0; text-align: center; }
-.clientsLabel { font-size: var(--fs-ui); color: var(--text3); }
-.clientsStrip {
-  margin-top: 22px;
   overflow: hidden;
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  text-overflow: ellipsis;
+  text-align: left;
 }
-.clientsTrack { list-style: none; display: flex; width: max-content; gap: 56px; animation: marquee 46s linear infinite; }
-.clientsStrip:hover .clientsTrack { animation-play-state: paused; }
-:global(html[dir="rtl"]) .clientsTrack { animation-name: marqueeRtl; }
-.clientsTrack li {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(18px, 2vw, 24px);
-  letter-spacing: -.02em;
-  color: var(--text2);
+.reelLive { display: inline-flex; align-items: center; gap: 7px; font-size: var(--fs-label); color: var(--text2); white-space: nowrap; }
+.reelScreen { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg2); }
+.reelShot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0;
+  transition: opacity .8s ease;
+}
+.reelShotOn { opacity: 1; }
+/* The screen drifts in while its project is up, like a camera on a monitor. */
+.reelScreen .reelShotOn { animation: reelZoom 6.5s ease-out both; animation-play-state: paused; }
+.reel[data-running] .reelScreen .reelShotOn { animation-play-state: running; }
+@keyframes reelZoom { from { transform: none; } to { transform: scale(1.07) translateY(-1.5%); } }
+
+.reelPhone {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: 52px;
+  width: 21%;
+  aspect-ratio: 9 / 18.5;
+  padding: 6px;
+  border-radius: 28px;
+  border: 1px solid #2A2A33;
+  background: #0A0A0D;
+  box-shadow: 0 40px 70px -28px rgba(0, 0, 0, .8);
+  transition: opacity .6s, transform .6s cubic-bezier(.22, 1, .36, 1);
+}
+.reelPhoneAway { opacity: 0; transform: translateY(18px); }
+.reelPhoneScreen { position: relative; display: block; width: 100%; height: 100%; border-radius: 22px; overflow: hidden; background: #15151B; }
+
+.reelFoot {
+  margin-top: 18px;
+  margin-inline-end: 12%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+.reelCaption { flex: 1 1 220px; display: inline-flex; align-items: baseline; gap: 10px; min-width: 0; color: var(--text); font-weight: 600; }
+.reelCaption:hover { color: var(--brand-text); }
+.reelTag { font-family: var(--font-mono); font-size: var(--fs-label); letter-spacing: .08em; text-transform: uppercase; color: var(--brand-text); white-space: nowrap; }
+.reelTitle { font-family: var(--font-display); font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reelBars { display: flex; gap: 6px; flex: none; }
+.reelBarBtn { position: relative; width: 34px; height: 24px; padding: 0; border: 0; background: none; }
+.reelBarBtn::before, .reelBarBtn > span {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 3px;
+}
+.reelBarBtn::before { background: var(--bstrong); }
+.reelBarBtn > span { background: var(--brand-gradient); transform: scaleX(0); transform-origin: left; }
+:global(html[dir="rtl"]) .reelBarBtn > span { transform-origin: right; }
+.reelBarDone > span { transform: none; }
+.reelFill { animation: reelFill 6s linear both; animation-play-state: paused; }
+.reel[data-running] .reelFill { animation-play-state: running; }
+@keyframes reelFill { to { transform: none; } }
+
+/* -------------------------------------------------------------- ribbons -- */
+/*
+ * Two ribbons crossing in an X: the logo gradient in front (services), solid
+ * brand orange behind (clients). Text on both is Ink, as the brand book
+ * requires on the gradient. They run past both edges and the section clips
+ * them (`clip`, not `hidden`: no scroll container, so RTL gains no sideways
+ * scroll). Only the tracks move, by transform.
+ */
+.ribbons {
+  position: relative;
+  height: clamp(190px, 20vw, 260px);
+  margin-top: clamp(40px, 6vh, 72px);
+  overflow: clip;
+}
+.ribbon {
+  position: absolute;
+  top: 50%;
+  left: -6%;
+  right: -6%;
+  overflow: hidden;
+  border-block: 1px solid rgba(10, 10, 13, .28);
+  box-shadow: 0 22px 44px -22px rgba(0, 0, 0, .55);
+}
+.ribbonFront { z-index: 2; background: var(--brand-gradient); transform: translateY(-50%) rotate(-4deg); }
+.ribbonBack { z-index: 1; background: #FC6D3A; transform: translateY(-50%) rotate(3.5deg); }
+:global(html[data-kf-theme="light"]) .ribbon { box-shadow: 0 18px 36px -22px rgba(10, 10, 13, .35); }
+
+/* The track holds the list twice and slides by half its width, so the loop
+   is seamless. In RTL the track starts at the right edge, so it slides the
+   other way (towards +50%) or it would leave the ribbon empty. */
+.ribbonTrack { list-style: none; display: flex; align-items: center; width: max-content; animation: ribbonL 40s linear infinite; }
+.ribbonTrackReverse { animation-name: ribbonLBack; animation-duration: 56s; }
+:global(html[dir="rtl"]) .ribbonTrack { animation-name: ribbonR; }
+:global(html[dir="rtl"]) .ribbonTrackReverse { animation-name: ribbonRBack; }
+.ribbon:hover .ribbonTrack, .ribbon:focus-within .ribbonTrack { animation-play-state: paused; }
+@keyframes ribbonL { to { transform: translateX(-50%); } }
+@keyframes ribbonLBack { from { transform: translateX(-50%); } to { transform: none; } }
+@keyframes ribbonR { to { transform: translateX(50%); } }
+@keyframes ribbonRBack { from { transform: translateX(50%); } to { transform: none; } }
+
+.ribbonService, .ribbonClient {
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
-  opacity: .75;
-  transition: opacity .25s, color .25s;
+  color: #0A0A0D;
+  transition: background .2s;
 }
-.clientsTrack li:hover { opacity: 1; color: var(--text); }
+.ribbonService {
+  gap: 26px;
+  padding: 20px 0 20px 26px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-ui);
+  font-weight: 600;
+  letter-spacing: .14em;
+}
+.ribbonStar { width: 9px; height: 9px; background: #0A0A0D; transform: rotate(45deg); border-radius: 1px; }
+.ribbonClient {
+  gap: 10px;
+  margin: 10px 6px;
+  padding: 8px 18px;
+  border-radius: var(--r-full);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+.ribbonService:hover, .ribbonClient:hover { color: #0A0A0D; }
+.ribbonClient:hover { background: rgba(10, 10, 13, .12); }
+.ribbonService:hover { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 2px; }
+.ribbonClient :global(.kf-arrow) { transition: transform .25s cubic-bezier(.22, 1, .36, 1); }
+.ribbonClient:hover :global(.kf-arrow) { transform: translateX(3px); }
+:global(html[dir="rtl"]) .ribbonClient:hover :global(.kf-arrow) { transform: scaleX(-1) translateX(3px); }
 
 /* -------------------------------------------------------------- services -- */
 .svcGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
@@ -216,7 +276,7 @@
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--text);
-  transition: transform .35s cubic-bezier(.22, 1, .36, 1), border-color .3s, background .3s;
+  transition: transform .35s cubic-bezier(.22, 1, .36, 1), border-color .3s, background .3s, box-shadow .35s;
 }
 .svcCard::after {
   content: "";
@@ -232,7 +292,7 @@
   transition: opacity .3s;
   pointer-events: none;
 }
-.svcCard:hover { transform: translateY(-4px); color: var(--text); background: var(--panel2); }
+.svcCard:hover { transform: translateY(-4px); color: var(--text); background: var(--panel2); box-shadow: var(--card-glow); }
 .svcCard:hover::after { opacity: 1; }
 .svcTop { display: flex; align-items: center; justify-content: space-between; }
 .svcIcon {
@@ -274,9 +334,9 @@
   background: var(--panel);
   color: var(--text);
   overflow: hidden;
-  transition: transform .35s cubic-bezier(.22, 1, .36, 1), border-color .3s;
+  transition: transform .35s cubic-bezier(.22, 1, .36, 1), border-color .3s, box-shadow .35s;
 }
-.workCard:hover { transform: translateY(-4px); border-color: var(--bstrong); color: var(--text); }
+.workCard:hover { transform: translateY(-6px); border-color: transparent; color: var(--text); box-shadow: var(--card-glow); }
 .browser {
   display: block;
   margin: 18px 18px 0;
@@ -366,9 +426,7 @@
   flex-direction: column;
   padding: 12px 16px;
   border-radius: 14px;
-  background: rgba(10, 10, 13, .72);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10, 10, 13, .82);
   color: #fff;
   font-size: var(--fs-ui);
 }
@@ -418,7 +476,6 @@
   inset: auto 0 -60% 0;
   height: 120%;
   background: radial-gradient(50% 50% at 50% 50%, var(--glow), transparent 70%);
-  animation: glowDrift 14s ease-in-out infinite alternate;
 }
 .ctaTitle {
   margin-top: 18px;
@@ -436,14 +493,12 @@
 
 /* ----------------------------------------------------- AI automation demo -- */
 .aiSection { position: relative; overflow: hidden; }
-.aiGlow { position: absolute; inset: 0; background: radial-gradient(55% 60% at 85% 15%, var(--glow), transparent 65%); }
-.aiGrid {
+/* A plain gradient that is transparent well before the section's edges, so
+   there is nothing to mask (see the hero note above on masked layers). */
+.aiGlow {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(70% 60% at 50% 50%, #000, transparent);
-  -webkit-mask-image: radial-gradient(70% 60% at 50% 50%, #000, transparent);
+  background: radial-gradient(38% 34% at 85% 45%, var(--glow), transparent 75%);
 }
 .aiInner { position: relative; max-width: 1280px; margin: 0 auto; padding: clamp(72px, 9vw, 112px) 24px; }
 .aiBadge {
@@ -519,31 +574,74 @@
 .aiOutcomeValue { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lead); }
 .aiOutcomeLabel { font-size: var(--fs-label); color: var(--text3); margin-top: 3px; }
 
+/* -------------------------------------------------------------- included -- */
+.included {
+  list-style: none;
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--panel);
+}
+/* Hairlines between cells, drawn by each cell so the grid can reflow. */
+.includedItem {
+  padding: 28px 26px 30px;
+  box-shadow: inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border);
+  transition: background .3s;
+}
+.includedItem:hover { background: var(--panel2); }
+.included:global(.kf-in) .includedItem { animation: kfUp .7s cubic-bezier(.22, 1, .36, 1) both; }
+.includedIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: var(--brand-text);
+  background: color-mix(in srgb, var(--brand-orange) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-orange) 22%, transparent);
+}
+.includedTitle { margin-top: 22px; font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -.01em; line-height: 1.3; }
+.includedDesc { margin-top: 8px; color: var(--text2); font-size: var(--fs-ui); line-height: 1.6; }
+
 /* ------------------------------------------------------------ responsive -- */
 @media (max-width: 1100px) {
-  .svcGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .svcGrid, .included { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 32px; }
   .steps::before, .steps::after { display: none; }
 }
 @media (max-width: 960px) {
   .heroInner { grid-template-columns: minmax(0, 1fr); }
-  .codeCard { max-width: 560px; }
+  .reel { max-width: 640px; margin-top: 8px; }
   .why, .industries, .aiBody { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 720px) {
   .hero { padding-top: 104px; }
-  .heroInner, .clients, .cta, .aiInner { padding-inline: 16px; }
+  .heroInner, .cta, .aiInner { padding-inline: 16px; }
+  /* Narrow screens need a steeper X, or the front ribbon hides the back one. */
+  .ribbons { height: 230px; }
+  .ribbonFront { transform: translateY(-50%) rotate(-9deg); }
+  .ribbonBack { transform: translateY(-50%) rotate(8deg); }
+  .ribbonService { padding-block: 15px; }
+  .ribbonClient { font-size: 16px; margin-block: 6px; }
   .workGrid, .values { grid-template-columns: minmax(0, 1fr); }
   .industry { grid-template-columns: minmax(0, 1fr) auto; }
   .industry span:not(:global(.kf-arrow)) { grid-column: 1; }
   .industry :global(.kf-arrow) { grid-row: 1 / span 2; grid-column: 2; }
-  .codeCard { padding: 18px; }
-  .code { font-size: 12.5px; }
+  .reelLive { display: none; }
+  .reelBrowser, .reelFoot { margin-inline-end: 9%; }
+  .reelPhone { width: 24%; bottom: 86px; }
   .aiFlow { padding: 20px 18px; }
 }
 @media (max-width: 520px) {
-  .svcGrid, .steps { grid-template-columns: minmax(0, 1fr); }
+  .svcGrid, .steps, .included { grid-template-columns: minmax(0, 1fr); }
   .svcGrid { gap: 10px; }
+  .includedItem { padding: 22px 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; }
+  .includedIcon { grid-row: span 2; }
+  .includedTitle { margin-top: 0; font-size: 17px; }
+  .includedDesc { margin-top: 4px; }
   /* Phones: a compact row per service — icon beside the words. */
   .svcCard { min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; padding: 18px; }
   .svcTop { grid-row: span 3; align-self: start; }
@@ -555,14 +653,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .heroGlow, .ctaGlow, .marqueeTrack, .clientsTrack, .caret, .heroLine, .heroLede, .heroActions, .heroPromises, .codeCard, .aiStep { animation: none !important; }
-  .codeLine { animation: none !important; clip-path: none; }
-  .caret { opacity: 1; }
+  .ribbonTrack, .heroLine, .heroLede, .heroActions, .reel, .reelShotOn, .reelFill, .aiStep { animation: none !important; }
   .steps::after { transform: scaleX(1); transition: none; }
   .browserScreen :global(img) { transition: none; }
 }
 
 /* Arabic letterforms run wider and taller than Latin at the same size: a
    step down keeps the headline at three lines, with room for the marks. */
-:global(html[lang="ar"]) .heroTitle { font-size: clamp(38px, 5.2vw, 72px); line-height: 1.22; letter-spacing: 0; }
+:global(html[lang="ar"]) .heroTitle { font-size: clamp(36px, 4.4vw, 62px); line-height: 1.22; letter-spacing: 0; }
 :global(html[lang="ar"]) .ctaTitle { line-height: 1.25; letter-spacing: 0; }

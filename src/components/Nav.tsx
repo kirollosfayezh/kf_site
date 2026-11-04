@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { scrollToTop } from "../lib/smooth-scroll";
 import { LANG_META, useI18n } from "../lib/i18n";
 import { localePath } from "../lib/seo";
 import { FlagIcon } from "./FlagIcon";
@@ -95,7 +96,19 @@ export function Nav() {
       />
       <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ""}`}>
         <div className={styles.inner}>
-          <Link to="/" className={styles.brand} aria-label={t("KF Tech Solutions home")}>
+          {/* On the homepage itself a link to "/" changes nothing, so it
+              scrolls back to the top instead — what a click on a logo means. */}
+          <Link
+            to="/"
+            className={styles.brand}
+            aria-label={t("KF Tech Solutions home")}
+            onClick={(e) => {
+              if (location.pathname === "/" && !location.hash) {
+                e.preventDefault();
+                scrollToTop();
+              }
+            }}
+          >
             {/* The original export's mark: a gradient code-window glyph, not
                 the letters "KF". Eager + fixed size — it is above the fold. */}
             <img src="/logo-icon.png" alt="" width={40} height={40} className={styles.logo} decoding="async" />

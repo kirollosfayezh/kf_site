@@ -212,7 +212,7 @@ export function ProjectGallery({ images, alt, width, sizes, priority = false, in
           );
         })}
       </div>
-      <div className={css.dots}>
+      <div className={css.dots} data-gallery-controls>
         {images.map((_, i) => (
           <button
             key={i}

@@ -25,10 +25,10 @@ const QUIET_ROUTES = [/^\/q(\/|$)/, /^\/book$/, /^\/campaign$/];
  * Shows the first published promo whose window is open, once per visitor per
  * promo. Deliberately:
  *
- * - **Shown promptly, and the delay is yours to set.** `delaySeconds` on the
- *   offer controls it; 1.5s is the default and 0 shows it as soon as the offer
- *   loads. The short pause exists only so the page paints first — an offer that
- *   lands over a blank screen reads as an ad, not an offer.
+ * - **Shown once the visitor is using the page.** It waits for the first
+ *   scroll, tap or key, then `delaySeconds` from page load (1.5 s by
+ *   default), and never sooner than 1.2 s after that first interaction. An
+ *   offer that lands over a page nobody has looked at yet reads as an ad.
  * - **Dismissal is remembered per promo id**, so publishing a new offer shows
  *   again while re-visiting during the same campaign does not.
  * - **Never shown to a crawler**: it is client-only and not in the prerendered
@@ -80,8 +80,23 @@ export function PromoDialog() {
     });
   }, [data]);
 
+  // The offer waits until the visitor has started using the page. Opened on
+  // its own timer it was the largest thing painted during load, so it became
+  // the page's LCP (a lazy image behind a JS-built dialog: 6.5 s on mobile)
+  // and covered the headline before anyone had read it.
+  const [engaged, setEngaged] = useState(false);
   useEffect(() => {
-    if (!promo || dismissed.includes(promo.id) || quiet || consentPending) return;
+    const events = ["pointerdown", "keydown", "touchstart", "wheel"] as const;
+    const on = () => setEngaged(true);
+    // No timer fallback: an offer that opens on its own, however late, is
+    // still the largest paint for a visitor who has not touched the page —
+    // which made it the LCP for every such visit in the field data.
+    events.forEach((e) => window.addEventListener(e, on, { once: true, passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, on));
+  }, []);
+
+  useEffect(() => {
+    if (!promo || dismissed.includes(promo.id) || quiet || consentPending || !engaged) return;
 
     // Measured from when the page loaded, not from when the offer arrived —
     // otherwise the fetch time is added to the delay, and a slow connection
@@ -89,15 +104,12 @@ export function PromoDialog() {
     const configured = Number(metaString(promo.meta, "delaySeconds") ?? "");
     const wanted = Number.isFinite(configured) && configured >= 0 ? configured * 1000 : 1500;
     const elapsed = performance.now();
-    const remaining = Math.max(0, wanted - elapsed);
+    // Never in the same moment as the first scroll or click.
+    const remaining = Math.max(1200, wanted - elapsed);
 
-    if (remaining === 0) {
-      setOpen(true);
-      return;
-    }
     const id = window.setTimeout(() => setOpen(true), remaining);
     return () => window.clearTimeout(id);
-  }, [promo, dismissed, quiet, consentPending]);
+  }, [promo, dismissed, quiet, consentPending, engaged]);
 
   // Navigating onto a quiet route closes an offer that is already up.
   useEffect(() => {

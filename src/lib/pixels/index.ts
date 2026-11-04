@@ -116,6 +116,31 @@ const GRANTED = {
 };
 
 /**
+ * Runs `fn` once the visitor first touches the page, or a few seconds after
+ * it has loaded, whichever comes first.
+ *
+ * gtag.js and the TikTok pixel are ~140 kB of script that run ~600 ms of main
+ * thread on a mid-range phone. Loaded straight away they competed with the
+ * page's own first paint and were the largest item in the mobile Total
+ * Blocking Time; a few seconds later nobody is waiting on them, and every
+ * visit that lasts long enough to matter is still counted.
+ */
+function afterFirstUse(fn: () => void): void {
+  let done = false;
+  const events = ["pointerdown", "keydown", "touchstart", "wheel"] as const;
+  const run = () => {
+    if (done) return;
+    done = true;
+    events.forEach((e) => window.removeEventListener(e, run));
+    fn();
+  };
+  events.forEach((e) => window.addEventListener(e, run, { once: true, passive: true }));
+  const later = () => setTimeout(run, 4000);
+  if (typeof document === "undefined" || document.readyState === "complete") later();
+  else window.addEventListener("load", later, { once: true });
+}
+
+/**
  * The consent state machine, in full:
  *
  * - Do Not Track on → nothing loads, nothing is pushed.
@@ -140,8 +165,14 @@ export function initPixels(settings: TrackingSettings | undefined): void {
   active = true;
 
   if (!settings.consentMode) {
-    loadAll();
-    if (settings.debug) console.info("[pixels] loaded", { ...loaded, container: clean(settings.gtmId) || "none" });
+    afterFirstUse(() => {
+      const first = !anyLoaded();
+      loadAll();
+      // The route effect already ran with nothing loaded, so the tags that
+      // just arrived never saw this page.
+      if (first) pixelPageview(window.location.pathname || "/");
+      if (settings.debug) console.info("[pixels] loaded", { ...loaded, container: clean(settings.gtmId) || "none" });
+    });
     return;
   }
 

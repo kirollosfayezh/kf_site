@@ -10,7 +10,6 @@ export function HomeFinalCta({ waLink }: { waLink: string }) {
   return (
     <section className={h.cta}>
       <Reveal className={h.ctaPanel}>
-        <div className={h.heroGrid} aria-hidden="true" />
         <div className={h.ctaGlow} aria-hidden="true" />
         <span className="kf-label">{t("Start a project")}</span>
         <h2 className={h.ctaTitle}>

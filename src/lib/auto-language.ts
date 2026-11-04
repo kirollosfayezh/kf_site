@@ -1,91 +1,21 @@
-import { LANGS, isLang, type Lang } from "./langs.ts";
+import { isLang, type Lang } from "./langs.ts";
 
 /**
- * Sends a first-time visitor to the language they most likely read.
+ * Keeps a visitor in the language they chose.
  *
  * Runs once, before React mounts, so there is no flash of the wrong language.
  *
+ * **English is the default for everyone.** The site used to guess a first-time
+ * visitor's language from the browser and the time zone and redirect Cairo to
+ * `/ar`; the owner asked for English first (2026-11-04), so the only things
+ * that pick another language now are a prefixed URL and the switcher.
+ *
  * **It never overrides an explicit choice.** A URL that already carries a
- * language prefix, and a visitor who has used the switcher before, are both
- * left alone — so a link someone shares always opens in the language it was
- * shared in, and the switcher is never fought by the detector.
- *
- * **It never runs for a crawler.** Googlebot is served the prerendered English
- * HTML at `/` and this file is client-side only, so the indexed page and its
- * canonical stay in agreement. Auto-redirecting a crawler by IP is the
- * documented way to get a multilingual site mis-indexed — Google crawls mostly
- * from the United States, so it would only ever see one language.
- *
- * Two signals, no network request and no IP lookup:
- *
- * 1. `navigator.languages` — what the visitor set on their own device. The
- *    strongest signal there is, because they chose it.
- * 2. The IANA time zone (`Africa/Cairo`, `Asia/Riyadh`) — a good country proxy
- *    that costs nothing, needs no geo-IP service, and sends no data anywhere.
- *    Used only when the browser language says nothing useful.
+ * language prefix is left alone — a link someone shares always opens in the
+ * language it was shared in.
  */
 
 const STORAGE_KEY = "kf-lang";
-const AUTO_KEY = "kf-lang-auto";
-
-/** Time zones whose country reads Arabic, and the European pair we serve.
- *  Exported for the build, which inlines the same table into every page's
- *  head so the redirect runs before the first paint. */
-export const ZONE_LANG: Record<string, Lang> = {
-  // Arabic-speaking countries
-  "Africa/Cairo": "ar",
-  "Asia/Riyadh": "ar",
-  "Asia/Dubai": "ar",
-  "Asia/Qatar": "ar",
-  "Asia/Kuwait": "ar",
-  "Asia/Bahrain": "ar",
-  "Asia/Muscat": "ar",
-  "Asia/Amman": "ar",
-  "Asia/Beirut": "ar",
-  "Asia/Damascus": "ar",
-  "Asia/Baghdad": "ar",
-  "Asia/Aden": "ar",
-  "Asia/Gaza": "ar",
-  "Asia/Hebron": "ar",
-  "Africa/Khartoum": "ar",
-  "Africa/Tripoli": "ar",
-  "Africa/Tunis": "ar",
-  "Africa/Algiers": "ar",
-  "Africa/Casablanca": "ar",
-  "Africa/El_Aaiun": "ar",
-  "Africa/Nouakchott": "ar",
-  "Africa/Mogadishu": "ar",
-  "Africa/Djibouti": "ar",
-  // German
-  "Europe/Berlin": "de",
-  "Europe/Vienna": "de",
-  "Europe/Zurich": "de",
-  // French
-  "Europe/Paris": "fr",
-  "Europe/Brussels": "fr",
-  "Europe/Monaco": "fr",
-  "Europe/Luxembourg": "fr",
-  "Africa/Abidjan": "fr",
-  "Africa/Dakar": "fr",
-};
-
-function fromBrowser(): Lang | null {
-  const tags = navigator.languages?.length ? navigator.languages : [navigator.language];
-  for (const tag of tags) {
-    const base = (tag || "").toLowerCase().split("-")[0];
-    if (isLang(base) && LANGS.includes(base)) return base;
-  }
-  return null;
-}
-
-function fromTimeZone(): Lang | null {
-  try {
-    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return ZONE_LANG[zone] ?? null;
-  } catch {
-    return null;
-  }
-}
 
 function stored(key: string): string | null {
   try {
@@ -125,9 +55,9 @@ function redirectLegacyParam(path: string, first: string | undefined): boolean {
 }
 
 /**
- * Redirects if, and only if, this is a first visit to an unprefixed URL and the
- * visitor reads a language we serve other than English. Returns nothing; it
- * either navigates or leaves the page alone.
+ * Redirects an unprefixed URL to the language the visitor picked with the
+ * switcher (or a legacy `?lang=` link). Returns nothing; it either navigates
+ * or leaves the page alone.
  */
 export function applyAutoLanguage(): void {
   if (typeof window === "undefined") return;
@@ -157,41 +87,6 @@ export function applyAutoLanguage(): void {
     }
     return;
   }
-
-  // A visitor who has been redirected (or detected as English) once already.
-  if (stored(AUTO_KEY)) return;
-
-  /*
-   * A non-English browser language wins outright: someone whose device is set
-   * to German is telling us what they read, wherever they happen to be.
-   *
-   * Otherwise the time zone decides — which is what makes someone in Cairo with
-   * an English phone land on Arabic. Plenty of people in the region run their
-   * device in English and still prefer to read Arabic, so location is the
-   * better signal once the browser has said nothing but "English".
-   */
-  const browser = fromBrowser();
-  const detected = browser && browser !== "en" ? browser : (fromTimeZone() ?? browser);
-  if (!detected || detected === "en") {
-    // Still mark it, so an English reader is not re-checked on every page.
-    try {
-      localStorage.setItem(AUTO_KEY, "en");
-    } catch {
-      /* ignore */
-    }
-    return;
-  }
-
-  try {
-    localStorage.setItem(AUTO_KEY, detected);
-  } catch {
-    /* a visitor who blocks storage is simply detected again next visit */
-  }
-
-  // `replace`, not `assign`: the English URL should not sit in the back stack,
-  // or Back from the Arabic page bounces straight into the redirect again.
-  stashEntry();
-  window.location.replace(`/${detected}${path === "/" ? "" : path}${window.location.search}${window.location.hash}`);
 }
 
 /**

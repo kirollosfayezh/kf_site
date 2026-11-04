@@ -54,7 +54,16 @@ function ProjectCard({ item, i, Heading = "h2" }: { item: ProjectCardItem; i: nu
         )}
       </div>
       <div className={s.cardBody} style={{ padding: 24 }}>
-        <Heading className={s.cardTitle} style={{ fontSize: "var(--fs-section)" }}>{item.title}</Heading>
+        <Heading className={s.cardTitle} style={{ fontSize: "var(--fs-section)" }}>
+          {/* The whole card opens the case study; see .stretchLink. */}
+          {item.slug ? (
+            <Link to={`/projects/${item.slug}`} className={s.stretchLink} data-track="projects.card">
+              {item.title}
+            </Link>
+          ) : (
+            item.title
+          )}
+        </Heading>
         <p className={s.cardDesc}>{item.desc}</p>
         {item.tech.length > 0 && (
           <div className={s.projChips}>

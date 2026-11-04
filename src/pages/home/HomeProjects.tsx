@@ -5,6 +5,7 @@ import { FALLBACK_PROJECTS } from "../../lib/fallback-content";
 import { Reveal } from "../../components/Reveal";
 import { Img } from "../../components/Img";
 import { galleryImages } from "../../components/ProjectGallery";
+import { SHOWREEL } from "./data";
 import s from "../../styles/sections.module.css";
 import h from "../Home.module.css";
 import type { ContentItem } from "../../services/api-types";
@@ -14,6 +15,9 @@ import type { ContentItem } from "../../services/api-types";
  * browser frame, scrolling down the page on hover. Concept demos have their
  * own section on /projects.
  */
+/** The desktop screenshot base name in public/hero/, when we keep one. */
+const local = (slug?: string) => SHOWREEL.find((r) => r.slug === slug)?.desktop;
+
 export function HomeProjects({ projects }: { projects: ContentItem[] | null }) {
   const { t, lang } = useI18n();
   const items =
@@ -51,7 +55,21 @@ export function HomeProjects({ projects }: { projects: ContentItem[] | null }) {
                 <i />
               </span>
               <span className={h.browserScreen}>
-                {item.image ? (
+                {local(item.slug) ? (
+                  // Our own resized copy (public/hero/): the CMS original is a
+                  // 2000px capture of up to 170 kB, for a 640px card.
+                  <img
+                    src={`/hero/${local(item.slug)}-640.webp`}
+                    srcSet={`/hero/${local(item.slug)}-640.webp 640w, /hero/${local(item.slug)}-1040.webp 1040w`}
+                    sizes="(max-width: 800px) 100vw, 640px"
+                    width={640}
+                    height={328}
+                    alt={item.title}
+                    loading="lazy"
+                    decoding="async"
+                    className={h.browserImg}
+                  />
+                ) : item.image ? (
                   <Img src={item.image} alt={item.title} width={640} sizes="(max-width: 800px) 100vw, 640px" className={h.browserImg} />
                 ) : (
                   <span className={h.browserEmpty}>{item.title[0]}</span>

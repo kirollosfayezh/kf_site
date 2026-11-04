@@ -21,14 +21,16 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readStored(): Theme {
   try {
-    return (localStorage.getItem("kf-theme") as Theme) || "dark";
+    return localStorage.getItem("kf-theme") === "dark" ? "dark" : "light";
   } catch {
-    return "dark";
+    return "light";
   }
 }
 
 /**
- * Dark is the design's default and what every prerendered page declares.
+ * Light is the default (the owner's choice, 2026-11-04). The prerendered
+ * markup is still the dark variant — the boot script flips `<html>` to light
+ * before paint, and dark only stays for a visitor who picked it.
  *
  * The stored preference is read *after* the first render, not in the state
  * initialiser: the sun/moon icon sits in the header outside every Suspense

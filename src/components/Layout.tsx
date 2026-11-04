@@ -59,7 +59,7 @@ export function Layout() {
   }, []);
 
   return (
-    <div style={{ position: "relative", width: "100%", minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ position: "relative", width: "100%", minHeight: "100vh", background: "var(--page-bg)" }}>
       <RouteSeo />
       {/* First tab stop: past the nine nav controls straight to the page.
           Focus moves into <main> itself, so the next Tab lands on the page's

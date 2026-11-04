@@ -1,31 +1,27 @@
-/* These pages are long — Home runs to roughly eight screens of cards, grids
-   and gradients. `content-visibility: auto` lets the browser skip layout,
-   style and paint for the sections that are nowhere near the viewport, which
-   is most of them at any moment, and is the single largest win available on
-   the scroll path. `contain-intrinsic-size: auto` makes the browser remember
-   each section's real height once it has been rendered, so the scrollbar
-   settles after the first pass instead of resizing as you scroll. */
+/* No `content-visibility: auto` on these. It skipped layout and paint for
+   off-screen sections, but on Chrome for macOS with GPU rasterisation the
+   skipped sections came back as darker rectangles with hard edges — the "grey
+   and black bands" behind the FAQ and under the hero — and the remembered
+   intrinsic sizes made the scrollbar jump. The page is light enough to render
+   whole. */
 .section {
   max-width: 1280px;
   margin: 0 auto;
   padding: clamp(80px, 9vw, 112px) 24px;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 700px;
 }
 .sectionTight {
   max-width: 1280px;
   margin: 0 auto;
   padding: 80px 24px;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 600px;
 }
-.sectionAlt { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+/* Used to be a lighter band with rules above and below. Against the Ink page
+   the two near-blacks read as a mistake rather than a rhythm, so every
+   section now sits on the one page background and spacing does the work. */
+.sectionAlt { background: none; }
 .sectionNarrow {
   max-width: 860px;
   margin: 0 auto;
   padding: 110px 24px;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 700px;
 }
 
 .head {
@@ -66,6 +62,12 @@
    pads its content by ≥22px, so the overlay never reaches a card's clipped
    edge. Breadcrumb links sit a few px apart, so theirs only grows vertically. */
 .viewAll, .projView, .textLink, .breadcrumb a { position: relative; }
+/* Makes a whole card one link: the title's link stretches over the card, and
+   the controls inside it (gallery dots, a demo link) sit above that layer. */
+.stretchLink { color: inherit; }
+.stretchLink:hover { color: inherit; }
+.stretchLink::before { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
+.card .projView, .card .textLink, .card :global([data-gallery-controls]) { z-index: 4; }
 .viewAll::after, .projView::after, .textLink::after { content: ""; position: absolute; inset: -12px -8px; }
 .breadcrumb a::after { content: ""; position: absolute; inset: -12px -2px; }
 .lede { margin-top: 18px; color: var(--text2); font-size: clamp(15.5px, 1.3vw, 17.5px); line-height: 1.65; max-width: 720px; }
@@ -83,7 +85,7 @@
   color: var(--text);
   transition: transform .3s cubic-bezier(.22, 1, .36, 1), border-color .3s, box-shadow .3s;
 }
-.card:hover { transform: translateY(-4px); border-color: var(--bstrong); color: var(--text); }
+.card:hover { transform: translateY(-4px); border-color: transparent; color: var(--text); box-shadow: var(--card-glow); }
 /* The hover edge: a 1px brand gradient, masked to the border. */
 .card::after, .svcCard::after, .featured::after {
   content: "";
@@ -144,8 +146,9 @@
   z-index: 2;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  background: rgba(0, 0, 0, .5);
-  backdrop-filter: blur(6px);
+  /* Solid, not a backdrop blur: one of these sits on every project card,
+     and each blur is re-sampled on every scrolled frame. */
+  background: rgba(10, 10, 13, .72);
   padding: 5px 10px;
   border-radius: var(--r-full);
   color: #fff;
@@ -205,19 +208,17 @@
 .stateTitle { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-section); color: var(--text); margin-bottom: 10px; }
 .stateError { color: var(--danger); }
 
-.pageHero { position: relative; overflow: hidden; isolation: isolate; padding: 156px 24px 64px; border-bottom: 1px solid var(--border); }
-/* Every inner page opens on the hero's stage: the faint grid and one glow. */
-.pageHero::before {
-  content: "";
+.pageHero { position: relative; overflow: hidden; isolation: isolate; padding: 156px 24px 64px; }
+/* Every inner page opens on one warm glow: a static gradient that fades to
+   nothing inside the hero, so it needs no mask and no clip (masked layers
+   showed as grey blocks on macOS). */
+.pageHeroGlow {
   position: absolute;
-  inset: 0;
   z-index: -1;
-  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(70% 90% at 70% 0%, #000 20%, transparent 75%);
-  -webkit-mask-image: radial-gradient(70% 90% at 70% 0%, #000 20%, transparent 75%);
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle min(480px, 60vw) at 88% 0%, var(--glow), transparent 70%);
 }
-.pageHeroGlow { position: absolute; z-index: -1; inset: -40% -10% auto auto; width: min(760px, 90vw); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(closest-side, var(--glow), transparent 72%); }
 .pageHeroInner { position: relative; max-width: 1280px; margin: 0 auto; }
 .breadcrumb { font-family: var(--font-mono); font-size: var(--fs-label); letter-spacing: .08em; color: var(--text3); animation: kfFadeIn .6s ease both; }
 .breadcrumb a { color: var(--text2); }
@@ -347,7 +348,7 @@
   transition: border-color .35s, box-shadow .35s;
 }
 .featured { position: relative; }
-.featured:hover { border-color: var(--bstrong); color: var(--text); }
+.featured:hover { border-color: transparent; color: var(--text); box-shadow: var(--card-glow); }
 .featuredMedia { position: relative; min-height: 300px; aspect-ratio: 16 / 10; overflow: hidden; background: var(--panel2); }
 .featuredMedia img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .featuredBadge {
@@ -426,7 +427,7 @@
   overflow: hidden;
   transition: border-color .3s, transform .3s cubic-bezier(.22, 1, .36, 1), box-shadow .3s;
 }
-.svcCard:hover { border-color: var(--bstrong); transform: translateY(-4px); }
+.svcCard:hover { border-color: transparent; transform: translateY(-4px); box-shadow: var(--card-glow); }
 .svcMedia { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--panel); }
 .svcMedia img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
 .svcCard:hover .svcMedia img { transform: scale(1.05); }

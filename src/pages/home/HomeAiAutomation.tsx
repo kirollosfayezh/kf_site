@@ -133,7 +133,6 @@ export function HomeAiAutomation() {
   return (
     <section className={`${h.aiSection} ${s.sectionAlt}`}>
       <div className={h.aiGlow} aria-hidden="true" />
-      <div className={h.aiGrid} aria-hidden="true" />
       <div className={h.aiInner}>
         <Reveal style={{ maxWidth: 720 }}>
           <div className={h.aiBadge}>
