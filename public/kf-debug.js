@@ -1,7 +1,7 @@
 /*
  * On-screen diagnostics for a real phone, where there is no console.
  * Loaded by the boot script only when the URL carries `?kf-debug`; never part
- * of the bundle. Shows the intro's state changes, the body scroll lock, the
+ * of the bundle. Shows the body scroll lock, the
  * scroll position, whether the page's storage works, and — the reason it
  * exists — every touch: what it landed on, and whether anything cancelled it.
  */
@@ -25,7 +25,7 @@
     log("vw " + innerWidth + "x" + innerHeight + " dpr " + devicePixelRatio);
     try {
       localStorage.setItem("kf-debug-probe", "1");
-      log("storage ok, intro-seen=" + (localStorage.getItem("kf-intro-seen") || "none"));
+      log("storage ok");
     } catch (e) {
       log("STORAGE FAILS: " + e);
     }
@@ -41,10 +41,7 @@
   }
   mount();
 
-  // intro state + scroll lock
-  new MutationObserver(function () {
-    log("intro=" + (document.documentElement.getAttribute("data-intro") || "none") + " body.overflow=\"" + document.body.style.overflow + "\"");
-  }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-intro"] });
+  // scroll lock
   var lastOverflow = "";
   setInterval(function () {
     if (!document.body) return;

@@ -137,7 +137,7 @@ export function Article() {
         <figure className={s.artFigure}>
           <Img
             src={post.media[0]}
-            alt={metaString(post.meta, "alt") || title}
+            alt={pickPlain(metaString(post.meta, "alt"), lang) || title}
             width={1200}
             sizes="(max-width: 1280px) 100vw, 1200px"
             priority

@@ -16,7 +16,6 @@ import {
 import { ApiError } from "../../services/http";
 import { trackConversion } from "../../lib/conversions";
 import { useI18n } from "../../lib/i18n";
-import { afterIntroReveal } from "../../lib/intro";
 import { guessCountry, readPhone, rememberCountry, switchCountry } from "../../lib/phone";
 import { ChatAvatar } from "./ChatAvatar";
 import { PhoneField } from "../PhoneField";
@@ -157,23 +156,15 @@ export function ChatWidget() {
    */
   useEffect(() => {
     if (readNum(GREETED_KEY)) return;
-    let id = 0;
-    // The greeting is timed from when the visitor can see the page: on a
-    // homepage that opens with the samurai intro, that is after the cut.
-    const cancelWait = afterIntroReveal(() => {
-      id = window.setTimeout(() => {
-        writeNum(GREETED_KEY, 1);
-        setOpen((already) => {
-          if (already) return already;
-          setUnread(0);
-          return true;
-        });
-      }, AUTO_OPEN_DELAY);
-    });
-    return () => {
-      cancelWait();
-      window.clearTimeout(id);
-    };
+    const id = window.setTimeout(() => {
+      writeNum(GREETED_KEY, 1);
+      setOpen((already) => {
+        if (already) return already;
+        setUnread(0);
+        return true;
+      });
+    }, AUTO_OPEN_DELAY);
+    return () => window.clearTimeout(id);
   }, []);
 
   /**

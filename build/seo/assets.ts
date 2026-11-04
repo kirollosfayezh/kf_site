@@ -37,8 +37,6 @@ export const ITEM_MODULES = {
   service: "src/pages/ServiceDetail.tsx",
 } as const;
 
-/** The homepage intro's engine: a lazy chunk the boot script preloads when the show will play. */
-export const INTRO_ENGINE_MODULE = "src/intro/engine/engine.ts";
 
 /** The emitted files a module pulls in through static imports, itself included. */
 export function closure(manifest: Manifest, key: string, js = new Set<string>(), css = new Set<string>()) {

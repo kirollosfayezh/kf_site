@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { isIntroRoute } from "./intro";
 import { LANGS, dirOf, isLang } from "./langs";
 
 describe("language primitives", () => {
@@ -20,9 +19,3 @@ describe("language primitives", () => {
   });
 });
 
-describe("isIntroRoute", () => {
-  it("plays the intro on the homepage in every language only", () => {
-    for (const path of ["/", "/ar", "/de/", "/fr"]) expect(isIntroRoute(path)).toBe(true);
-    for (const path of ["/services", "/ar/services", "/blog/x", "/es"]) expect(isIntroRoute(path)).toBe(false);
-  });
-});

@@ -124,7 +124,7 @@ export function ServiceDetail() {
         <figure className={s.artFigure}>
           <Img
             src={photo}
-            alt={metaString(item.meta, "alt") || headline}
+            alt={pickPlain(metaString(item.meta, "alt"), lang) || headline}
             width={1200}
             sizes="(max-width: 1280px) 100vw, 1200px"
             priority

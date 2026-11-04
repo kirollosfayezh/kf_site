@@ -2,11 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, metaString } from "../lib/content-helpers";
+import { pick, pickPlain, metaString } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
 import { useSettings } from "../lib/settings";
 import { CONSENT_CHANGED_EVENT, needsConsent } from "../lib/pixels";
-import { INTRO_DONE_EVENT, introRunning } from "../lib/intro";
 import { trackClick } from "../services/analytics";
 import { Img } from "../components/Img";
 import s from "./PromoDialog.module.css";
@@ -56,21 +55,6 @@ export function PromoDialog() {
     return () => window.removeEventListener(CONSENT_CHANGED_EVENT, done);
   }, [settings]);
 
-  // Nor while the opening animation is on: an offer over the show is noise,
-  // and one waiting behind it would pop the moment the page appears. When
-  // the show ran, the delay below counts from its end rather than from the
-  // page load, so the visitor gets to see the page before the offer.
-  const [introBusy, setIntroBusy] = useState(false);
-  const introEndedAt = useRef(0);
-  useEffect(() => {
-    setIntroBusy(introRunning());
-    const done = () => {
-      introEndedAt.current = performance.now();
-      setIntroBusy(false);
-    };
-    window.addEventListener(INTRO_DONE_EVENT, done);
-    return () => window.removeEventListener(INTRO_DONE_EVENT, done);
-  }, []);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -97,14 +81,14 @@ export function PromoDialog() {
   }, [data]);
 
   useEffect(() => {
-    if (!promo || dismissed.includes(promo.id) || quiet || consentPending || introBusy) return;
+    if (!promo || dismissed.includes(promo.id) || quiet || consentPending) return;
 
     // Measured from when the page loaded, not from when the offer arrived —
     // otherwise the fetch time is added to the delay, and a slow connection
     // pushes the offer past the point anyone is still looking.
     const configured = Number(metaString(promo.meta, "delaySeconds") ?? "");
     const wanted = Number.isFinite(configured) && configured >= 0 ? configured * 1000 : 1500;
-    const elapsed = performance.now() - introEndedAt.current;
+    const elapsed = performance.now();
     const remaining = Math.max(0, wanted - elapsed);
 
     if (remaining === 0) {
@@ -113,7 +97,7 @@ export function PromoDialog() {
     }
     const id = window.setTimeout(() => setOpen(true), remaining);
     return () => window.clearTimeout(id);
-  }, [promo, dismissed, quiet, consentPending, introBusy]);
+  }, [promo, dismissed, quiet, consentPending]);
 
   // Navigating onto a quiet route closes an offer that is already up.
   useEffect(() => {
@@ -175,8 +159,9 @@ export function PromoDialog() {
 
   const title = pick(promo.title, lang);
   const desc = pick(promo.summary ?? promo.body, lang);
-  const badge = metaString(promo.meta, "badge");
-  const ctaLabel = metaString(promo.meta, "ctaLabel");
+  // Typed once in English in the dashboard; the dictionaries carry the other languages.
+  const badge = pickPlain(metaString(promo.meta, "badge"), lang);
+  const ctaLabel = pickPlain(metaString(promo.meta, "ctaLabel"), lang);
   const ctaUrl = metaString(promo.meta, "ctaUrl");
   const endsAt = metaString(promo.meta, "endsAt");
   const photo = promo.media?.[0];
@@ -199,7 +184,7 @@ export function PromoDialog() {
 
         {photo ? (
           <div className={s.media}>
-            <Img src={photo} alt={metaString(promo.meta, "alt") || ""} width={800} sizes="(max-width: 720px) 100vw, 440px" />
+            <Img src={photo} alt={pickPlain(metaString(promo.meta, "alt"), lang)} width={800} sizes="(max-width: 720px) 100vw, 440px" />
             {badge ? <span className={s.badge}>{badge}</span> : null}
           </div>
         ) : null}

@@ -8,7 +8,6 @@ import { useSiteSettings } from "./hooks/useContent";
 import { AnalyticsProvider } from "./lib/analytics-provider";
 import { ConsentBanner } from "./components/ConsentBanner";
 import { PromoDialog } from "./components/PromoDialog";
-import { SamuraiIntro } from "./components/SamuraiIntro";
 import { SeoProvider } from "./components/Seo";
 
 /**
@@ -72,7 +71,6 @@ export default function App({ initialLang }: { initialLang?: Lang } = {}) {
         <AnalyticsProvider settings={settings} />
         <ConsentBanner settings={settings} />
         <PromoDialog />
-        <SamuraiIntro />
         <SeoProvider settings={settings}>
         <Routes>
           <Route element={<Layout />}>

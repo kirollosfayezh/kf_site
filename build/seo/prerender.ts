@@ -24,13 +24,11 @@ import { FALLBACK_FAQS } from "../../src/lib/fallback-content.ts";
 import { extractFaq } from "../../src/lib/faq.ts";
 import { bootScript } from "../boot-script.ts";
 import {
-  INTRO_ENGINE_MODULE,
   ITEM_MODULES,
   type Manifest,
   ROUTE_MODULES,
   type SsrModule,
   assetsFor,
-  closure,
 } from "./assets.ts";
 import type { BuildContext } from "./context.ts";
 import { ARABIC_FONT_PRELOAD, DISPLAY_FONT_PRELOAD, injectHead, stripStaticHead } from "./head.ts";
@@ -260,9 +258,7 @@ export async function prerenderPages(
 ): Promise<PrerenderResult> {
   // The boot script (theme + language redirect before paint) goes into the
   // shell itself, so the shell-served pages carry it too.
-  const introChunks = manifest ? [...closure(manifest, INTRO_ENGINE_MODULE).js].map((f) => `/${f}`) : [];
-  if (manifest && !introChunks.length) warnings.push(`the build manifest has no entry for ${INTRO_ENGINE_MODULE}; the intro's chunk will not be preloaded`);
-  const shell = injectHead(stripStaticHead(await readFile(join(distDir, "index.html"), "utf8")), bootScript(ctx.langs, introChunks));
+  const shell = injectHead(stripStaticHead(await readFile(join(distDir, "index.html"), "utf8")), bootScript(ctx.langs));
   const opts = tagOptions(ctx);
   // `/q` is the client quote page: private links, served by the SPA shell.
   const prerenderable = Object.values(ctx.pages).filter((p) => p.path !== "/404" && p.path !== "/q");

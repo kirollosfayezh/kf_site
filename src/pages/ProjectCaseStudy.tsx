@@ -202,7 +202,7 @@ export function ProjectCaseStudy() {
             <div className={s.projChips}>
               {tech.map((x) => (
                 <span key={x} className={s.projChip}>
-                  {x}
+                  {pickPlain(x, lang)}
                 </span>
               ))}
             </div>

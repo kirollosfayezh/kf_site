@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { afterIntroDone } from "../lib/intro";
 import { startScene } from "./hero/renderer.ts";
 import { DUST_FS, DUST_VS, TERRAIN_FS, TERRAIN_VS } from "./hero/shaders.ts";
 import { program, whenLinked } from "./hero/webgl.ts";
@@ -127,14 +126,8 @@ export function HeroStage({ className }: { className?: string }) {
      */
     let idleHandle: number | null = null;
     let frameHandle = 0;
-    let cancelIntroWait = () => {};
     const whenIdle = (run: () => void) => {
-      // While the opening animation is up its scene owns the GPU, and the
-      // shader compile here is a long main-thread task that would freeze its
-      // last frames; this scene starts once the overlay is gone.
-      const fn = () => {
-        cancelIntroWait = afterIntroDone(run);
-      };
+      const fn = () => run();
       const w = window as Window & {
         requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
         cancelIdleCallback?: (h: number) => void;
@@ -149,7 +142,6 @@ export function HeroStage({ className }: { className?: string }) {
     };
     const cancelIdle = () => {
       cancelAnimationFrame(frameHandle);
-      cancelIntroWait();
       if (idleHandle === null) return;
       const w = window as Window & { cancelIdleCallback?: (h: number) => void };
       if (w.cancelIdleCallback) w.cancelIdleCallback(idleHandle);

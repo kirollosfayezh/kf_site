@@ -59,7 +59,7 @@ function ProjectCard({ item, i, Heading = "h2" }: { item: ProjectCardItem; i: nu
         {item.tech.length > 0 && (
           <div className={s.projChips}>
             {item.tech.map((tech) => (
-              <span key={tech} className={s.projChip}>{tech}</span>
+              <span key={tech} className={s.projChip}>{pickPlain(tech, lang)}</span>
             ))}
           </div>
         )}
