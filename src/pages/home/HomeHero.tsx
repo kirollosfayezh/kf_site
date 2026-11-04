@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
 import h from "../Home.module.css";
-import { HomeShowreel } from "./HomeShowreel";
+import { HomeHeroVideo } from "./HomeHeroVideo";
 
 /**
  * The hero headline, translated. The dictionary value carries `\n` for the
@@ -28,8 +28,8 @@ function heroHeadline(t: (key: string) => string) {
 
 /**
  * The hero: the claim, one line of what we build and two actions on one side,
- * and the showreel of real client products on the other. Deliberately short —
- * the promises and numbers that used to crowd it live further down the page.
+ * and the looping motion piece on the other. Deliberately short — the
+ * promises and numbers that used to crowd it live further down the page.
  */
 export function HomeHero() {
   const { t } = useI18n();
@@ -42,7 +42,7 @@ export function HomeHero() {
         <div className={h.heroCopy}>
           <span className={`kf-label ${h.heroKicker}`}>
             <span className="kf-dot" aria-hidden="true" />
-            {t("OPEN FOR NEW PROJECTS")} <span aria-hidden="true">—</span> {t("CAIRO, EG")}
+            {t("OPEN FOR NEW PROJECTS")} <span aria-hidden="true">—</span> {t("WORLDWIDE")}
           </span>
           <h1 className={h.heroTitle}>{heroHeadline(t)}</h1>
           <p className={h.heroLede}>
@@ -58,7 +58,7 @@ export function HomeHero() {
           </div>
         </div>
 
-        <HomeShowreel />
+        <HomeHeroVideo />
       </div>
 
     </section>

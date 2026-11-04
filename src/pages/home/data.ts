@@ -12,9 +12,9 @@ export const HERO_MARQUEE = [
 ];
 
 /**
- * The hero showreel: delivered client projects with a desktop and (where we
- * have one) a phone screenshot, resized for the hero in public/hero/. Slugs
- * are the case-study URLs; tag and title are dictionary keys.
+ * Delivered client projects we keep resized screenshots of in public/hero/
+ * (desktop 640/1040w, phone 360w): the homepage work cards use these instead
+ * of the 2000px CMS originals. Slugs are the case-study URLs.
  */
 export const SHOWREEL = [
   { slug: "solana-red-sea", title: "Solana Red Sea", tag: "Luxury real estate", desktop: "solana-red-sea", mobile: "solana-red-sea-mobile" },

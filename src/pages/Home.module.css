@@ -10,8 +10,11 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  /* The nav floats over the hero; this clears it. */
+  /* The nav floats over the hero; this clears it. The bottom padding leaves
+     room for the video's shadow, which the hero's clip would otherwise cut
+     off in a straight line. */
   padding-top: clamp(112px, 14vh, 150px);
+  padding-bottom: 96px;
 }
 /*
  * The hero's decoration is one static gradient, painted with the page.
@@ -31,10 +34,12 @@
 }
 .heroGlow {
   position: absolute;
-  width: min(900px, 110vw);
+  /* Sized and placed so the glow has faded out above the hero's bottom edge
+     (the hero is short now; a larger circle was cut off in a straight line). */
+  width: min(760px, 100vw);
   aspect-ratio: 1;
-  inset-inline-end: -14%;
-  top: -8%;
+  inset-inline-end: -12%;
+  top: -260px;
   border-radius: 50%;
   /* Fully transparent well inside its own box, so the clip never shows. */
   background: radial-gradient(closest-side, var(--glow), transparent 72%);
@@ -83,114 +88,33 @@
   gap: 12px;
   animation: kfUp .9s .35s cubic-bezier(.22, 1, .36, 1) both;
 }
-/* ------------------------------------------------------------- showreel -- */
-.reel { position: relative; min-width: 0; animation: cardIn 1s .3s cubic-bezier(.22, 1, .36, 1) both; }
+/* ----------------------------------------------------------- hero video -- */
+.heroVideo { position: relative; min-width: 0; animation: cardIn 1s .3s cubic-bezier(.22, 1, .36, 1) both; }
 @keyframes cardIn { 0% { opacity: 0; transform: translateY(24px) scale(.98); } 100% { opacity: 1; transform: none; } }
-.reelGlow {
+.heroVideoGlow {
   position: absolute;
-  inset: -12% -10% -16%;
+  /* Kept inside the hero (which clips) and transparent at its own edges, so
+     the glow never ends in a straight line under the video. */
+  inset: -12% -8% -4%;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--brand-pink) 20%, transparent), transparent 70%);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-pink) 24%, transparent), transparent);
 }
-.reelBrowser {
+/* The film is dark by design (the brand's video stage), so in light mode it
+   reads as a screen set into the page: a hairline rim and a soft shadow. */
+.heroVideoFrame {
   position: relative;
-  display: block;
-  margin-inline-end: 12%;
-  border-radius: 18px;
-  border: 1px solid var(--bstrong);
-  background: var(--panel);
-  color: var(--text);
+  aspect-ratio: 16 / 10;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 50px 100px -40px rgba(0, 0, 0, .75);
-  transition: transform .5s cubic-bezier(.22, 1, .36, 1), box-shadow .5s;
-}
-:global(html[data-kf-theme="light"]) .reelBrowser { box-shadow: 0 40px 80px -36px rgba(10, 10, 13, .35); }
-.reelBrowser:hover { color: var(--text); transform: translateY(-4px); box-shadow: var(--card-glow); }
-.reelBar { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--border); }
-.reelBar > i { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; flex: none; }
-.reelBar > i:nth-child(2) { background: #F5A524; }
-.reelBar > i:nth-child(3) { background: #22C55E; }
-.reelUrl {
-  flex: 1;
-  min-width: 0;
-  margin-inline-start: 8px;
-  padding: 5px 12px;
-  border-radius: var(--r-full);
-  background: var(--bg2);
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  color: var(--text3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: left;
-}
-.reelLive { display: inline-flex; align-items: center; gap: 7px; font-size: var(--fs-label); color: var(--text2); white-space: nowrap; }
-.reelScreen { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg2); }
-.reelShot {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  opacity: 0;
-  transition: opacity .8s ease;
-}
-.reelShotOn { opacity: 1; }
-/* The screen drifts in while its project is up, like a camera on a monitor. */
-.reelScreen .reelShotOn { animation: reelZoom 6.5s ease-out both; animation-play-state: paused; }
-.reel[data-running] .reelScreen .reelShotOn { animation-play-state: running; }
-@keyframes reelZoom { from { transform: none; } to { transform: scale(1.07) translateY(-1.5%); } }
-
-.reelPhone {
-  position: absolute;
-  inset-inline-end: 0;
-  bottom: 52px;
-  width: 21%;
-  aspect-ratio: 9 / 18.5;
-  padding: 6px;
-  border-radius: 28px;
-  border: 1px solid #2A2A33;
   background: #0A0A0D;
-  box-shadow: 0 40px 70px -28px rgba(0, 0, 0, .8);
-  transition: opacity .6s, transform .6s cubic-bezier(.22, 1, .36, 1);
+  border: 1px solid var(--bstrong);
+  box-shadow: 0 50px 100px -40px rgba(0, 0, 0, .75);
 }
-.reelPhoneAway { opacity: 0; transform: translateY(18px); }
-.reelPhoneScreen { position: relative; display: block; width: 100%; height: 100%; border-radius: 22px; overflow: hidden; background: #15151B; }
-
-.reelFoot {
-  margin-top: 18px;
-  margin-inline-end: 12%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-}
-.reelCaption { flex: 1 1 220px; display: inline-flex; align-items: baseline; gap: 10px; min-width: 0; color: var(--text); font-weight: 600; }
-.reelCaption:hover { color: var(--brand-text); }
-.reelTag { font-family: var(--font-mono); font-size: var(--fs-label); letter-spacing: .08em; text-transform: uppercase; color: var(--brand-text); white-space: nowrap; }
-.reelTitle { font-family: var(--font-display); font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.reelBars { display: flex; gap: 6px; flex: none; }
-.reelBarBtn { position: relative; width: 34px; height: 24px; padding: 0; border: 0; background: none; }
-.reelBarBtn::before, .reelBarBtn > span {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 50%;
-  height: 3px;
-  margin-top: -1.5px;
-  border-radius: 3px;
-}
-.reelBarBtn::before { background: var(--bstrong); }
-.reelBarBtn > span { background: var(--brand-gradient); transform: scaleX(0); transform-origin: left; }
-:global(html[dir="rtl"]) .reelBarBtn > span { transform-origin: right; }
-.reelBarDone > span { transform: none; }
-.reelFill { animation: reelFill 6s linear both; animation-play-state: paused; }
-.reel[data-running] .reelFill { animation-play-state: running; }
-@keyframes reelFill { to { transform: none; } }
+:global(html[data-kf-theme="light"]) .heroVideoFrame { border-color: rgba(10, 10, 13, .12); box-shadow: 0 40px 80px -34px rgba(10, 10, 13, .4); }
+.heroVideoEl { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.heroVideoPlay { opacity: 0; transition: opacity .4s ease; }
+.heroVideoPlay[data-on] { opacity: 1; }
 
 /* -------------------------------------------------------------- ribbons -- */
 /*
@@ -203,7 +127,6 @@
 .ribbons {
   position: relative;
   height: clamp(190px, 20vw, 260px);
-  margin-top: clamp(40px, 6vh, 72px);
   overflow: clip;
 }
 .ribbon {
@@ -614,7 +537,7 @@
 }
 @media (max-width: 960px) {
   .heroInner { grid-template-columns: minmax(0, 1fr); }
-  .reel { max-width: 640px; margin-top: 8px; }
+  .heroVideo { max-width: 640px; margin-top: 8px; }
   .why, .industries, .aiBody { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 720px) {
@@ -630,9 +553,6 @@
   .industry { grid-template-columns: minmax(0, 1fr) auto; }
   .industry span:not(:global(.kf-arrow)) { grid-column: 1; }
   .industry :global(.kf-arrow) { grid-row: 1 / span 2; grid-column: 2; }
-  .reelLive { display: none; }
-  .reelBrowser, .reelFoot { margin-inline-end: 9%; }
-  .reelPhone { width: 24%; bottom: 86px; }
   .aiFlow { padding: 20px 18px; }
 }
 @media (max-width: 520px) {
@@ -653,7 +573,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ribbonTrack, .heroLine, .heroLede, .heroActions, .reel, .reelShotOn, .reelFill, .aiStep { animation: none !important; }
+  .ribbonTrack, .heroLine, .heroLede, .heroActions, .heroVideo, .aiStep { animation: none !important; }
   .steps::after { transform: scaleX(1); transition: none; }
   .browserScreen :global(img) { transition: none; }
 }
