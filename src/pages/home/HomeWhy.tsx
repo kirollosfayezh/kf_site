@@ -25,7 +25,7 @@ export function HomeWhy({ waLink }: { waLink: string }) {
             decoding="async"
           />
           <span className={h.founderCaption}>
-            <b>Kirollos Fayez</b>
+            <b>{t("Kirollos Fayez")}</b>
             <span>{t("Founder & lead engineer")}</span>
           </span>
         </Reveal>

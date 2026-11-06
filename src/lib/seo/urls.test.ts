@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { absolute, languageAlternates, localePath } from "./urls.ts";
+import { absolute, languageAlternates, localePath, markdownPath } from "./urls.ts";
 
 describe("localePath", () => {
   it("keeps English at the root and prefixes every other language", () => {
@@ -32,5 +32,14 @@ describe("languageAlternates", () => {
       { hreflang: "ar", href: "https://kf.test/ar/services" },
       { hreflang: "x-default", href: "https://kf.test/services" },
     ]);
+  });
+});
+
+describe("markdownPath", () => {
+  it("appends .md to a page and index.md to a directory URL", () => {
+    expect(markdownPath("en", "/about")).toBe("/about.md");
+    expect(markdownPath("de", "/blog/x")).toBe("/de/blog/x.md");
+    expect(markdownPath("en", "/")).toBe("/index.md");
+    expect(markdownPath("ar", "/")).toBe("/ar/index.md");
   });
 });

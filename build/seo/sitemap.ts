@@ -15,12 +15,14 @@ import {
 import type { BuildContext } from "./context.ts";
 
 /**
- * When each static page's copy last changed, bumped by hand when it does.
+ * When each static page's copy last changed. The date now lives on the
+ * `PAGES` entry itself (`lastmod`); this table is the fallback for an entry
+ * that has none.
  *
  * `lastmod` used to be the build date, so every deploy told Google that all
  * 32 static pages had just changed — which teaches it to ignore the field.
- * The real date is the newer of this table and the newest CMS item the page
- * lists, so a new blog post updates /blog's date and nothing else's.
+ * The real date is the newer of the page's own date and the newest CMS item
+ * it lists, so a new blog post updates /blog's date and nothing else's.
  */
 export const PAGE_LASTMOD: Record<string, string> = {
   home: "2026-09-25",
@@ -56,8 +58,17 @@ export function itemsFor(ctx: BuildContext, key: string): ArticleLike[] {
 
 export const day = (iso: string | undefined) => (iso || "").slice(0, 10);
 
+/** The pages that state the company's identity and contact details. */
+const IDENTITY_PAGES = new Set(["home", "about", "contact"]);
+
 export function lastmodFor(ctx: BuildContext, key: string): string {
-  const dates = [PAGE_LASTMOD[key] ?? "2026-09-01", ...itemsFor(ctx, key).map((i) => day(i.updatedAt || i.createdAt))];
+  const dates = [
+    ctx.pages[key]?.lastmod ?? PAGE_LASTMOD[key] ?? "2026-09-01",
+    ...itemsFor(ctx, key).map((i) => day(i.updatedAt || i.createdAt)),
+    // A brand, contact or social edit in the dashboard changes what these
+    // pages say; without its date IndexNow would resubmit nothing.
+    ...(IDENTITY_PAGES.has(key) ? [day(ctx.settings?.updatedAt)] : []),
+  ];
   return dates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().at(-1)!;
 }
 

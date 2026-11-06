@@ -9,7 +9,7 @@
  * This file is the entry point (`runSeoBuild`, called from `vite.config.ts`);
  * the work itself lives in `build/seo/`, one module per artifact: `fetch`
  * (CMS reads with retries), `prerender` + `assets` + `head` (per-page HTML),
- * `sitemap`, `feeds`, `robots` and `llms`.
+ * `sitemap`, `feeds`, `robots`, `llms` and `markdown` (the pages' `.md` twins).
  */
 
 // First: primes the shared translator with every dictionary.
@@ -37,7 +37,8 @@ import { itemEntries, prerenderPages } from "./seo/prerender.ts";
 import { writeSitemap } from "./seo/sitemap.ts";
 import { writeFeeds } from "./seo/feeds.ts";
 import { writeRobots } from "./seo/robots.ts";
-import { writeLlmsTxt, writeSeoDefaults } from "./seo/llms.ts";
+import { LLMS_FULL_MAX_BYTES, writeLlmsFull, writeLlmsTxt, writeSeoDefaults } from "./seo/llms.ts";
+import { writeMarkdownTwins } from "./seo/markdown.ts";
 
 export { ARABIC_FONT_URL, DISPLAY_FONT_URL, checkArabicFont, checkDisplayFont } from "./seo/head.ts";
 export { SeoFetchError, enabledLangs, fetchSeoOverrides, fetchSettings } from "./seo/fetch.ts";
@@ -47,7 +48,8 @@ export { prerenderPages, type PrerenderResult } from "./seo/prerender.ts";
 export { writeSitemap } from "./seo/sitemap.ts";
 export { writeFeeds } from "./seo/feeds.ts";
 export { writeRobots } from "./seo/robots.ts";
-export { writeLlmsTxt, writeSeoDefaults } from "./seo/llms.ts";
+export { writeLlmsFull, writeLlmsTxt, writeSeoDefaults } from "./seo/llms.ts";
+export { writeMarkdownTwins } from "./seo/markdown.ts";
 
 export interface SeoBuildResult {
   summary: string;
@@ -56,8 +58,8 @@ export interface SeoBuildResult {
 
 /**
  * The whole post-build pass: fetch what the CMS holds, then write every
- * prerendered page, the sitemap, the feeds, robots.txt and llms.txt from that
- * one snapshot. Throws `SeoFetchError` when the API cannot be read at all —
+ * prerendered page, the sitemap, the feeds, robots.txt, llms.txt, llms-full.txt
+ * and the Markdown twins from that one snapshot. Throws `SeoFetchError` when the API cannot be read at all —
  * the build must fail rather than ship a site that has forgotten its content.
  */
 export async function runSeoBuild(input: {
@@ -158,12 +160,20 @@ export async function runSeoBuild(input: {
   const feeds = await writeFeeds(dist, origin, ctx);
   await writeRobots(dist, origin);
   await writeLlmsTxt(dist, origin, ctx);
+  const twins = await writeMarkdownTwins(dist, origin, ctx);
+  const full = await writeLlmsFull(dist, origin, ctx);
+  if (full.dropped) {
+    warnings.push(
+      `llms-full.txt reached ${Math.round(LLMS_FULL_MAX_BYTES / 1024 / 1024)} MB; the last ${full.dropped} page(s) were left out (their .md twins still exist)`,
+    );
+  }
   await writeSeoDefaults(dist, ctx);
   await writeIndexNowKey(dist);
 
   return {
     summary:
-      `SEO: ${prerendered}, sitemap.xml with ${urls} URLs, ${feeds} feed(s), robots.txt + llms.txt` +
+      `SEO: ${prerendered}, sitemap.xml with ${urls} URLs, ${feeds} feed(s), robots.txt + llms.txt + ` +
+      `llms-full.txt (${full.pages} pages, ${Math.round(full.bytes / 1024)} kB) + ${twins} Markdown twins` +
       `${ctx.overrides ? `, ${ctx.overrides} dashboard override(s)` : ""} (origin ${origin})`,
     warnings,
   };

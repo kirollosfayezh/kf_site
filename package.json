@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node build/verify-seo.mjs",
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "test": "vitest run",
@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "serve:dist": "node build/vercel-like.mjs",
     "og:image": "bash build/make-og-image.sh",
-    "verify:prerender": "node build/verify-prerender.mjs"
+    "verify:prerender": "node build/verify-prerender.mjs",
+    "verify:seo": "node build/verify-seo.mjs"
   },
   "dependencies": {
     "countries-and-timezones": "^3.10.0",

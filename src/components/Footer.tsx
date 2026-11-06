@@ -4,13 +4,15 @@ import { reopenConsent } from "../lib/pixels";
 import { useI18n } from "../lib/i18n";
 import { useContactInfo, useSettings } from "../lib/settings";
 import { resolveSocial, type SocialKey } from "../lib/contact";
+import { COPYRIGHT_KEY } from "../lib/brand-copy";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import { SocialIcon, type SocialName } from "./SocialIcon";
 import { NewsletterForm } from "./NewsletterForm";
 import styles from "./Footer.module.css";
 
-/** Settings keys → the icon set's names. */
-const ICON: Record<SocialKey, SocialName> = {
+/** Settings keys → the icon set's names, which are also the networks' own
+ *  spelling (About lists the same profiles as text). */
+export const SOCIAL_NAME: Record<SocialKey, SocialName> = {
   facebook: "Facebook",
   instagram: "Instagram",
   linkedin: "LinkedIn",
@@ -21,13 +23,11 @@ const ICON: Record<SocialKey, SocialName> = {
 };
 
 /**
- * The dictionary keys the whole copyright line, year included, because that is
- * the exact string the design export translated. Keeping the year dynamic and
- * substituting it into the translated string gives both: a correct year and a
- * translated line. An untranslated year still falls back to the English key.
+ * The dictionary keys the whole copyright line, years included. Keeping the
+ * current year dynamic and substituting it into the translated string gives
+ * both: a correct year and a translated line. The first "2026" is the end of
+ * the range — the founding year stays put.
  */
-const COPYRIGHT_KEY = "© 2026 KF Tech Solutions. All rights reserved.";
-
 function copyright(t: (k: string) => string, year: number): string {
   return t(COPYRIGHT_KEY).replace("2026", String(year));
 }
@@ -67,6 +67,10 @@ export function Footer() {
             <p className={styles.desc}>
               {t("Turning ideas into real, working products. Custom software, web, mobile and business systems — built in Cairo, delivered worldwide.")}
             </p>
+            {/* Who and where, with the one official domain, on every page. */}
+            <p className={styles.brandMeta}>
+              {t("Custom software studio · Cairo, Egypt")} · <Link to="/" dir="ltr">kftechsolutions.dev</Link>
+            </p>
             <div className={styles.social}>
               {social.map((s) => (
                 <a
@@ -74,12 +78,12 @@ export function Footer() {
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={ICON[s.key]}
-                  title={ICON[s.key]}
+                  aria-label={SOCIAL_NAME[s.key]}
+                  title={SOCIAL_NAME[s.key]}
                   data-track={`footer.social.${s.key}`}
                   className={styles.socialBtn}
                 >
-                  <SocialIcon name={ICON[s.key]} />
+                  <SocialIcon name={SOCIAL_NAME[s.key]} />
                 </a>
               ))}
             </div>

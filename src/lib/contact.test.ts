@@ -42,3 +42,30 @@ describe("resolveSocial", () => {
     expect(identityFromSettings(null).email).toBe(DEFAULT_CONTACT.email);
   });
 });
+
+describe("identityFromSettings", () => {
+  it("forwards every brand field, the founder's profiles under the Person's name for them", () => {
+    const brand = {
+      alternateNames: { en: ["KFT"], ar: ["كي إف تك"], de: [], fr: [] },
+      foundingDate: "2020",
+      founderProfiles: ["https://github.com/someone"],
+      profiles: ["https://clutch.co/profile/kf"],
+      notAffiliatedWith: [{ name: "Other KF", url: "https://other.test" }],
+    };
+    const settings = { contact: {}, social: {}, brand } as Pick<SiteSettings, "contact" | "social" | "brand"> as SiteSettings;
+    expect(identityFromSettings(settings)).toMatchObject({
+      alternateNames: brand.alternateNames,
+      foundingDate: "2020",
+      founderSameAs: brand.founderProfiles,
+      profiles: brand.profiles,
+      notAffiliatedWith: brand.notAffiliatedWith,
+    });
+  });
+
+  it("leaves the brand fields undefined without settings, so each falls back on its own", () => {
+    const id = identityFromSettings(null);
+    for (const key of ["alternateNames", "foundingDate", "founderSameAs", "profiles", "notAffiliatedWith"] as const) {
+      expect(id[key]).toBeUndefined();
+    }
+  });
+});

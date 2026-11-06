@@ -6,6 +6,8 @@
  * so they all fall back to this copy. Anything the dashboard publishes wins.
  */
 
+import { BRAND_FAQS } from "./brand-copy.ts";
+
 export interface FallbackCard {
   key: string;
   title: string;
@@ -58,11 +60,41 @@ export const FALLBACK_PROJECTS: FallbackCard[] = [
   { key: "iot-dashboard", tag: "IoT System", title: "Connected Devices Dashboard", desc: "Live telemetry and control for sensors and physical devices.", img: "https://images.unsplash.com/photo-1707733260992-73ff6dbed163" + U, alt: "Phone connected to smart light bulbs" , points: ["IoT", "Python", "Cloudflare"], result: "Sample layout" },
 ];
 
+/**
+ * The /about "why" and "process" cards, used when the CMS has no
+ * `aboutSections` tagged `why` / `process`. Shared with the page's Markdown
+ * twin, which has to say what the page says.
+ */
+export const FALLBACK_WHY = [
+  { title: "Built For Your Business", desc: "Every solution is customized around your workflow." },
+  { title: "Clean & Maintainable", desc: "Code structured for long-term development." },
+  { title: "Performance First", desc: "Fast websites and efficient applications." },
+  { title: "Scalable Architecture", desc: "Systems designed to grow with you." },
+  { title: "Clear Communication", desc: "You always know what is being built and why." },
+  { title: "Long-Term Partnership", desc: "Support does not stop when the project launches." },
+];
+
+export const FALLBACK_STEPS = [
+  { n: "01", title: "Discover", desc: "Understand the business, users and requirements." },
+  { n: "02", title: "Plan", desc: "Define architecture, features and user experience." },
+  { n: "03", title: "Design", desc: "Create the interface and the product experience." },
+  { n: "04", title: "Build", desc: "Develop, integrate and thoroughly test the product." },
+  { n: "05", title: "Launch", desc: "Deploy, monitor and continuously improve." },
+];
+
+/**
+ * The one FAQ list for /, /contact and their prerendered FAQPage. Contact used
+ * to keep its own fuller copy, so the build's structured data and the page a
+ * visitor saw answered the same questions differently.
+ */
 export const FALLBACK_FAQS = [
-  { q: "How much does custom software development cost?", a: "It depends on scope and complexity. After a short discovery call we give you a clear, itemized estimate — no vague packages." },
-  { q: "How long does it take to build a website?", a: "A focused marketing website typically takes 2–4 weeks. Web applications and custom systems run longer depending on features." },
-  { q: "Do you build software for businesses in Egypt?", a: "Yes. We are based in Cairo and work with businesses across Egypt and internationally." },
-  { q: "Can you build a custom POS system?", a: "Absolutely. POS, inventory, kitchen displays and management dashboards are a core specialty." },
+  { q: "How much does custom software development cost?", a: "It depends on scope and complexity. After a short discovery call we give you a clear, itemized estimate — no vague packages. Small projects start low; larger systems are quoted per feature set." },
+  { q: "How long does it take to build a website?", a: "A focused marketing website typically takes 2–4 weeks. Web applications and custom systems run longer depending on features. We share a realistic timeline before we start." },
+  { q: "Do you build software for businesses in Egypt?", a: "Yes. We are based in Cairo and work with businesses across Egypt and internationally, both remotely and on-site where needed." },
+  { q: "Can you build a custom POS system?", a: "Absolutely. POS, inventory, kitchen displays and management dashboards are a core specialty — built around how your business actually operates." },
+  { q: "Do you develop mobile applications?", a: "Yes — modern cross-platform apps for iOS and Android, connected to secure backends and real-time data." },
   { q: "Can you maintain an existing website or software?", a: "Yes. We can audit, fix, extend and maintain existing projects, or take over a codebase from a previous team." },
   { q: "Can you integrate APIs and payment gateways?", a: "Yes. We integrate payment gateways, third-party APIs, messaging, maps and analytics as part of most projects." },
+  { q: "Do you provide hosting and deployment?", a: "Yes. We handle deployment, hosting setup and monitoring, and can manage everything for you after launch." },
+  ...BRAND_FAQS,
 ];

@@ -1,4 +1,5 @@
 import type { SiteSettings } from "../services/api-types.ts";
+import type { SiteIdentityInput } from "./seo/site.ts";
 
 /**
  * Contact details and social profiles, resolved from site settings.
@@ -72,16 +73,24 @@ export function whatsappDigits(value: string): string {
   return value.replace(/\D+/g, "");
 }
 
-/** What the Organization schema needs, from settings. */
-export function identityFromSettings(settings: SiteSettings | null | undefined): {
-  phone: string;
-  email: string;
-  sameAs: string[];
-} {
+/**
+ * What the Organization schema needs, from settings. The brand block is
+ * forwarded field by field and left undefined when absent, so `setSiteIdentity`
+ * falls back per field rather than treating an old settings document as
+ * "no aliases". `settings.social.github` stays the company's organisation;
+ * the founder's own GitHub lives in `founderProfiles` only.
+ */
+export function identityFromSettings(settings: SiteSettings | null | undefined): SiteIdentityInput {
   const contact = resolveContact(settings?.contact);
+  const brand = settings?.brand;
   return {
     phone: contact.phone,
     email: contact.email,
     sameAs: resolveSocial(settings?.social).map((s) => s.href),
+    alternateNames: brand?.alternateNames,
+    foundingDate: brand?.foundingDate,
+    founderSameAs: brand?.founderProfiles,
+    profiles: brand?.profiles,
+    notAffiliatedWith: brand?.notAffiliatedWith,
   };
 }

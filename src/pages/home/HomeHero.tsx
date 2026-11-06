@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useI18n } from "../../lib/i18n";
+import { HERO_LEDE } from "../../lib/brand-copy";
 import h from "../Home.module.css";
 import { HomeHeroVideo } from "./HomeHeroVideo";
 
@@ -45,9 +46,9 @@ export function HomeHero() {
             {t("OPEN FOR NEW PROJECTS")} <span aria-hidden="true">—</span> {t("WORLDWIDE")}
           </span>
           <h1 className={h.heroTitle}>{heroHeadline(t)}</h1>
-          <p className={h.heroLede}>
-            {t("Websites, admin dashboards, iOS & Android apps and business systems — built around how your business actually runs, and supported after launch.")}
-          </p>
+          {/* The brand names itself in the first line under the h1, in every
+              language: the headline sells the service, this says who sells it. */}
+          <p className={h.heroLede}>{t(HERO_LEDE)}</p>
           <div className={h.heroActions}>
             <Link to="/contact" data-track="hero.start-project" className="btn btn-primary">
               {t("Start a project")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>

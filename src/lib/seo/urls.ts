@@ -53,3 +53,13 @@ export function languageAlternates(origin: string, path: string, langs: readonly
     { hreflang: "x-default", href: absolute(origin, path) },
   ];
 }
+
+/**
+ * Where a page's Markdown twin lives, per llmstxt.org: the page's URL with
+ * `.md` appended, and `index.md` for a URL that ends at a directory —
+ * `/about` → `/about.md`, `/` → `/index.md`, `/ar` → `/ar/index.md`.
+ */
+export function markdownPath(lang: Lang, path: string): string {
+  const url = localePath(lang, path);
+  return url === "/" || url === `/${lang}` ? `${url.replace(/\/$/, "")}/index.md` : `${url}.md`;
+}

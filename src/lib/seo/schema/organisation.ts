@@ -1,6 +1,6 @@
 import { LANGS, type Lang } from "../../langs.ts";
-import { PAGES } from "../pages.ts";
-import { OG_IMAGE, SITE, siteIdentity } from "../site.ts";
+import { OG_IMAGE, SITE, allAlternateNames, disambiguation, siteIdentity } from "../site.ts";
+import { tr } from "../text.ts";
 import { LANGUAGE_NAMES, absolute } from "../urls.ts";
 
 /**
@@ -62,45 +62,45 @@ export const KNOWS_ABOUT = [
 /**
  * One organisation node, anchored by `@id`, that every other node references.
  *
- * It used to declare `["Organization", "LocalBusiness", "ProfessionalService"]`.
- * Three problems with that:
+ * `["Organization", "LocalBusiness"]` is deliberate: "software company in
+ * Cairo" searches and the Business Profile tie the site to a place, and
+ * `LocalBusiness` is the type that carries one. Locality only — no street
+ * address is claimed, because none is public. `ProfessionalService`, which
+ * the node once listed too, is deprecated by schema.org itself.
  *
- * - **`ProfessionalService` is deprecated by schema.org itself**, for being
- *   confused with `Service`.
- * - `LocalBusiness` is a *subtype* of `Organization`, so listing both as
- *   siblings said nothing extra — and `LocalBusiness` **requires** a real
- *   `PostalAddress`. The studio has no public premises, so claiming it was
- *   simply untrue.
- * - A storefront type invites a local-pack reading of a business that works
- *   remotely for clients worldwide.
+ * `areaServed` carries the geography beyond Cairo. It is *not* in Google's
+ * supported-properties list, so it is an entity/AI-retrieval signal rather
+ * than anything that shows in search.
  *
- * Plain `Organization` is the honest, valid type. `areaServed` carries the
- * geography instead — note it is *not* in Google's supported-properties list, so
- * it is an entity/AI-retrieval signal rather than anything that shows in search.
+ * Every fact here that could tell this company from a namesake — the aliases,
+ * the description, the founder, the year, the city, the size, the industry
+ * codes, the "not affiliated" sentence — is stated so a knowledge graph reading
+ * only this node can separate the two. No `legalName`: it is unconfirmed, and
+ * a guessed one is worse than none.
  *
  * `aggregateRating` is deliberately absent and must stay absent: review markup
  * about yourself, on your own site, is ineligible for star treatment and risks a
  * manual action. Ratings belong on Clutch and G2, whose pages carry them
  * legitimately.
  */
-export function organisationSchema(origin: string, siteLangs: readonly Lang[] = LANGS) {
-  const { email, phone, sameAs } = siteIdentity();
+export function organisationSchema(origin: string, lang: Lang = "en", siteLangs: readonly Lang[] = LANGS) {
+  const { email, phone, sameAs, foundingDate } = siteIdentity();
   const languages = siteLangs.map((l) => LANGUAGE_NAMES[l]);
   return {
     "@context": "https://schema.org",
-    // Also a LocalBusiness, so "software company in Cairo" style searches and
-    // the Business Profile can tie the site to a place. Locality only: no
-    // street address is claimed, because none is public.
     "@type": ["Organization", "LocalBusiness"],
     "@id": `${origin}/#organization`,
     name: SITE.name,
-    alternateName: [...SITE.alternateName],
+    // Every language's aliases on every page: the Arabic form has to resolve
+    // to this entity whichever page a crawler reads it from.
+    alternateName: allAlternateNames(),
     url: `${origin}/`,
     // Google wants the logo as an ImageObject with its real dimensions; the
     // 512 icon is square, which is the one shape it never crops.
     logo: { "@type": "ImageObject", url: absolute(origin, SITE.logo), width: 512, height: 512 },
     image: absolute(origin, OG_IMAGE),
-    description: PAGES.home.desc,
+    description: tr(SITE.description, lang),
+    slogan: tr(SITE.slogan, lang),
     email,
     telephone: phone,
     // The sales contact point is what "contact this business" answers use;
@@ -115,7 +115,21 @@ export function organisationSchema(origin: string, siteLangs: readonly Lang[] = 
         areaServed: AREA_SERVED,
       },
     ],
-    founder: { "@type": "Person", name: SITE.founder, jobTitle: "Founder & Lead Developer" },
+    founder: founderSchema(origin, lang),
+    foundingDate,
+    foundingLocation: {
+      "@type": "Place",
+      address: { "@type": "PostalAddress", addressLocality: SITE.city, addressCountry: SITE.country },
+    },
+    numberOfEmployees: {
+      "@type": "QuantitativeValue",
+      minValue: SITE.numberOfEmployees.min,
+      maxValue: SITE.numberOfEmployees.max,
+    },
+    naics: SITE.naics,
+    isicV4: SITE.isicV4,
+    // Schema.org's own field for "not the other company with this name".
+    disambiguatingDescription: disambiguation(origin),
     // Locality only — no street address is claimed, because none is public.
     address: {
       "@type": "PostalAddress",
@@ -130,20 +144,57 @@ export function organisationSchema(origin: string, siteLangs: readonly Lang[] = 
     // Schema.org has no "worldwide" enum, so those are named, with a catch-all Place.
     areaServed: [{ "@type": "City", name: "Cairo" }, { "@type": "City", name: "Giza" }, ...AREA_SERVED],
     availableLanguage: languages,
-    sameAs: [...new Set([...sameAs, ...SITE.extraSameAs])],
+    sameAs,
     knowsAbout: KNOWS_ABOUT,
   };
 }
 
-export function websiteSchema(origin: string, siteLangs: readonly Lang[] = LANGS) {
+/** What the founder personally works on — a subset of the company's list. */
+const FOUNDER_KNOWS_ABOUT = new Set([
+  "Custom software development",
+  "Web development",
+  "Mobile app development",
+  "POS systems",
+  "AI automation",
+  "API and backend engineering",
+  "System integration",
+]);
+
+/**
+ * The founder as their own entity, with one stable `@id` that article authors
+ * reference. Their sameAs is personal (GitHub), never the company's profiles,
+ * so a knowledge graph keeps the person and the brand as two linked things.
+ * The description is the article byline, so the two can never disagree.
+ */
+export function founderSchema(origin: string, lang: Lang = "en") {
+  return {
+    "@type": "Person",
+    "@id": `${origin}/about#founder`,
+    name: SITE.founder,
+    alternateName: [...SITE.founderAlternateName],
+    jobTitle: "Founder & Lead Developer",
+    description: `${tr("Founder, KF Tech Solutions", lang)} · ${tr("Builds POS, web and automation systems for businesses in Egypt and abroad.", lang)}`,
+    url: `${origin}/about`,
+    image: absolute(origin, "/founder.jpg"),
+    sameAs: siteIdentity().founderSameAs,
+    knowsAbout: KNOWS_ABOUT.filter((k) => FOUNDER_KNOWS_ABOUT.has(k)),
+    worksFor: { "@id": `${origin}/#organization` },
+  };
+}
+
+export function websiteSchema(origin: string, siteLangs: readonly Lang[] = LANGS, lang: Lang = "en") {
+  const { alternateNames } = siteIdentity();
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": `${origin}/#website`,
     url: `${origin}/`,
     name: SITE.name,
-    // Google's site-name feature reads WebSite.alternateName.
-    alternateName: [...SITE.alternateName],
+    // Google's site-name feature reads WebSite.alternateName, so this one is
+    // per page: the Latin forms everywhere, this language's own on top. An
+    // Arabic alias on the English page would be an Arabic site name in Latin
+    // results.
+    alternateName: [...new Set([...alternateNames.en, ...alternateNames[lang]])],
     publisher: { "@id": `${origin}/#organization` },
     inLanguage: [...siteLangs],
   };

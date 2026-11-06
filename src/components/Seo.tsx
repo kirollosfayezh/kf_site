@@ -17,6 +17,7 @@ import {
   type SeoOptions,
   type SeoOverride,
   type SeoTag,
+  type SiteIdentityInput,
 } from "../lib/seo";
 
 interface SeoContextValue {
@@ -29,9 +30,18 @@ interface SeoContextValue {
   pages: Record<string, PageSeo>;
   /** The X handle from site settings, for `twitter:site`. */
   twitterSite?: string;
+  /**
+   * The brand facts from site settings (phone, profiles, aliases…) that the
+   * Organization node carries, so the schema and the footer can never
+   * disagree. Applied by `useSeo` right before it writes the head: it used to
+   * be set in a parent effect, which runs *after* the child's — so the first
+   * apply after hydration shipped the compiled defaults, and nothing re-ran
+   * once the real values were in.
+   */
+  identity: SiteIdentityInput;
 }
 
-const SeoContext = createContext<SeoContextValue>({ pages: PAGES });
+const SeoContext = createContext<SeoContextValue>({ pages: PAGES, identity: identityFromSettings(null) });
 
 export function SeoProvider({ settings, children }: { settings: SiteSettings | null; children: ReactNode }) {
   const [overrides, setOverrides] = useState<SeoOverride[] | null>(null);
@@ -52,13 +62,8 @@ export function SeoProvider({ settings, children }: { settings: SiteSettings | n
 
   const pages = useMemo(() => mergeSeoOverrides(overrides), [overrides]);
   const twitterSite = settings?.social?.x?.trim() || undefined;
-  const value = useMemo<SeoContextValue>(() => ({ pages, twitterSite }), [pages, twitterSite]);
-
-  // The Organization node carries the phone, email and profiles an editor set
-  // in the dashboard, so the schema and the footer can never disagree.
-  useEffect(() => {
-    setSiteIdentity(identityFromSettings(settings));
-  }, [settings]);
+  const identity = useMemo(() => identityFromSettings(settings), [settings]);
+  const value = useMemo<SeoContextValue>(() => ({ pages, twitterSite, identity }), [pages, twitterSite, identity]);
 
   return <SeoContext.Provider value={value}>{children}</SeoContext.Provider>;
 }
@@ -131,15 +136,16 @@ export function applySeo(page: PageSeo, lang: Lang, origin = SITE_ORIGIN, opts: 
  */
 export function useSeo(page: PageSeo | null) {
   const { lang, dictReady, available } = useI18n();
-  const { twitterSite } = useSeoContext();
+  const { twitterSite, identity } = useSeoContext();
 
   useEffect(() => {
     // Waiting on the dictionary matters: the prerendered HTML already carries
     // the translated title, and applying tags before the translations land
     // would overwrite it with the English key.
     if (!page || !dictReady) return;
+    setSiteIdentity(identity);
     applySeo(page, lang, SITE_ORIGIN, { siteLangs: available, twitterSite });
-  }, [page, lang, dictReady, available, twitterSite]);
+  }, [page, lang, dictReady, available, twitterSite, identity]);
 }
 
 /**

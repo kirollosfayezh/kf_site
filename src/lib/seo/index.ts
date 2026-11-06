@@ -32,13 +32,26 @@
 
 export type { Lang } from "../langs.ts";
 export type { ArticleLike, PageSeo } from "./types.ts";
-export { OG_IMAGE, OG_IMAGE_ALT, SITE, SITE_ORIGIN, setSiteIdentity, siteIdentity, type SiteIdentity } from "./site.ts";
+export {
+  OG_IMAGE,
+  OG_IMAGE_ALT,
+  SITE,
+  SITE_ORIGIN,
+  allAlternateNames,
+  disambiguation,
+  resetSiteIdentity,
+  setSiteIdentity,
+  siteIdentity,
+  type SiteIdentity,
+  type SiteIdentityInput,
+} from "./site.ts";
 export { INDEXABLE_PAGES, PAGES, PRERENDER_PAGES, pageForPath, pageForPathIn } from "./pages.ts";
-export { LOCALES, absolute, languageAlternates, localePath } from "./urls.ts";
+export { LOCALES, absolute, languageAlternates, localePath, markdownPath } from "./urls.ts";
 export { fitDesc, fitTitle, resolveDesc, resolveTitle } from "./text.ts";
-export { KNOWS_ABOUT, organisationSchema, websiteSchema } from "./schema/organisation.ts";
+export { KNOWS_ABOUT, founderSchema, organisationSchema, websiteSchema } from "./schema/organisation.ts";
 export { SERVICES, serviceCatalogSchema, servicePath, serviceSchemas } from "./schema/services.ts";
 export { articleSchema, breadcrumbSchema, faqSchema } from "./schema/page.ts";
+export { webPageSchema } from "./schema/webpage.ts";
 export { articlePageSeo, availableLangs, legalPageSeo, projectPageSeo, projectSchema } from "./cms.ts";
 export { serviceHeadline, serviceLangs, serviceLede, servicePageSeo } from "./service-page.ts";
 export { seoTags, tagsToHtml, type SeoOptions, type SeoTag } from "./tags.ts";

@@ -2,6 +2,7 @@ import { LANGS, type Lang } from "../langs.ts";
 import { ogImageUrl } from "../images.ts";
 import { PAGES } from "./pages.ts";
 import { imageObject } from "./schema/page.ts";
+import { SITE } from "./site.ts";
 import { localized, tr } from "./text.ts";
 import type { ArticleLike, PageSeo } from "./types.ts";
 
@@ -37,7 +38,7 @@ export function itemImage(item: ArticleLike, lang: Lang): Pick<PageSeo, "image" 
 export function articlePageSeo(post: ArticleLike, lang: Lang, siteLangs: readonly Lang[] = LANGS): PageSeo {
   const title = localized(post.title, lang);
   const summary = localized(post.summary, lang);
-  const brand = PAGES.home.title.split(" — ")[0];
+  const brand = SITE.name;
   // `tag`, not `category`. The seeder writes `meta.tag`; `meta.category` was a
   // leftover from the design export's field name and always read `undefined`,
   // so every article shipped without an `articleSection`.
@@ -73,7 +74,7 @@ export function articlePageSeo(post: ArticleLike, lang: Lang, siteLangs: readonl
 export function projectPageSeo(item: ArticleLike, lang: Lang, siteLangs: readonly Lang[] = LANGS): PageSeo {
   const title = localized(item.title, lang);
   const summary = localized(item.summary, lang);
-  const brand = PAGES.home.title.split(" — ")[0];
+  const brand = SITE.name;
   const tag = typeof item.meta?.tag === "string" ? item.meta.tag : undefined;
 
   return {
@@ -139,7 +140,7 @@ export function projectSchema(origin: string, item: ArticleLike, lang: Lang, url
  */
 export function legalPageSeo(doc: ArticleLike, lang: Lang, siteLangs: readonly Lang[] = LANGS): PageSeo {
   const title = localized(doc.title, lang);
-  const brand = PAGES.home.title.split(" — ")[0];
+  const brand = SITE.name;
   return {
     path: `/legal/${doc.slug || doc.id}`,
     title: `${title} | ${brand}`,

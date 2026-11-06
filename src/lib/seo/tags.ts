@@ -4,11 +4,12 @@ import { PAGES } from "./pages.ts";
 import { organisationSchema, websiteSchema } from "./schema/organisation.ts";
 import { articleSchema, breadcrumbSchema, faqSchema } from "./schema/page.ts";
 import { serviceCatalogSchema, serviceSchemas } from "./schema/services.ts";
+import { webPageSchema } from "./schema/webpage.ts";
 import { servicePageSchema } from "./service-page.ts";
 import { OG_IMAGE, OG_IMAGE_ALT, SITE } from "./site.ts";
 import { fitDesc, fitTitle, resolveDesc, resolveTitle, tr } from "./text.ts";
 import type { PageSeo } from "./types.ts";
-import { LOCALES, absolute, languageAlternates, localePath } from "./urls.ts";
+import { LOCALES, absolute, languageAlternates, localePath, markdownPath } from "./urls.ts";
 
 /**
  * The single source of truth for what a page's <head> contains.
@@ -71,6 +72,9 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   m("name", "description", desc);
   m("name", "keywords", tr(page.keywords, lang));
   m("name", "author", SITE.founder);
+  // The brand as browsers and crawlers read it off the page itself, apart
+  // from any title.
+  m("name", "application-name", SITE.name);
   m(
     "name",
     "robots",
@@ -88,6 +92,18 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
     languageAlternates(origin, page.path, available).forEach((a) =>
       tags.push({ kind: "link", rel: "alternate", href: a.href, hreflang: a.hreflang }),
     );
+  }
+
+  // The same page as plain Markdown (build/seo/markdown.ts writes one for
+  // every indexable page), for assistants that fetch a page on a user's
+  // behalf and read text far better than a React bundle.
+  if (origin && !page.noindex && page.path !== PAGES.notFound.path && page.path !== PAGES.quote.path) {
+    tags.push({
+      kind: "link",
+      rel: "alternate",
+      type: "text/markdown",
+      href: absolute(origin, markdownPath(available.includes(lang) ? lang : "en", page.path)),
+    });
   }
 
   // The feed for this language, on the blog index and every article — the
@@ -133,8 +149,13 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
 
   if (!origin) return tags;
 
-  tags.push({ kind: "jsonld", data: organisationSchema(origin, siteLangs) });
-  tags.push({ kind: "jsonld", data: websiteSchema(origin, siteLangs) });
+  tags.push({ kind: "jsonld", data: organisationSchema(origin, lang, siteLangs) });
+  tags.push({ kind: "jsonld", data: websiteSchema(origin, siteLangs, lang) });
+  // The page's own node — except where there is no page to describe: /404 is
+  // a 404 and /q is a private shell.
+  if (page.path !== PAGES.notFound.path && page.path !== PAGES.quote.path) {
+    tags.push({ kind: "jsonld", data: webPageSchema(origin, page, lang, url, title, desc, available) });
+  }
   // No trail on the homepage: a single "Home" crumb is noise.
   if (page.path !== PAGES.home.path && !page.noindex) {
     tags.push({ kind: "jsonld", data: breadcrumbSchema(origin, page, lang, available) });

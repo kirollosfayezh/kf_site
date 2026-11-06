@@ -22,6 +22,12 @@ export interface PageSeo {
   crumb?: string;
   published?: string;
   modified?: string;
+  /**
+   * When a static page's copy last changed (`YYYY-MM-DD`), bumped by hand
+   * when it does. The sitemap's `lastmod` and the WebPage's `dateModified`
+   * both read it; a build date here would teach Google to ignore the field.
+   */
+  lastmod?: string;
   section?: string;
   /** FAQ items rendered on the page, emitted as `FAQPage` alongside the rest
    *  of the graph. Set per language by the build; the runtime uses `useFaqSchema`. */

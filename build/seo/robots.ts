@@ -49,11 +49,21 @@ export async function writeRobots(distDir: string, origin: string): Promise<void
   // client-side shell, on the other hand, have nothing to index and every
   // reason not to be crawled.
   const disallow = ["/q/", ...LANGS.filter((l) => l !== "en").map((l) => `/${l}/q/`), "/article-shell.html"];
-  const txt = `User-agent: *
-Allow: /
-${disallow.map((p) => `Disallow: ${p}`).join("\n")}
+  // The same rules under every group. A crawler obeys only the most specific
+  // group that names it (RFC 9309), so an AI group with just `Allow: /` was
+  // an invitation to crawl the private quotes the `*` group hid.
+  // `Content-Signal` is Cloudflare's robots.txt extension: a positive "use
+  // this site in search and AI answers" that the AI groups otherwise only imply.
+  const rules = [
+    "Allow: /",
+    ...disallow.map((p) => `Disallow: ${p}`),
+    "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
+  ].join("\n");
+  const txt = `# Content-Signal: see https://contentsignals.org
+User-agent: *
+${rules}
 
-${AI_CRAWLERS.map((ua) => `User-agent: ${ua}\nAllow: /`).join("\n\n")}
+${AI_CRAWLERS.map((ua) => `User-agent: ${ua}\n${rules}`).join("\n\n")}
 
 Sitemap: ${origin}/sitemap.xml
 `;

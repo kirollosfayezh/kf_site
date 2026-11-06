@@ -6,30 +6,39 @@ import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
 import { Testimonials } from "../components/Testimonials";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
+import { FALLBACK_STEPS as STEPS, FALLBACK_WHY as WHY } from "../lib/fallback-content";
+import { useSettings } from "../lib/settings";
+import { resolveSocial } from "../lib/contact";
+import { ABOUT_IDENTITY as ID } from "../lib/brand-copy";
+import { SITE } from "../lib/seo";
+import { SOCIAL_NAME } from "../components/Footer";
 import s from "../styles/sections.module.css";
 
 
-const WHY = [
-  { title: "Built For Your Business", desc: "Every solution is customized around your workflow." },
-  { title: "Clean & Maintainable", desc: "Code structured for long-term development." },
-  { title: "Performance First", desc: "Fast websites and efficient applications." },
-  { title: "Scalable Architecture", desc: "Systems designed to grow with you." },
-  { title: "Clear Communication", desc: "You always know what is being built and why." },
-  { title: "Long-Term Partnership", desc: "Support does not stop when the project launches." },
-];
-
-const STEPS = [
-  { n: "01", title: "Discover", desc: "Understand the business, users and requirements." },
-  { n: "02", title: "Plan", desc: "Define architecture, features and user experience." },
-  { n: "03", title: "Design", desc: "Create the interface and the product experience." },
-  { n: "04", title: "Build", desc: "Develop, integrate and thoroughly test the product." },
-  { n: "05", title: "Launch", desc: "Deploy, monitor and continuously improve." },
-];
+/**
+ * The brand never breaks across lines: in the Arabic heading the browser
+ * split it as "KF / Tech Solutions" at phone width. `dir="ltr"` keeps the
+ * Latin name's own order inside the right-to-left line.
+ */
+function keepBrandTogether(text: string) {
+  const at = text.indexOf("KF Tech Solutions");
+  if (at < 0) return text;
+  return (
+    <>
+      {text.slice(0, at)}
+      <span dir="ltr" style={{ whiteSpace: "nowrap" }}>KF Tech Solutions</span>
+      {text.slice(at + "KF Tech Solutions".length)}
+    </>
+  );
+}
 
 export function About() {
   const { t, lang } = useI18n();
   const waLink = useWhatsAppLink();
   const sections = useContentList("aboutSections");
+  // Settings are primed into the prerender, so the build and the browser list
+  // the same profiles.
+  const social = resolveSocial(useSettings()?.social);
 
   // `aboutSections` is the source for both blocks below, grouped by `meta.tag`.
   // It used to be rendered as a third, standalone list of prose blocks, which
@@ -61,7 +70,9 @@ export function About() {
             </p>
           </Reveal>
           {/* The founder portrait and workspace strip from the original export. */}
-          <Reveal className={s.portraitCol}>
+          {/* `#founder` is the Person node's @id: the article bylines and the
+              structured data land on the face it describes. */}
+          <Reveal className={s.portraitCol} id="founder">
             <div className={s.portraitGlow} aria-hidden="true" />
             <img
               className={s.portrait}
@@ -73,6 +84,67 @@ export function About() {
               decoding="async"
             />
             <div className={s.portraitCaption}>{t("Kirollos Fayez \u00B7 Founder")}</div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Which "KF Tech" this is, in words a reader and an assistant can both
+          quote: assistants were answering the brand with a same-named company.
+          Every Latin-only value gets its own direction, or an Arabic page
+          reorders "KF Tech · KFTech" and the domain's dots. */}
+      <section className={s.sectionAlt}>
+        <div className={s.section}>
+          <Reveal style={{ maxWidth: 760 }}>
+            <span className={s.eyebrow}>{t(ID.eyebrow)}</span>
+            <h2 className={s.h2sm}>{keepBrandTogether(t(ID.heading))}</h2>
+            <p className={s.lede}>{t(ID.intro)}</p>
+            <p className={s.lede}>{t(ID.notAffiliated)}</p>
+            <dl className={s.caseFacts}>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.fullName)}</dt>
+                <dd className={s.caseFactValue} dir="ltr">{SITE.name}</dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.alsoKnownAs)}</dt>
+                <dd className={s.caseFactValue} dir="auto">{t(ID.aliases)}</dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.founded)}</dt>
+                <dd className={s.caseFactValue}>2020</dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.founder)}</dt>
+                <dd className={s.caseFactValue}>
+                  {t(ID.founderName)} · {t(ID.founderRole)} ·{" "}
+                  <a href={SITE.founderSameAs[0]} target="_blank" rel="me noopener noreferrer" data-track="about.identity.founder-github">
+                    GitHub
+                  </a>
+                </dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.basedIn)}</dt>
+                <dd className={s.caseFactValue}>{t(ID.city)}</dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.website)}</dt>
+                <dd className={s.caseFactValue} dir="ltr">
+                  <Link to="/">kftechsolutions.dev</Link>
+                </dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.profiles)}</dt>
+                <dd className={s.caseFactValue}>
+                  {social.map((p, i) => (
+                    <span key={p.key}>
+                      {i > 0 && " · "}
+                      <a href={p.href} target="_blank" rel="noopener noreferrer" data-track={`about.identity.${p.key}`}>
+                        {SOCIAL_NAME[p.key]}
+                      </a>
+                    </span>
+                  ))}
+                </dd>
+              </div>
+            </dl>
           </Reveal>
         </div>
       </section>

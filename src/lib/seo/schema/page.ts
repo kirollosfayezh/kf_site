@@ -1,5 +1,5 @@
 import { LANGS, type Lang } from "../../langs.ts";
-import { OG_IMAGE, SITE, siteIdentity } from "../site.ts";
+import { OG_IMAGE, SITE } from "../site.ts";
 import { resolveDesc, resolveTitle, tr } from "../text.ts";
 import type { PageSeo } from "../types.ts";
 import { absolute, localePath } from "../urls.ts";
@@ -43,6 +43,8 @@ export function breadcrumbSchema(origin: string, page: PageSeo, lang: Lang, avai
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    // The page's WebPage node points here by id.
+    "@id": `${here(page.path)}#breadcrumb`,
     itemListElement: crumbs.map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
@@ -64,7 +66,8 @@ export function articleSchema(
   page: PageSeo & { path: string },
   lang: Lang,
 ) {
-  const url = absolute(origin, (page.langs ?? LANGS).includes(lang) ? localePath(lang, page.path) : page.path);
+  const available = page.langs ?? LANGS;
+  const url = absolute(origin, available.includes(lang) ? localePath(lang, page.path) : page.path);
   const tags = Array.isArray(page.item?.meta?.tags)
     ? (page.item!.meta!.tags as unknown[]).filter((x): x is string => typeof x === "string")
     : [];
@@ -79,8 +82,13 @@ export function articleSchema(
     dateModified: page.modified || page.published,
     articleSection: page.section,
     ...(tags.length ? { keywords: tags.join(", ") } : {}),
-    inLanguage: lang,
-    author: { "@type": "Person", name: SITE.founder, url: `${origin}/about`, sameAs: siteIdentity().sameAs },
+    // The language of the body served, which for an untranslated post read
+    // from a German URL is English — claiming `de` on English text is the
+    // mismatch hreflang audits flag.
+    inLanguage: available.includes(lang) ? lang : "en",
+    // The founder's node (organisation.ts), by id. It used to carry the
+    // company's social profiles as the person's sameAs, merging the two entities.
+    author: { "@type": "Person", "@id": `${origin}/about#founder`, name: SITE.founder, url: `${origin}/about` },
     publisher: { "@id": `${origin}/#organization` },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
   };

@@ -31,6 +31,7 @@ import {
   assetsFor,
 } from "./assets.ts";
 import type { BuildContext } from "./context.ts";
+import { lastmodFor } from "./sitemap.ts";
 import { ARABIC_FONT_PRELOAD, DISPLAY_FONT_PRELOAD, injectHead, stripStaticHead } from "./head.ts";
 
 /**
@@ -173,9 +174,20 @@ export function tagOptions(ctx: BuildContext): SeoOptions {
   return { siteLangs: ctx.langs, twitterSite: ctx.twitterSite };
 }
 
+/**
+ * One language of a CMS text, exactly as the page's `pick()` reads it —
+ * dictionary fallback included. It used to skip the dictionary, so a FAQ saved
+ * with only `en` went into the Arabic page's FAQPage in English while the
+ * accordion under it rendered the translation.
+ */
 export function localized(text: ArticleLike["title"], lang: Lang): string {
   if (!text) return "";
-  return text[lang] || text.en || text.ar || "";
+  const stored = text[lang];
+  if (stored?.trim()) return stored;
+  const english = (text.en || text.ar || "").trim();
+  // `pick()` itself is not importable here (extensionless imports), so its
+  // dictionary step is repeated: `translate` returns the key when it has none.
+  return lang !== "en" && english ? translate(english, lang) : english;
 }
 
 /**
@@ -190,12 +202,17 @@ export function faqItems(ctx: BuildContext, lang: Lang): { q: string; a: string 
   return FALLBACK_FAQS.map((f) => ({ q: translate(f.q, lang), a: translate(f.a, lang) }));
 }
 
-/** A page with the per-language extras only the build can fill in. */
-export function pageFor(ctx: BuildContext, page: PageSeo, lang: Lang): PageSeo {
+/**
+ * A page with the extras only the build can fill in: the FAQ in this language
+ * and the same `dateModified` the sitemap states — the WebPage node and the
+ * sitemap must never give Google two dates for one URL.
+ */
+export function pageFor(ctx: BuildContext, page: PageSeo, lang: Lang, key: string): PageSeo {
+  const full = { ...page, modified: lastmodFor(ctx, key) };
   if (page.path === PAGES.home.path || page.path === PAGES.contact.path) {
-    return { ...page, faq: faqItems(ctx, lang) };
+    return { ...full, faq: faqItems(ctx, lang) };
   }
-  return page;
+  return full;
 }
 
 /* --------------------------------------------------------------- writing */
@@ -261,7 +278,7 @@ export async function prerenderPages(
   const shell = injectHead(stripStaticHead(await readFile(join(distDir, "index.html"), "utf8")), bootScript(ctx.langs));
   const opts = tagOptions(ctx);
   // `/q` is the client quote page: private links, served by the SPA shell.
-  const prerenderable = Object.values(ctx.pages).filter((p) => p.path !== "/404" && p.path !== "/q");
+  const prerenderable = Object.entries(ctx.pages).filter(([, p]) => p.path !== "/404" && p.path !== "/q");
 
   // With the server bundle present every page gets a real body; without it
   // (a build that only wants the head, e.g. a quick local check) the files
@@ -285,10 +302,10 @@ export async function prerenderPages(
     // The lists this language's pages read, trimmed to what they can show.
     ssr?.primeContent(listsFor(ctx, lang));
 
-    for (const page of prerenderable) {
+    for (const [key, page] of prerenderable) {
       const moduleKey = ROUTE_MODULES[page.path];
       if (!moduleKey) throw new Error(`no page module is registered for ${page.path} (build/seo-build.ts ROUTE_MODULES)`);
-      const full = pageFor(ctx, page, lang);
+      const full = pageFor(ctx, page, lang, key);
       const body = await bodyFor(full, lang, moduleKey);
       await writePage(distDir, shell, full, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       pageCount++;
@@ -299,10 +316,13 @@ export async function prerenderPages(
     // JavaScript. One document per language the article is actually written
     // in, which for most is English alone. `availableLangs` reports that set,
     // so an Arabic post gets a real `/ar/blog/x` to index while an
-    // untranslated one does not claim a page it cannot serve.
+    // untranslated one does not claim a page it cannot serve. The post's FAQ
+    // section goes into the static head, as it does for services — it used
+    // to appear only once the page's own effect ran.
     for (const post of ctx.articles) {
       if (!availableLangs(post, ctx.langs).includes(lang)) continue;
-      const page = articlePageSeo(post, lang, ctx.langs);
+      const faq = extractFaq(localized(post.body, lang));
+      const page = { ...articlePageSeo(post, lang, ctx.langs), ...(faq.length ? { faq } : {}) };
       const body = await bodyFor(page, lang, ITEM_MODULES.article);
       await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       articleCount++;

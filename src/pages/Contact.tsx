@@ -4,6 +4,7 @@ import { useI18n } from "../lib/i18n";
 import { useFaqSchema } from "../components/Seo";
 import { pick } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
+import { FALLBACK_FAQS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
 import { useContactInfo } from "../lib/settings";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
@@ -15,17 +16,6 @@ import c from "./Contact.module.css";
 
 const PROJECT_TYPES = ["Custom software", "Website / web app", "Mobile application", "Business system / POS", "Automation / AI", "Other"];
 const BUDGETS = ["Under $2k", "$2k – $5k", "$5k – $15k", "$15k+", "Not sure yet"];
-
-const FALLBACK_FAQS = [
-  { q: "How much does custom software development cost?", a: "It depends on scope and complexity. After a short discovery call we give you a clear, itemized estimate — no vague packages. Small projects start low; larger systems are quoted per feature set." },
-  { q: "How long does it take to build a website?", a: "A focused marketing website typically takes 2–4 weeks. Web applications and custom systems run longer depending on features. We share a realistic timeline before we start." },
-  { q: "Do you build software for businesses in Egypt?", a: "Yes. We are based in Cairo and work with businesses across Egypt and internationally, both remotely and on-site where needed." },
-  { q: "Can you build a custom POS system?", a: "Absolutely. POS, inventory, kitchen displays and management dashboards are a core specialty — built around how your business actually operates." },
-  { q: "Do you develop mobile applications?", a: "Yes — modern cross-platform apps for iOS and Android, connected to secure backends and real-time data." },
-  { q: "Can you maintain an existing website or software?", a: "Yes. We can audit, fix, extend and maintain existing projects, or take over a codebase from a previous team." },
-  { q: "Can you integrate APIs and payment gateways?", a: "Yes. We integrate payment gateways, third-party APIs, messaging, maps and analytics as part of most projects." },
-  { q: "Do you provide hosting and deployment?", a: "Yes. We handle deployment, hosting setup and monitoring, and can manage everything for you after launch." },
-];
 
 interface FormState {
   name: string;

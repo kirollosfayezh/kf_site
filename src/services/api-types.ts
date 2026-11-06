@@ -105,5 +105,26 @@ export interface SiteSettings {
     youtube?: string;
     tiktok?: string;
   };
+  /** The brand facts the Organization schema and llms.txt state (Site settings → Brand identity). */
+  brand?: BrandIdentity;
   updatedAt: string;
+}
+
+/** Aliases per language; the full name itself is fixed in the site. */
+export interface BrandNames {
+  en: string[];
+  ar: string[];
+  de: string[];
+  fr: string[];
+}
+
+export interface BrandIdentity {
+  alternateNames: BrandNames;
+  /** `2020`, or a fuller ISO date. */
+  foundingDate: string;
+  /** The founder's personal profiles — they describe the Person node, not the company. */
+  founderProfiles: string[];
+  /** Directories and other company profiles that have no footer icon. */
+  profiles: string[];
+  notAffiliatedWith: { name: string; url: string }[];
 }

@@ -1,43 +1,59 @@
 import type { PageSeo } from "./types.ts";
 
+/**
+ * The brand leads the home title and opens both home and about descriptions
+ * on purpose: "KF Tech Solutions" is a query AI assistants were answering
+ * with a different company, and `fitTitle` only ever strips a *trailing*
+ * brand. Every other title stays short enough (≤ 60 in all four languages)
+ * for its "| KF Tech…" suffix to survive the fit.
+ *
+ * `lastmod` is the day the page's copy last changed — not the build date,
+ * which taught Google to ignore the field. The sitemap takes the newer of it
+ * and the newest CMS item the page lists.
+ */
 export const PAGES: Record<string, PageSeo> = {
   home: {
     path: "/",
-    title: "KF Tech Solutions — Custom Software, Web & AI Automation",
-    desc: "Custom software, web and mobile development plus AI automation for growing businesses. POS systems, dashboards and integrations built around how you actually work.",
+    title: "KF Tech Solutions (KFTech) | Software Company in Cairo, Egypt",
+    desc: "KF Tech Solutions (KFTech) is a software company in Cairo, Egypt: custom software, websites, mobile apps, POS systems and AI automation for businesses.",
     keywords:
-      "custom software development, web development egypt, ai automation, pos system, business dashboards",
+      "KF Tech Solutions, KF Tech, KFTech, software company Cairo, software company Egypt, custom software development, web development egypt, ai automation, pos system, business dashboards",
     type: "website",
+    lastmod: "2026-11-05",
   },
   services: {
     path: "/services",
-    title: "Software Development & AI Automation Services | KF Tech Solutions",
+    title: "Software & AI Automation Services | KF Tech Solutions",
     desc: "Custom software, web and mobile apps, business systems, automation, IoT, AI integration and backend APIs — delivered end to end from Cairo.",
     keywords:
       "software development services, mobile app development, ai integration, api development",
     type: "website",
+    lastmod: "2026-11-05",
   },
   solutions: {
     path: "/solutions",
-    title: "Industry Solutions — POS, Retail, Real Estate, Clinics | KF Tech",
+    title: "Industry Solutions — POS, Retail, Real Estate | KF Tech",
     desc: "Software built for how your industry actually operates: restaurants, retail, real estate, startups and enterprises.",
     keywords:
       "pos system restaurants, retail software, real estate portal, industry software solutions",
     type: "website",
+    lastmod: "2026-09-24",
   },
   projects: {
     path: "/projects",
-    title: "Our Work — Software Projects & Case Studies | KF Tech Solutions",
+    title: "Software Projects & Case Studies | KF Tech Solutions",
     desc: "Delivered platforms, dashboards and mobile apps, with the problem, the approach and the technology behind each build.",
     keywords: "software case studies, software portfolio, pos platform project",
     type: "website",
+    lastmod: "2026-09-25",
   },
   about: {
     path: "/about",
-    title: "About KF Tech Solutions — Software Studio in Cairo",
-    desc: "A software studio founded on one idea: businesses do not need more tools, they need the right system built around how they work.",
-    keywords: "software studio cairo, software company egypt, kirollos fayez",
+    title: "About KF Tech Solutions — Software Company in Cairo, Egypt",
+    desc: "KF Tech Solutions is a software company founded in Cairo, Egypt in 2020 by Kirollos Fayez: custom software, mobile apps, POS systems and AI automation.",
+    keywords: "KF Tech Solutions, KFTech, Kirollos Fayez, software studio cairo, software company egypt",
     type: "website",
+    lastmod: "2026-11-05",
   },
   contact: {
     path: "/contact",
@@ -46,23 +62,26 @@ export const PAGES: Record<string, PageSeo> = {
     keywords:
       "software development quote, hire software developer egypt, contact software company",
     type: "website",
+    lastmod: "2026-11-05",
   },
   blog: {
     path: "/blog",
-    title: "Insights on Software, Automation & Business Systems | KF Tech",
+    title: "Software, Automation & Business Insights | KF Tech",
     desc: "Practical notes on software, AI automation and running a better business — written for owners, not engineers.",
     keywords: "software blog, business automation guide, pos system roi",
     type: "website",
+    lastmod: "2026-09-24",
   },
   campaign: {
     path: "/campaign",
-    title: "Custom Software Built for Your Business | Free Quote — KF Tech",
+    title: "Custom Software for Your Business | Free Quote — KF Tech",
     desc: "POS systems, dashboards, web platforms and automation. Fixed scope, clear pricing and a working demo before you commit.",
     keywords: "custom software quote, pos system quote, business automation egypt",
     type: "website",
     // A paid-traffic landing page. Kept out of the index so it can't compete
     // with /contact for the same queries, but followed so its links still pass.
     noindex: true,
+    lastmod: "2026-09-24",
   },
   book: {
     path: "/book",
@@ -70,6 +89,7 @@ export const PAGES: Record<string, PageSeo> = {
     desc: "Pick a time and we'll call you on WhatsApp: a free 30-minute call about your software, website or automation project.",
     keywords: "book a call software company, free consultation software egypt, software project call",
     type: "website",
+    lastmod: "2026-09-24",
   },
   quote: {
     // A client's private quote (`/q/<token>`): never indexed, never prerendered.

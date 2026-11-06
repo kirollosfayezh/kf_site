@@ -4,6 +4,7 @@ import { PAGES } from "./pages.ts";
 import { AREA_SERVED } from "./schema/organisation.ts";
 import { imageObject } from "./schema/page.ts";
 import { SERVICES, serviceId, servicePath } from "./schema/services.ts";
+import { SITE } from "./site.ts";
 import { localized, tr } from "./text.ts";
 import type { ArticleLike, PageSeo } from "./types.ts";
 import { absolute, localePath } from "./urls.ts";
@@ -55,7 +56,7 @@ export function servicePageSeo(
   siteLangs: readonly Lang[] = LANGS,
   faq?: { q: string; a: string }[],
 ): PageSeo {
-  const brand = PAGES.home.title.split(" — ")[0];
+  const brand = SITE.name;
   const headline = serviceHeadline(item, lang);
   const lede = serviceLede(item, lang);
   const seoTitle = metaText(item, "seoTitle", lang);

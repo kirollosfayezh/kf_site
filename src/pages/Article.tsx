@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
 import { useFaqSchema, useSeo } from "../components/Seo";
-import { PAGES, SITE_ORIGIN, absolute, articlePageSeo, localePath, SITE, type PageSeo } from "../lib/seo";
+import { PAGES, SITE_ORIGIN, absolute, articlePageSeo, localePath, type PageSeo } from "../lib/seo";
 import { pick, pickPlain, metaString, metaPoints } from "../lib/content-helpers";
 import { renderRichText, readingMinutes, extractFaq } from "../lib/rich-text";
 import { useContentItem, useContentList } from "../hooks/useContent";
@@ -120,11 +120,13 @@ export function Article() {
             {post.summary && <p className={s.pageLede}>{pick(post.summary, lang)}</p>}
 
             {/* A face and a link, not initials: an author a reader can look
-                up is part of what makes an article worth trusting. */}
-            <Link to="/about" className={s.artAuthor} data-track="article.author">
+                up is part of what makes an article worth trusting.
+                `#founder` is the Person node's @id, so the byline and the
+                structured data point at the same visible portrait. */}
+            <Link to="/about#founder" className={s.artAuthor} data-track="article.author">
               <img src="/founder.jpg" alt="" width={56} height={56} loading="lazy" decoding="async" className={s.artAvatarImg} />
               <div>
-                <div className={s.artAuthorName}>{SITE.founder}</div>
+                <div className={s.artAuthorName}>{t("Kirollos Fayez")}</div>
                 <div className={s.artAuthorRole}>{t("Founder, KF Tech Solutions")}</div>
                 <div className={s.artAuthorBio}>{t("Builds POS, web and automation systems for businesses in Egypt and abroad.")}</div>
               </div>
