@@ -7,6 +7,9 @@ import { loadDict, setOverrides } from "./lib/dict";
 import { primeContent } from "./services/content-cache";
 import "./index.css";
 import App from "./App.tsx";
+import { installChunkReload } from "./lib/chunk-reload";
+
+installChunkReload();
 
 /**
  * Non-English pages live under a language prefix — `/de/services`, `/ar/blog`.

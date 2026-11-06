@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from "react";
 import type { Socket } from "socket.io-client";
 import { Link } from "react-router-dom";
 import type { CountryCode } from "libphonenumber-js/max";
@@ -24,6 +24,7 @@ import { ChatLog } from "./ChatLog";
 import { mergeMessage } from "./messages";
 import { AUTO_OPEN_DELAY, GREETED_KEY, SEEN_KEY, readNum, readPhoneKey, writeNum, writePhoneKey } from "./storage";
 import styles from "./ChatWidget.module.css";
+import { lazyWithReload } from "../../lib/chunk-reload";
 
 const QUICK = ["I need a POS system", "Website or web app", "AI automation", "How much does it cost?"];
 
@@ -35,7 +36,7 @@ const QUICK = ["I need a POS system", "Website or web app", "AI automation", "Ho
 type PhoneLib = typeof import("../../lib/phone");
 let phoneLibPromise: Promise<PhoneLib> | null = null;
 const loadPhoneLib = () => (phoneLibPromise ??= import("../../lib/phone"));
-const PhoneField = lazy(() => import("../PhoneField").then((m) => ({ default: m.PhoneField })));
+const PhoneField = lazyWithReload(() => import("../PhoneField").then((m) => ({ default: m.PhoneField })));
 const NO_PHONE: PhoneState = { display: "", valid: false, complete: false };
 
 export function ChatWidget() {

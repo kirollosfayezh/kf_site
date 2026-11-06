@@ -1,10 +1,11 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Nav } from "./Nav";
 import { Footer } from "./Footer";
 import { useSmoothScroll } from "../lib/smooth-scroll";
 import { RouteSeo } from "./Seo";
 import { useI18n } from "../lib/i18n";
+import { lazyWithReload } from "../lib/chunk-reload";
 
 /**
  * The chat widget pulls in socket.io-client, which is the single largest
@@ -12,7 +13,7 @@ import { useI18n } from "../lib/i18n";
  * visit. It is split out and only mounted once the browser is idle (or the
  * visitor interacts), so it never competes with the hero for bandwidth.
  */
-const ChatWidget = lazy(() => import("./chat/ChatWidget").then((m) => ({ default: m.ChatWidget })));
+const ChatWidget = lazyWithReload(() => import("./chat/ChatWidget").then((m) => ({ default: m.ChatWidget })));
 
 function useDeferredMount(): boolean {
   const [ready, setReady] = useState(false);

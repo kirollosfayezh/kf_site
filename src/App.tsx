@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { Suspense, lazy, useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { I18nProvider, isLang, type Lang } from "./lib/i18n";
 import { ThemeProvider } from "./lib/theme";
 import { SettingsProvider } from "./lib/settings";
@@ -10,32 +10,33 @@ import { ConsentBanner } from "./components/ConsentBanner";
 import { PromoDialog } from "./components/PromoDialog";
 import { SeoProvider } from "./components/Seo";
 import { MARKETS, marketPath } from "./lib/seo";
+import { lazyWithReload } from "./lib/chunk-reload";
 
 /**
  * Route-level code splitting. Every page is its own chunk, so a first visit to
  * `/` no longer downloads the contact form, the campaign landing page and the
  * article template alongside it.
  */
-const Home = lazy(() => import("./pages/Home").then((m) => ({ default: m.Home })));
-const About = lazy(() => import("./pages/About").then((m) => ({ default: m.About })));
-const Services = lazy(() => import("./pages/Services").then((m) => ({ default: m.Services })));
-const Solutions = lazy(() => import("./pages/Solutions").then((m) => ({ default: m.Solutions })));
-const Projects = lazy(() => import("./pages/Projects").then((m) => ({ default: m.Projects })));
-const ProjectCaseStudy = lazy(() =>
+const Home = lazyWithReload(() => import("./pages/Home").then((m) => ({ default: m.Home })));
+const About = lazyWithReload(() => import("./pages/About").then((m) => ({ default: m.About })));
+const Services = lazyWithReload(() => import("./pages/Services").then((m) => ({ default: m.Services })));
+const Solutions = lazyWithReload(() => import("./pages/Solutions").then((m) => ({ default: m.Solutions })));
+const Projects = lazyWithReload(() => import("./pages/Projects").then((m) => ({ default: m.Projects })));
+const ProjectCaseStudy = lazyWithReload(() =>
   import("./pages/ProjectCaseStudy").then((m) => ({ default: m.ProjectCaseStudy })),
 );
-const ServiceDetail = lazy(() =>
+const ServiceDetail = lazyWithReload(() =>
   import("./pages/ServiceDetail").then((m) => ({ default: m.ServiceDetail })),
 );
-const MarketDetail = lazy(() => import("./pages/MarketDetail").then((m) => ({ default: m.MarketDetail })));
-const Legal = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Legal })));
-const Blog = lazy(() => import("./pages/Blog").then((m) => ({ default: m.Blog })));
-const Article = lazy(() => import("./pages/Article").then((m) => ({ default: m.Article })));
-const Contact = lazy(() => import("./pages/Contact").then((m) => ({ default: m.Contact })));
-const Campaign = lazy(() => import("./pages/Campaign").then((m) => ({ default: m.Campaign })));
-const Book = lazy(() => import("./pages/Book").then((m) => ({ default: m.Book })));
-const Quote = lazy(() => import("./pages/Quote").then((m) => ({ default: m.Quote })));
-const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
+const MarketDetail = lazyWithReload(() => import("./pages/MarketDetail").then((m) => ({ default: m.MarketDetail })));
+const Legal = lazyWithReload(() => import("./pages/Legal").then((m) => ({ default: m.Legal })));
+const Blog = lazyWithReload(() => import("./pages/Blog").then((m) => ({ default: m.Blog })));
+const Article = lazyWithReload(() => import("./pages/Article").then((m) => ({ default: m.Article })));
+const Contact = lazyWithReload(() => import("./pages/Contact").then((m) => ({ default: m.Contact })));
+const Campaign = lazyWithReload(() => import("./pages/Campaign").then((m) => ({ default: m.Campaign })));
+const Book = lazyWithReload(() => import("./pages/Book").then((m) => ({ default: m.Book })));
+const Quote = lazyWithReload(() => import("./pages/Quote").then((m) => ({ default: m.Quote })));
+const NotFound = lazyWithReload(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 
 /**
  * Held while a page chunk loads. It reserves a full viewport of the page
