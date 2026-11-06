@@ -290,6 +290,15 @@ describe("auditDist", () => {
     expect(checks(page.failures)).toContain("links");
   });
 
+  it("only warns about a broken link in a country page's dashboard copy", async () => {
+    const market = await dist({
+      pages: { "/uae": { body: `<h1>UAE</h1><p>KF Tech Solutions</p><a href="/blog/not-yet">Soon</a>` } },
+      files: { "sitemap.xml": sitemap(["/", "/about", "/ar", "/ar/about", "/uae"]) },
+    });
+    expect(checks(market.failures)).not.toContain("links");
+    expect(checks(market.warnings)).toContain("links");
+  });
+
   it("only warns about editor-typed CMS text", async () => {
     const r = await dist({
       pages: { "/blog/post": { title: "A very long article title that an editor typed into the dashboard", desc: "Short." } },

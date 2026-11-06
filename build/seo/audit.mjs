@@ -30,6 +30,10 @@ const LANG_ORDER = ["en", ...PREFIXED];
 /** The only pages allowed to say noindex (base paths, any language). */
 const NOINDEX_PAGES = new Set(["/campaign"]);
 const CMS_RE = /^\/(blog|projects|legal|services)\/[^/]+$/;
+// The country pages (/saudi-arabia, /uae, /gulf): one path segment, so they
+// keep the static pages' title and brand checks, but their body is typed in
+// the dashboard — a link in it is the editor's, and only warns.
+const MARKET_RE = /^\/(saudi-arabia|uae|gulf)$/;
 const WEBPAGE_TYPES = new Set([
   "WebPage",
   "AboutPage",
@@ -199,6 +203,7 @@ function readPage(path, file, raw) {
     base,
     static: base.split("/").filter(Boolean).length <= 1,
     cms: CMS_RE.test(base),
+    editorText: CMS_RE.test(base) || MARKET_RE.test(base),
     htmlLang: /<html\b[^>]*\blang="([^"]*)"/.exec(html)?.[1] ?? null,
     titles,
     descriptions: named("description"),
@@ -520,7 +525,7 @@ export async function auditDist(distDir, { origin = null, vercelConfig = null, t
     // where a broken link from code shows up. On an article, case study or
     // service page the broken one is almost always in text an editor typed in
     // the dashboard: a warning, or one typo would block every deploy.
-    if (broken.length) (p.cms ? warn : fail)("links", p.path, `${broken.length} broken: ${broken.slice(0, 3).join(", ")}`);
+    if (broken.length) (p.editorText ? warn : fail)("links", p.path, `${broken.length} broken: ${broken.slice(0, 3).join(", ")}`);
 
     // Markdown twins
     for (const href of p.twins) {
