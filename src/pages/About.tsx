@@ -12,6 +12,7 @@ import { resolveSocial } from "../lib/contact";
 import { ABOUT_IDENTITY as ID } from "../lib/brand-copy";
 import { SITE } from "../lib/seo";
 import { SOCIAL_NAME } from "../components/Footer";
+import { MarketAnchor, useMarketLinks } from "./home/HomeGulf";
 import s from "../styles/sections.module.css";
 
 
@@ -39,6 +40,7 @@ export function About() {
   // Settings are primed into the prerender, so the build and the browser list
   // the same profiles.
   const social = resolveSocial(useSettings()?.social);
+  const markets = useMarketLinks();
 
   // `aboutSections` is the source for both blocks below, grouped by `meta.tag`.
   // It used to be rendered as a third, standalone list of prose blocks, which
@@ -144,6 +146,60 @@ export function About() {
                   ))}
                 </dd>
               </div>
+            </dl>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* How a client outside Egypt works with us: the process, the shared
+          week and hours, the one public price, and who owns what. Facts we
+          can show — no office, client or certificate we do not have. */}
+      <section className={s.sectionAlt}>
+        <div className={s.section}>
+          <Reveal style={{ maxWidth: 760 }}>
+            <span className={s.eyebrow}>{t("// WORKING ABROAD")}</span>
+            <h2 className={s.h2sm}>{t("Working with clients abroad.")}</h2>
+            <p className={s.lede}>
+              {t("Projects run remotely from Cairo: calls in Arabic or English, a working build to review every one to two weeks, and written updates in between.")}
+            </p>
+            <dl className={s.caseFacts}>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t("Working week")}</dt>
+                <dd className={s.caseFactValue}>{t("Sunday to Thursday, Cairo time — the same working week as Saudi Arabia")}</dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t("Time difference")}</dt>
+                <dd className={s.caseFactValue}>
+                  {t("On Riyadh time from late April to late October, one hour behind it in winter; one to two hours behind the UAE")}
+                </dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t("Pricing")}</dt>
+                <dd className={s.caseFactValue}>
+                  {t("Projects start from $200 (about SAR 750 / AED 735); final price depends on scope, with a fixed written quote after a free call.")}
+                </dd>
+              </div>
+              <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t("Ownership")}</dt>
+                <dd className={s.caseFactValue}>
+                  {t("You own the code and the store, cloud and domain accounts; we deploy to the provider and region you choose.")}
+                </dd>
+              </div>
+              {markets.length > 0 && (
+                <div className={s.caseFact}>
+                  <dt className={s.caseFactLabel}>{t("Markets")}</dt>
+                  <dd className={s.caseFactValue}>
+                    {markets.map((m, i) => (
+                      <span key={m.slug}>
+                        {i > 0 && " · "}
+                        <MarketAnchor link={m} track={`about.abroad.${m.slug}`}>
+                          {t(m.name)}
+                        </MarketAnchor>
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+              )}
             </dl>
           </Reveal>
         </div>

@@ -1,5 +1,5 @@
 /** Reading the CMS at build time, with retries — a build must fail loudly rather than ship without its content. */
-import { type ArticleLike, type Lang, type SeoOverride } from "../../src/lib/seo/index.ts";
+import { type ArticleLike, type Lang, type SeoOverride, isMarketSlug } from "../../src/lib/seo/index.ts";
 import { LANGS, isLang } from "../../src/lib/langs.ts";
 import type { SiteSettings } from "../../src/services/api-types.ts";
 
@@ -57,6 +57,27 @@ export async function fetchArticles(apiBase: string | undefined): Promise<Articl
 /** Projects, for the `/projects/:slug` case-study pages. */
 export async function fetchProjects(apiBase: string | undefined): Promise<ArticleLike[]> {
   return fetchCollection(apiBase, "projects");
+}
+
+/**
+ * The country pages, limited to the slugs the site has a route for: an item
+ * for any other slug would be prerendered at a URL the app answers with 404.
+ *
+ * A backend from before the collection existed answers 404 for it, which is
+ * a "no country pages yet", not a broken API — so that one status yields an
+ * empty list and a warning instead of a failed deploy. Anything else (a
+ * sleeping or failing backend) still throws, as every other fetch does.
+ */
+export async function fetchMarkets(apiBase: string | undefined, warnings: string[] = []): Promise<ArticleLike[]> {
+  try {
+    return (await fetchCollection(apiBase, "markets")).filter((m) => isMarketSlug(m.slug));
+  } catch (err) {
+    if (err instanceof SeoFetchError && /: HTTP 404$/.test(err.message)) {
+      warnings.push("The API has no markets collection yet (HTTP 404); no country pages were prerendered. Deploy the backend first.");
+      return [];
+    }
+    throw err;
+  }
 }
 
 /** Privacy policy, terms — rendered at `/legal/:slug`. */

@@ -4,6 +4,7 @@ import type { CountryCode } from "libphonenumber-js/max";
 import { useI18n } from "../lib/i18n";
 import { defaultCountry, guessCountry, readPhone, rememberCountry } from "../lib/phone";
 import { PhoneField } from "../components/PhoneField";
+import { zoneName } from "./home/gulf";
 import { Calendar, type DayKey } from "../components/Calendar";
 import { Reveal } from "../components/Reveal";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
@@ -132,6 +133,8 @@ export function Book() {
   const timeFmt = new Intl.DateTimeFormat(locale(lang), { hour: "2-digit", minute: "2-digit", timeZone: tz });
   const dateFmt = new Intl.DateTimeFormat(locale(lang), { weekday: "long", day: "numeric", month: "long", timeZone: tz });
   const longFmt = new Intl.DateTimeFormat(locale(lang), { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: tz });
+  // "Riyadh time" for the Gulf and Cairo zones; the IANA name elsewhere.
+  const zone = zoneName(tz);
   const daySlots = (day && days.get(day)) || [];
   const periods = PERIODS.map((p) => ({ ...p, slots: daySlots.filter((sl) => { const h = localHour(sl.start, tz); return h >= p.from && h < p.to; }) })).filter((p) => p.slots.length);
 
@@ -210,7 +213,8 @@ export function Book() {
                   <span className={b.stepNum}>1</span> {t("Choose a time")}
                 </h2>
                 <span className={b.tzNote}>
-                  {t("Times in your time zone")}: <b dir="ltr">{tz.replace(/_/g, " ")}</b>
+                  {t("Times in your time zone")}:{" "}
+                  {zone ? <b title={tz}>{t(zone)}</b> : <b dir="ltr">{tz.replace(/_/g, " ")}</b>}
                 </span>
               </div>
 

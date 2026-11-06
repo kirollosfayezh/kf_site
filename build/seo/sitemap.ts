@@ -7,6 +7,7 @@ import {
   legalPageSeo,
   languageAlternates,
   localePath,
+  marketPageSeo,
   projectPageSeo,
   servicePageSeo,
   type ArticleLike,
@@ -99,6 +100,8 @@ export async function writeSitemap(distDir: string, origin: string, ctx: BuildCo
     // that all resolve to the same English document.
     ...[
       ...ctx.services.map((item) => ({ item, seo: servicePageSeo(item, "en", ctx.langs), priority: "0.8" })),
+      // English and Arabic at most, so hreflang names en, ar and x-default only.
+      ...ctx.markets.map((item) => ({ item, seo: marketPageSeo(item, "en", ctx.langs), priority: "0.8" })),
       ...ctx.projects.map((item) => ({ item, seo: projectPageSeo(item, "en", ctx.langs), priority: "0.7" })),
       ...ctx.articles.map((item) => ({ item, seo: articlePageSeo(item, "en", ctx.langs), priority: "0.6" })),
       ...ctx.legal.map((item) => ({ item, seo: legalPageSeo(item, "en", ctx.langs), priority: "0.3" })),

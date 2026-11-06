@@ -16,6 +16,8 @@ export interface BuildContext {
   testimonials: ArticleLike[];
   aboutSections: ArticleLike[];
   promos: ArticleLike[];
+  /** The published country pages (/saudi-arabia, /uae, /gulf) the site has a route for. */
+  markets: ArticleLike[];
   translations: Partial<Record<Lang, Record<string, string>>>;
   langs: Lang[];
   twitterSite?: string;

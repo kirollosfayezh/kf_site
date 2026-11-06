@@ -7,6 +7,9 @@ import {
   availableLangs,
   legalPageSeo,
   localePath,
+  marketCard,
+  marketLangs,
+  marketPageSeo,
   projectPageSeo,
   servicePageSeo,
   serviceLangs,
@@ -77,8 +80,12 @@ export function listsFor(ctx: BuildContext, lang: Lang): Record<string, unknown>
   for (const [name, items] of Object.entries(lists)) out[`list:${name}`] = items.map((i) => pruneForLang(i, lang));
   // The blog list goes out as cards, exactly as the client fetches it
   // (`?view=card`): with bodies it was every post's full text, ~300 kB inline
-  // on each of the 120 blog pages, for titles and a "N min read".
-  out["list:blogPosts"] = ctx.articles.map((i) => cardView(i));
+  // on each of the 120 blog pages, for titles and a "N min read". Trimmed to
+  // this page's language too: with ~100 posts, four languages of every title
+  // and summary pushed an article page past the 200 kB check. Safe because a
+  // language switch is a full navigation (Nav's language links), so a page
+  // never shows these cards in another language.
+  out["list:blogPosts"] = ctx.articles.map((i) => cardView(i, lang));
   // Project cards read the summary; the body only matters on the case study,
   // which has its own item entry. Kept where there is no summary to show.
   out["list:projects"] = ctx.projects.map((i) => (hasText(i.summary) ? withoutBody(i) : pruneForLang(i, lang)));
@@ -90,6 +97,9 @@ export function listsFor(ctx: BuildContext, lang: Lang): Record<string, unknown>
     for (const k of ["headline", "lede", "seoTitle", "seoDescription"]) delete meta[k];
     return { ...rest, meta };
   });
+  // The footer's country links, on every page: titles and the languages each
+  // page was prerendered in, no bodies — the shape the API's card view has.
+  out["list:markets"] = ctx.markets.map((i) => marketCard(i, ctx.langs));
   return out;
 }
 
@@ -105,7 +115,7 @@ function withoutBody<T extends ArticleLike>(item: T): T {
 /** Items, keyed the way the pages ask for them (by slug, falling back to id). */
 export function itemEntries(ctx: BuildContext): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  for (const [name, items] of [["blogPosts", ctx.articles], ["projects", ctx.projects], ["legalPages", ctx.legal], ["services", ctx.services]] as const) {
+  for (const [name, items] of [["blogPosts", ctx.articles], ["projects", ctx.projects], ["legalPages", ctx.legal], ["services", ctx.services], ["markets", ctx.markets]] as const) {
     for (const item of items) out[`item:${name}:${item.slug || item.id}`] = item;
   }
   return out;
@@ -263,6 +273,7 @@ export interface PrerenderResult {
   projects: number;
   legal: number;
   services: number;
+  markets: number;
 }
 
 export async function prerenderPages(
@@ -292,6 +303,7 @@ export async function prerenderPages(
   let projectCount = 0;
   let legalCount = 0;
   let serviceCount = 0;
+  let marketCount = 0;
 
   // Every route, in every enabled language, as its own file: `/services` and
   // `/de/services` are separate documents with their own canonical, hreflang
@@ -348,6 +360,17 @@ export async function prerenderPages(
       serviceCount++;
     }
 
+    // Country pages: English and Arabic only, each once its heading and body
+    // are written (`marketLangs`). No item, no file: the URL stays a 404.
+    for (const item of ctx.markets) {
+      if (!marketLangs(item, ctx.langs).includes(lang)) continue;
+      const faq = extractFaq(localized(item.body, lang));
+      const page = marketPageSeo(item, lang, ctx.langs, faq);
+      const body = await bodyFor(page, lang, ITEM_MODULES.market);
+      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      marketCount++;
+    }
+
     // Legal documents, on the same terms.
     for (const doc of ctx.legal) {
       if (!availableLangs(doc, ctx.langs).includes(lang)) continue;
@@ -394,5 +417,12 @@ export async function prerenderPages(
     "utf8",
   );
 
-  return { routes: pageCount + 1, articles: articleCount, projects: projectCount, legal: legalCount, services: serviceCount };
+  return {
+    routes: pageCount + 1,
+    articles: articleCount,
+    projects: projectCount,
+    legal: legalCount,
+    services: serviceCount,
+    markets: marketCount,
+  };
 }

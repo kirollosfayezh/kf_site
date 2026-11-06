@@ -65,7 +65,9 @@ export type ContentCollection =
   | "blogPosts"
   | "aboutSections"
   | "legalPages"
-  | "promos";
+  | "promos"
+  // The country pages (/saudi-arabia, /uae, /gulf).
+  | "markets";
 
 /** Marketing tags configured on the dashboard's Marketing screen. */
 export interface TrackingSettings {

@@ -6,6 +6,8 @@ import { useContactInfo, useSettings } from "../lib/settings";
 import { resolveSocial, type SocialKey } from "../lib/contact";
 import { COPYRIGHT_KEY } from "../lib/brand-copy";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
+import { useContentList } from "../hooks/useContent";
+import { marketLinks } from "../lib/seo";
 import { SocialIcon, type SocialName } from "./SocialIcon";
 import { NewsletterForm } from "./NewsletterForm";
 import styles from "./Footer.module.css";
@@ -40,11 +42,15 @@ function copyright(t: (k: string) => string, year: number): string {
  * people check you are real.
  */
 export function Footer() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const settings = useSettings();
   const { email } = useContactInfo();
   const waLink = useWhatsAppLink();
   const social = resolveSocial(settings?.social);
+  // The country pages that are published. A link whose page is not written in
+  // this language goes to the English page by a plain href: the router would
+  // otherwise put it under this language's prefix, a URL with no file.
+  const markets = marketLinks(useContentList("markets").data, lang);
   // The key's own year first, the clock's after mount: the footer sits
   // outside every Suspense boundary, so a build-year/visit-year mismatch
   // would re-render the whole page on hydration.
@@ -58,7 +64,7 @@ export function Footer() {
         <p className={styles.tagline}>
           {t("From idea to")} <span className="gradient-text">{t("working product.")}</span>
         </p>
-        <div className={styles.grid}>
+        <div className={`${styles.grid} ${markets.length ? styles.gridMarkets : ""}`}>
           <div className={styles.brandCol}>
             <Link to="/" className={styles.brand}>
               <img src="/logo-icon.png" alt="" width={38} height={38} className={styles.logo} loading="lazy" decoding="async" />
@@ -101,6 +107,25 @@ export function Footer() {
               <Link to="/book">{t("Book a call")}</Link>
             </div>
           </div>
+
+          {markets.length > 0 && (
+            <div>
+              <h2 className={styles.colTitle}>{t("Markets")}</h2>
+              <div className={styles.colLinks}>
+                {markets.map((m) =>
+                  m.translated ? (
+                    <Link key={m.slug} to={m.path} data-track={`footer.market.${m.slug}`}>
+                      {t(m.name)}
+                    </Link>
+                  ) : (
+                    <a key={m.slug} href={m.path} hrefLang="en" data-track={`footer.market.${m.slug}`}>
+                      {t(m.name)}
+                    </a>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
 
           <div>
             <h2 className={styles.colTitle}>{t("Legal")}</h2>

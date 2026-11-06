@@ -97,4 +97,11 @@ export const FALLBACK_FAQS = [
   { q: "Can you integrate APIs and payment gateways?", a: "Yes. We integrate payment gateways, third-party APIs, messaging, maps and analytics as part of most projects." },
   { q: "Do you provide hosting and deployment?", a: "Yes. We handle deployment, hosting setup and monitoring, and can manage everything for you after launch." },
   ...BRAND_FAQS,
+  // For buyers in Saudi Arabia and the UAE. The same four, in all four
+  // languages, are kf_backend `add-faqs.data.json` (orders 12–15). The tax
+  // answer is general information from the dated fact sheet, not advice.
+  { q: "Do you work with businesses in Saudi Arabia and the UAE?", a: "Yes. We are based in Cairo and work remotely, Sunday to Thursday — the same working week as Saudi Arabia. Calls are in Arabic or English, and you see a working build every one to two weeks." },
+  { q: "Which currency do you quote in?", a: "In US dollars, with the Saudi riyal or UAE dirham equivalent shown at the official fixed rate. Projects start from $200 (about SAR 750 / AED 735); final price depends on scope, with a fixed written quote after a free call." },
+  { q: "How do VAT and withholding tax work if we pay you from Saudi Arabia or the UAE?", a: "General information, not tax advice: we invoice from Egypt, so a VAT-registered business in Saudi Arabia or the UAE accounts for the VAT itself under the reverse charge. In Saudi Arabia, payments to a non-resident for technical services may also carry 5% withholding tax, which the payer deducts. Please confirm the details with your accountant." },
+  { q: "Who owns the code, and where is our data hosted?", a: "You do. The source code and the store, cloud and domain accounts are yours. We deploy to the hosting provider and region you choose." },
 ];

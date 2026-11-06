@@ -7,7 +7,7 @@ export interface PageSeo {
   keywords?: string;
   type?: "website" | "article";
   /** What kind of page this is, for the JSON-LD that goes with it. */
-  kind?: "page" | "article" | "project" | "legal" | "service";
+  kind?: "page" | "article" | "project" | "legal" | "service" | "market";
   /** The CMS item behind an article/project/legal page, for its schema. */
   item?: ArticleLike;
   image?: string;

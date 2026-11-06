@@ -21,8 +21,12 @@ export function cachedSettings(): SiteSettings | null {
  * Lists fetched as cards: no bodies, reading time in `meta.readingMinutes`.
  * A blog list with bodies is every post's full text (~900 kB) for a page of
  * titles. The prerender builds the same shape (`cardView` in build/seo).
+ *
+ * The markets list is read by the footer on every page for three links; its
+ * card's `meta.langs` says which languages each country page is written in
+ * (`marketCard` builds the prerendered equivalent).
  */
-export const CARD_LISTS: ReadonlySet<ContentCollection> = new Set(["blogPosts"]);
+export const CARD_LISTS: ReadonlySet<ContentCollection> = new Set(["blogPosts", "markets"]);
 
 export function getContentList(collection: ContentCollection): Promise<ContentItem[]> {
   const view = CARD_LISTS.has(collection) ? "?view=card" : "";

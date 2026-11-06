@@ -35,7 +35,7 @@ export function webPageSchema(
       ? "ContactPage"
       : COLLECTIONS.has(page.path)
         ? "CollectionPage"
-        : page.kind && page.kind !== "page"
+        : page.kind && page.kind !== "page" && page.kind !== "market"
           ? "ItemPage"
           : "WebPage";
   const published = page.published;
@@ -57,7 +57,9 @@ export function webPageSchema(
     ...(page.path !== PAGES.home.path && !page.noindex ? { breadcrumb: { "@id": `${url}#breadcrumb` } } : {}),
     ...(published ? { datePublished: published } : {}),
     ...(modified ? { dateModified: modified } : {}),
-    ...(ABOUT_ORGANISATION.has(page.path) ? { about: { "@id": `${origin}/#organization` } } : {}),
+    // A country page (/saudi-arabia) is about the company's work for that
+    // market: no `Service` or `Place` node of its own, just the Organization.
+    ...(ABOUT_ORGANISATION.has(page.path) || page.kind === "market" ? { about: { "@id": `${origin}/#organization` } } : {}),
     ...(about ? { mainEntity: founderSchema(origin, lang) } : {}),
   };
 }

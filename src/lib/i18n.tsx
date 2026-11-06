@@ -230,6 +230,14 @@ export function I18nProvider({
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
+/**
+ * The current language, or `undefined` outside a provider. For leaf renderers
+ * (the Markdown body) that tests also render on their own.
+ */
+export function useOptionalLang(): Lang | undefined {
+  return useContext(I18nContext)?.lang;
+}
+
 export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) throw new Error("useI18n must be used within I18nProvider");

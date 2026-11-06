@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SeoFetchError, enabledLangs, fetchCollection, fetchJson } from "./fetch.ts";
+import { SeoFetchError, enabledLangs, fetchCollection, fetchJson, fetchMarkets } from "./fetch.ts";
 import type { SiteSettings } from "../../src/services/api-types.ts";
 
 const ok = (data: unknown) => new Response(JSON.stringify({ data }), { status: 200 });
@@ -68,6 +68,24 @@ describe("fetchJson (build-time CMS reads)", () => {
     );
     const items = await settle(fetchCollection("https://api.test", "projects"));
     expect(items.map((i) => i.slug ?? i.id)).toEqual(["a", "b"]);
+  });
+
+  it("lists only the country pages the site has a route for", async () => {
+    fetchMock.mockResolvedValueOnce(ok([{ slug: "uae" }, { slug: "egypt" }, { slug: "gulf", published: false }]));
+    const items = await settle(fetchMarkets("https://api.test"));
+    expect(items.map((i) => i.slug)).toEqual(["uae"]);
+  });
+
+  it("treats a backend without the markets collection as no country pages, with a warning", async () => {
+    fetchMock.mockResolvedValue(status(404));
+    const warnings: string[] = [];
+    expect(await settle(fetchMarkets("https://api.test", warnings))).toEqual([]);
+    expect(warnings).toHaveLength(1);
+  });
+
+  it("still fails the build when the backend is down", async () => {
+    fetchMock.mockResolvedValue(status(503));
+    await expect(settle(fetchMarkets("https://api.test"))).rejects.toBeInstanceOf(SeoFetchError);
   });
 });
 

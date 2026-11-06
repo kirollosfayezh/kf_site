@@ -30,6 +30,10 @@
 @media (min-width: 1000px) {
   .grid { grid-template-columns: 1.6fr repeat(3, minmax(0, 1fr)); gap: 40px; }
 }
+/* With the Markets column there are four link columns beside the brand. */
+@media (min-width: 1000px) {
+  .gridMarkets { grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr)); gap: 36px; }
+}
 .brandCol { max-width: 320px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--text); }
 .logo { width: 38px; height: 38px; object-fit: contain; display: block; flex-shrink: 0; }

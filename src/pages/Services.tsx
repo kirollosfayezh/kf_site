@@ -7,11 +7,13 @@ import { Reveal } from "../components/Reveal";
 import { BalancedGrid } from "../components/BalancedGrid";
 import { CheckIcon } from "../components/CheckIcon";
 import { ServiceIcon } from "../components/ServiceIcon";
+import { MarketAnchor, useMarketLinks } from "./home/HomeGulf";
 import s from "../styles/sections.module.css";
 
 export function Services() {
   const { t, lang } = useI18n();
   const services = useContentList("services");
+  const markets = useMarketLinks(["saudi-arabia", "uae"]);
 
   // Empty *and* failed responses both fall back to static copy, so a cold
   // backend never leaves this page blank.
@@ -48,6 +50,15 @@ export function Services() {
               {t(
                 "From a single web app to a full business platform, we cover the whole stack — so you get one accountable partner from idea to launch and beyond.",
               )}
+            </p>
+            {/* Where we work, with the country pages that are published. */}
+            <p className={s.lede} style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "6px 18px" }}>
+              <span>{t("We work with businesses in Egypt, Saudi Arabia, the UAE and beyond.")}</span>
+              {markets.map((m) => (
+                <MarketAnchor key={m.slug} link={m} className={s.textLink} track={`services.market.${m.slug}`}>
+                  {t(m.name)} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
+                </MarketAnchor>
+              ))}
             </p>
           </Reveal>
         </div>

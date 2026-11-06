@@ -24,6 +24,7 @@ function context(overrides: Partial<BuildContext> = {}): BuildContext {
     testimonials: [],
     aboutSections: [],
     promos: [],
+    markets: [],
     translations: {},
     langs: ["en", "ar"],
     overrides: 0,
@@ -199,5 +200,80 @@ describe("llms.txt and llms-full.txt", () => {
     await writeMarkdownTwins(dir, ORIGIN, ctx);
     await writeSitemap(dir, ORIGIN, ctx);
     expect(await readFile(join(dir, "sitemap.xml"), "utf8")).not.toContain(".md<");
+  });
+});
+
+/** A country page as the CMS holds it — placeholder copy, English and Arabic. */
+const MARKET = {
+  id: "m1",
+  slug: "uae",
+  published: true,
+  title: { en: "Placeholder UAE heading", ar: "عنوان تجريبي للإمارات" },
+  summary: { en: "Placeholder intro.", ar: "مقدمة تجريبية." },
+  body: {
+    en: "See [our services](/services).\n\n## Common questions\n\n### Do you work remotely?\n\nYes.",
+    ar: "نص تجريبي.\n\n## أسئلة شائعة\n\n### هل تعملون عن بعد؟\n\nنعم.",
+    de: "Im Dashboard eingetippt.",
+  },
+  meta: {
+    seoTitle: { en: "Placeholder UAE title | KF Tech", ar: "عنوان تجريبي | KF Tech" },
+    seoDescription: { en: "Placeholder description of the UAE page.", ar: "وصف تجريبي." },
+  },
+  updatedAt: "2026-11-06T10:00:00Z",
+};
+
+describe("market pages", () => {
+  afterEach(resetSiteIdentity);
+
+  it("are in the sitemap in English and Arabic only, with en, ar and x-default alternates", async () => {
+    await writeSitemap(dir, ORIGIN, context({ markets: [MARKET], langs: ["en", "ar", "de", "fr"] }));
+    const xml = await readFile(join(dir, "sitemap.xml"), "utf8");
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(locs.filter((l) => l.endsWith("/uae"))).toEqual([`${ORIGIN}/uae`, `${ORIGIN}/ar/uae`]);
+    const entry = xml.slice(xml.indexOf(`<loc>${ORIGIN}/uae</loc>`), xml.indexOf("</url>", xml.indexOf(`<loc>${ORIGIN}/uae</loc>`)));
+    expect(entry).toContain("<lastmod>2026-11-06</lastmod>");
+    const hreflangs = [...entry.matchAll(/hreflang="([^"]+)"/g)].map((m) => m[1]);
+    expect(hreflangs.sort()).toEqual(["ar", "en", "x-default"]);
+  });
+
+  it("are left out of everything until the CMS has one", async () => {
+    const ctx = context();
+    await writeSitemap(dir, ORIGIN, ctx);
+    await writeLlmsTxt(dir, ORIGIN, ctx);
+    await writeMarkdownTwins(dir, ORIGIN, ctx);
+    expect(await readFile(join(dir, "sitemap.xml"), "utf8")).not.toContain("/uae");
+    expect(await readFile(join(dir, "llms.txt"), "utf8")).not.toContain("## Markets");
+    expect(await exists(join(dir, "uae.md"))).toBe(false);
+  });
+
+  it("get a Markets section in llms.txt, with the Arabic version named", async () => {
+    await writeLlmsTxt(dir, ORIGIN, context({ markets: [MARKET] }));
+    const txt = await readFile(join(dir, "llms.txt"), "utf8");
+    expect(txt).toContain("\n## Markets\n");
+    expect(txt).toContain("it has no office there.");
+    expect(txt).toContain(
+      `- [Placeholder UAE title](${ORIGIN}/uae): Placeholder description of the UAE page. (also in Arabic: ${ORIGIN}/ar/uae)`,
+    );
+    expect(txt.indexOf("## Markets")).toBeLessThan(txt.indexOf("## Services"));
+  });
+
+  it("get Markdown twins in English and Arabic, never German", async () => {
+    await writeMarkdownTwins(dir, ORIGIN, context({ markets: [MARKET], langs: ["en", "ar", "de"] }));
+    const en = await readFile(join(dir, "uae.md"), "utf8");
+    expect(en).toContain(`\nurl: ${ORIGIN}/uae\n`);
+    expect(en).toContain("\n# Placeholder UAE heading\n");
+    expect(en).toContain(`[our services](${ORIGIN}/services)`);
+    expect(en).toContain("### Do you work remotely?");
+    expect(await readFile(join(dir, "ar/uae.md"), "utf8")).toContain("\n# عنوان تجريبي للإمارات\n");
+    expect(await exists(join(dir, "de/uae.md"))).toBe(false);
+  });
+
+  it("go into llms-full.txt after the service pages", async () => {
+    const full = await writeLlmsFull(dir, ORIGIN, context({ markets: [MARKET] }));
+    const txt = await readFile(join(dir, "llms-full.txt"), "utf8");
+    expect(txt).toContain("\n# Placeholder UAE heading\n");
+    expect(txt).not.toContain("عنوان تجريبي للإمارات");
+    // home, about, services, contact and the market page.
+    expect(full).toMatchObject({ pages: 5, dropped: 0 });
   });
 });

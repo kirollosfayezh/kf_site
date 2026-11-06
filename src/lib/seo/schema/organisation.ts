@@ -13,6 +13,11 @@ export const AREA_SERVED = [
   { "@type": "Country", name: "Egypt" },
   { "@type": "Country", name: "Saudi Arabia" },
   { "@type": "Country", name: "United Arab Emirates" },
+  // The rest of the GCC, served from the /gulf page.
+  { "@type": "Country", name: "Kuwait" },
+  { "@type": "Country", name: "Qatar" },
+  { "@type": "Country", name: "Bahrain" },
+  { "@type": "Country", name: "Oman" },
   { "@type": "Country", name: "Germany" },
   { "@type": "Country", name: "France" },
   { "@type": "Country", name: "United Kingdom" },
@@ -57,6 +62,13 @@ export const KNOWS_ABOUT = [
   "System integration",
   "ETA e-invoicing and e-receipt integration",
   "Nearshore software development",
+  // Gulf work: the site itself is a four-language right-to-left build, and
+  // e-invoicing integration is offered to the published ZATCA and UAE
+  // specifications — work KF builds, never an accreditation it holds.
+  // Payment gateways and Salla/Zid stay out until one has been built.
+  "Arabic-first (RTL) websites and mobile apps",
+  "ZATCA e-invoicing (FATOORA Phase 2) integration",
+  "UAE e-invoicing (PINT AE) data preparation and ASP integration",
 ];
 
 /**

@@ -116,14 +116,22 @@ export const INDEXABLE_PAGES = Object.values(PAGES).filter((p) => !p.noindex);
 export const PRERENDER_PAGES = Object.values(PAGES).filter((p) => p.path !== "/404" && p.path !== "/q");
 
 /**
- * Routes whose page owns its own metadata, built from fetched data. The
+ * Routes whose page owns its own metadata, built from fetched data. An entry
+ * ending in "/" is a prefix (every `/blog/<slug>`); any other is one exact
+ * path — the country pages, so that `/uae` never also claims `/uae-whatever`,
+ * which must still resolve to the not-found entry. The
  * Layout's `RouteSeo` must return null for these: effects run child-first, so
  * if it resolved them it would run *after* the page and overwrite the article's
  * tags with — since no PAGES entry matches — the noindex "Page not found" set.
  * That is exactly what happened to every case study and legal page on a
  * client-side navigation.
  */
-export const SELF_DESCRIBED = ["/blog/", "/projects/", "/legal/", "/services/"];
+export const SELF_DESCRIBED = ["/blog/", "/projects/", "/legal/", "/services/", "/saudi-arabia", "/uae", "/gulf"];
+
+/** Whether a (language-free, slash-trimmed) path is one of `SELF_DESCRIBED`. */
+export function isSelfDescribed(clean: string): boolean {
+  return SELF_DESCRIBED.some((entry) => (entry.endsWith("/") ? clean.startsWith(entry) : clean === entry));
+}
 
 /** Resolve a pathname to its PAGES entry. Returns null for routes that own
  *  their own metadata (`/blog/:id`, `/projects/:slug`, `/legal/:slug`). */
@@ -139,7 +147,7 @@ export function pageForPathIn(
   pathname: string,
 ): PageSeo | null {
   const clean = pathname.replace(/\/+$/, "") || "/";
-  if (SELF_DESCRIBED.some((prefix) => clean.startsWith(prefix))) return null;
+  if (isSelfDescribed(clean)) return null;
   if (clean.startsWith("/q/")) return pages.quote ?? PAGES.quote;
   return Object.values(pages).find((p) => p.path === clean) ?? pages.notFound ?? PAGES.notFound;
 }

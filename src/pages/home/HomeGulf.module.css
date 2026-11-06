@@ -1,0 +1,53 @@
+/* ---------------------------------------------------------------- gulf -- */
+/* A slim band, not a section: one bordered panel with the heading on one
+   side and three short facts on the other, in the "values" card style. */
+.wrap { max-width: 1280px; margin: 0 auto; padding: clamp(24px, 4vw, 48px) 24px; }
+.band {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  padding: clamp(24px, 3.5vw, 40px);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--panel);
+}
+/* The brand glow, faint, from the start edge. */
+.band::before {
+  content: "";
+  position: absolute;
+  inset-block: -40%;
+  inset-inline-start: -15%;
+  width: 45%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--brand-orange) 14%, transparent), transparent);
+  pointer-events: none;
+}
+.head { position: relative; }
+.title {
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+.lede { margin-top: 10px; color: var(--text2); font-size: var(--fs-ui); line-height: 1.55; }
+.links { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.links:empty { display: none; }
+
+.facts { position: relative; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.fact { display: flex; gap: 12px; padding: 18px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg2); }
+.factNo { font-family: var(--font-mono); font-size: var(--fs-label); color: var(--brand-text); padding-top: 3px; }
+.factTitle { display: block; font-family: var(--font-display); font-weight: 700; font-size: var(--fs-body); }
+.factDesc { display: block; margin-top: 5px; color: var(--text2); font-size: var(--fs-ui); line-height: 1.5; }
+
+@media (max-width: 1100px) {
+  .band { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .facts { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .fact { padding: 14px 16px; }
+}

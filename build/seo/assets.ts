@@ -35,6 +35,7 @@ export const ITEM_MODULES = {
   project: "src/pages/ProjectCaseStudy.tsx",
   legal: "src/pages/Legal.tsx",
   service: "src/pages/ServiceDetail.tsx",
+  market: "src/pages/MarketDetail.tsx",
 } as const;
 
 

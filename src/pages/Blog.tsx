@@ -1,14 +1,21 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
-import { pick, metaString, pickPlain } from "../lib/content-helpers";
+import { BLOG_REGIONS, listedIn, pick, metaString, pickPlain, postRegions, type BlogRegion } from "../lib/content-helpers";
 import { cardMinutes } from "../lib/reading-time";
 import { useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
 import { Img } from "../components/Img";
 import s from "../styles/sections.module.css";
+import b from "./Blog.module.css";
 
 const ALL = "All";
+
+/**
+ * Cards per step under the featured article. Twelve fills whole rows at every
+ * width the grid has — one to four columns — so a page never ends ragged.
+ */
+const PAGE = 12;
 
 /**
  * "POS SYSTEM · 12 AUG 2026 · 8 MIN" — the meta line the original cards show.
@@ -50,28 +57,77 @@ function metaLine(
 export function Blog() {
   const { t, lang } = useI18n();
   const posts = useContentList("blogPosts");
+  // Both filters and the page start as "everything, first page" in the build
+  // and in the browser alike, so the prerendered HTML hydrates as it is; only
+  // a click changes them.
+  const [region, setRegion] = useState<BlogRegion | typeof ALL>(ALL);
   const [cat, setCat] = useState(ALL);
+  const [shown, setShown] = useState(PAGE);
 
-  const all = useMemo(() => posts.data ?? [], [posts.data]);
+  // Only posts written in this language: an English-only post on /de/blog
+  // would be an English card leading to a page that is not in German.
+  const all = useMemo(() => (posts.data ?? []).filter((p) => listedIn(p.meta, lang)), [posts.data, lang]);
+
+  // Regions come from the posts' English tags. The row appears once two
+  // regions have posts, and a region with none gets no chip, so no chip ever
+  // leads to an empty list.
+  const regionsOf = useMemo(() => new Map(all.map((p) => [p.id, postRegions(p.meta)])), [all]);
+  const regions = useMemo(
+    () => BLOG_REGIONS.map((r) => r.label).filter((r) => all.some((p) => regionsOf.get(p.id)?.includes(r))),
+    [all, regionsOf],
+  );
+  const showRegions = regions.length > 1;
+  const regionChips: (BlogRegion | typeof ALL)[] = [ALL, ...regions];
+  const activeRegion = showRegions && region !== ALL && regions.includes(region) ? region : ALL;
+  const inRegion = useMemo(
+    () => (activeRegion === ALL ? all : all.filter((p) => regionsOf.get(p.id)?.includes(activeRegion))),
+    [all, regionsOf, activeRegion],
+  );
 
   // Categories come from the posts themselves (`meta.tag`), so publishing a new
-  // category in the dashboard adds a filter here with no code change.
+  // category in the dashboard adds a filter here with no code change. Only the
+  // chosen region's, for the same reason as above.
   const cats = useMemo(() => {
     const seen: string[] = [];
-    for (const p of all) {
+    for (const p of inRegion) {
       const tag = metaString(p.meta, "tag");
       if (tag && !seen.includes(tag)) seen.push(tag);
     }
     return [ALL, ...seen];
-  }, [all]);
+  }, [inRegion]);
+  const activeCat = cats.includes(cat) ? cat : ALL;
 
-  const filtered = cat === ALL ? all : all.filter((p) => metaString(p.meta, "tag") === cat);
+  const filtered = activeCat === ALL ? inRegion : inRegion.filter((p) => metaString(p.meta, "tag") === activeCat);
 
   // The original export leads with a featured article above the grid. It is
   // taken from the published list rather than hardcoded, so the CMS stays the
   // source of truth; the grid then shows the rest.
   const featured = filtered[0];
   const rest = featured ? filtered.slice(1) : filtered;
+
+  // "Show more" moves focus to the first card it revealed, so a keyboard or
+  // screen-reader user continues from the new cards, not from the button.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const focusFrom = useRef<number | null>(null);
+  useEffect(() => {
+    const i = focusFrom.current;
+    if (i === null) return;
+    focusFrom.current = null;
+    (gridRef.current?.children[i] as HTMLElement | undefined)?.focus({ preventScroll: true });
+  }, [shown]);
+
+  const chooseRegion = (next: BlogRegion | typeof ALL) => {
+    setRegion(next);
+    setShown(PAGE);
+  };
+  const chooseCat = (next: string) => {
+    setCat(next);
+    setShown(PAGE);
+  };
+  const showMore = () => {
+    focusFrom.current = shown;
+    setShown(shown + PAGE);
+  };
 
   return (
     <div>
@@ -92,20 +148,47 @@ export function Blog() {
         </div>
       </section>
 
-      {cats.length > 1 && (
+      {(showRegions || cats.length > 1) && (
         <section className={s.section} style={{ paddingTop: 0, paddingBottom: 32 }}>
-          <div className={s.catRow}>
-            {cats.map((c) => (
-              <button
-                key={c}
-                type="button"
-                aria-pressed={c === cat}
-                className={`${s.catBtn} ${c === cat ? s.catBtnOn : ""}`}
-                onClick={() => setCat(c)}
+          <div className={b.filters}>
+            {/* Two rows that each start with "All" need saying which is which;
+                with the topic row alone the page looks as it always did. */}
+            {showRegions && (
+              <div className={s.catRow} role="group" aria-labelledby="blog-filter-region">
+                <span id="blog-filter-region" className={b.rowLabel}>{t("Region")}</span>
+                {regionChips.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={r === activeRegion}
+                    className={`${s.catBtn} ${r === activeRegion ? s.catBtnOn : ""}`}
+                    onClick={() => chooseRegion(r)}
+                  >
+                    {t(r)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {cats.length > 1 && (
+              <div
+                className={s.catRow}
+                role="group"
+                {...(showRegions ? { "aria-labelledby": "blog-filter-topic" } : { "aria-label": t("Topic") })}
               >
-                {pickPlain(c, lang)}
-              </button>
-            ))}
+                {showRegions && <span id="blog-filter-topic" className={b.rowLabel}>{t("Topic")}</span>}
+                {cats.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-pressed={c === activeCat}
+                    className={`${s.catBtn} ${c === activeCat ? s.catBtnOn : ""}`}
+                    onClick={() => chooseCat(c)}
+                  >
+                    {pickPlain(c, lang)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -144,11 +227,13 @@ export function Blog() {
           </Reveal>
         )}
 
-        <div className={s.grid}>
-          {rest.map((post) => {
+        {/* Every card is in the HTML, so a crawler finds every article from
+            here; the ones past the current page are only out of the layout. */}
+        <div className={s.grid} id="blog-cards" ref={gridRef}>
+          {rest.map((post, i) => {
             const tag = metaString(post.meta, "tag");
             return (
-              <Link key={post.id} to={`/blog/${post.slug || post.id}`} className={s.card}>
+              <Link key={post.id} to={`/blog/${post.slug || post.id}`} className={`${s.card} ${i >= shown ? b.later : ""}`}>
                 <Reveal>
                   <div className={s.cardMedia}>
                     {post.media?.[0] ? (
@@ -171,6 +256,14 @@ export function Blog() {
             );
           })}
         </div>
+
+        {rest.length > shown && (
+          <div className={b.moreRow}>
+            <button type="button" className="btn btn-outline" aria-controls="blog-cards" onClick={showMore}>
+              {t("Show more")}
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Closing CTA band from the original export. */}

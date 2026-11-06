@@ -5,6 +5,7 @@ import { useContentList } from "../hooks/useContent";
 import { FALLBACK_SOLUTIONS } from "../lib/fallback-content";
 import { Reveal } from "../components/Reveal";
 import { CheckIcon } from "../components/CheckIcon";
+import { MarketAnchor, useMarketLinks } from "./home/HomeGulf";
 import s from "../styles/sections.module.css";
 
 interface Row {
@@ -22,6 +23,7 @@ interface Row {
 export function Solutions() {
   const { t, lang } = useI18n();
   const solutions = useContentList("solutions");
+  const markets = useMarketLinks(["saudi-arabia", "uae"]);
 
   // Empty *and* failed responses both fall back to static copy.
   const items: Row[] =
@@ -106,6 +108,17 @@ export function Solutions() {
               {t("See our work")}
             </Link>
           </div>
+          {/* Only once a country page is published: the question needs somewhere to go. */}
+          {markets.length > 0 && (
+            <p className={s.finalCtaLede} style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "baseline", gap: "6px 18px" }}>
+              <span>{t("Serving Saudi Arabia or the UAE?")}</span>
+              {markets.map((m) => (
+                <MarketAnchor key={m.slug} link={m} className={s.textLink} track={`solutions.market.${m.slug}`}>
+                  {t(m.name)} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
+                </MarketAnchor>
+              ))}
+            </p>
+          )}
         </Reveal>
       </section>
     </div>

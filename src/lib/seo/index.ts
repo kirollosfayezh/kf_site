@@ -26,6 +26,7 @@
  * - `schema/`      JSON-LD nodes (organisation, services, page-level)
  * - `cms.ts`       entries for articles, case studies and legal pages
  * - `service-page.ts` entries and schema for `/services/:slug`
+ * - `market-page.ts`  entries for the country pages (`/saudi-arabia`, `/uae`, `/gulf`)
  * - `tags.ts`      the head-tag descriptors and their static HTML
  * - `overrides.ts` dashboard SEO overrides merged onto PAGES
  */
@@ -54,5 +55,17 @@ export { articleSchema, breadcrumbSchema, faqSchema } from "./schema/page.ts";
 export { webPageSchema } from "./schema/webpage.ts";
 export { articlePageSeo, availableLangs, legalPageSeo, projectPageSeo, projectSchema } from "./cms.ts";
 export { serviceHeadline, serviceLangs, serviceLede, servicePageSeo } from "./service-page.ts";
+export {
+  MARKETS,
+  MARKET_LANGS,
+  isMarketSlug,
+  marketCard,
+  marketLangs,
+  marketLinks,
+  marketPageSeo,
+  marketPath,
+  type MarketLink,
+  switchLanguagePath,
+} from "./market-page.ts";
 export { seoTags, tagsToHtml, type SeoOptions, type SeoTag } from "./tags.ts";
 export { mergeSeoOverrides, type SeoOverride } from "./overrides.ts";

@@ -26,6 +26,7 @@ import {
   fetchArticles,
   fetchCollection,
   fetchLegal,
+  fetchMarkets,
   fetchProjects,
   fetchSeoOverrides,
   fetchSettings,
@@ -75,7 +76,7 @@ export async function runSeoBuild(input: {
 
   const settings = await fetchSettings(apiBase);
   const langs = enabledLangs(settings);
-  const [articles, projects, legal, services, solutions, faqs, testimonials, aboutSections, promos, overrides, ...translationMaps] =
+  const [articles, projects, legal, services, solutions, faqs, testimonials, aboutSections, promos, markets, overrides, ...translationMaps] =
     await Promise.all([
       fetchArticles(apiBase),
       fetchProjects(apiBase),
@@ -86,6 +87,7 @@ export async function runSeoBuild(input: {
       fetchCollection(apiBase, "testimonials"),
       fetchCollection(apiBase, "aboutSections"),
       fetchCollection(apiBase, "promos"),
+      fetchMarkets(apiBase, warnings),
       fetchSeoOverrides(apiBase),
       ...langs.map((l) => fetchTranslations(apiBase, l)),
     ]);
@@ -115,6 +117,7 @@ export async function runSeoBuild(input: {
     testimonials,
     aboutSections,
     promos,
+    markets,
     translations,
     langs,
     twitterSite: settings?.social?.x?.trim() || undefined,
@@ -152,7 +155,7 @@ export async function runSeoBuild(input: {
 
   const prerendered =
     `prerendered ${counts.routes} routes + ${counts.articles} articles + ${counts.projects} case studies + ${counts.services} services + ` +
-    `${counts.legal} legal (${ctx.langs.join(", ")}${ssr ? ", full pages" : ", head only"})`;
+    `${counts.markets} country pages + ${counts.legal} legal (${ctx.langs.join(", ")}${ssr ? ", full pages" : ", head only"})`;
 
   if (!origin) return { summary: `SEO: ${prerendered} (no origin set)`, warnings };
 
@@ -179,4 +182,4 @@ export async function runSeoBuild(input: {
   };
 }
 
-export { fetchArticles, fetchProjects, fetchLegal, fetchCollection };
+export { fetchArticles, fetchProjects, fetchLegal, fetchCollection, fetchMarkets };

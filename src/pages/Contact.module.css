@@ -11,6 +11,8 @@
 @media (max-width: 560px) { .fieldsGrid { grid-template-columns: 1fr; } }
 
 .field { display: flex; flex-direction: column; gap: 7px; }
+/* The shared phone control sits in the grid like any other field. */
+.phoneCell { min-width: 0; }
 .fieldLabel { font-size: var(--fs-ui); color: var(--text2); }
 .input {
   background: var(--field);

@@ -21,6 +21,8 @@ import {
   legalPageSeo,
   localePath,
   markdownPath,
+  marketLangs,
+  marketPageSeo,
   projectPageSeo,
   resolveDesc,
   resolveTitle,
@@ -48,7 +50,7 @@ import { faqItems, localized, pageFor } from "./prerender.ts";
 import { day } from "./sitemap.ts";
 
 /** Which page a twin belongs to, for `llms-full.txt` to choose from. */
-export type TwinKind = "page" | "article" | "project" | "service" | "legal";
+export type TwinKind = "page" | "article" | "project" | "service" | "market" | "legal";
 
 export interface Twin {
   lang: Lang;
@@ -264,6 +266,12 @@ export function markdownTwins(origin: string, ctx: BuildContext): Twin[] {
       if (!serviceLangs(item, ctx.langs).includes(lang)) continue;
       const page = servicePageSeo(item, lang, ctx.langs, extractFaq(localized(item.body, lang)));
       out.push(twin(origin, page, lang, "service", itemBody(page, lang, origin)));
+    }
+    // Country pages: the same English and Arabic files the prerender writes.
+    for (const item of ctx.markets) {
+      if (!marketLangs(item, ctx.langs).includes(lang)) continue;
+      const page = marketPageSeo(item, lang, ctx.langs, extractFaq(localized(item.body, lang)));
+      out.push(twin(origin, page, lang, "market", itemBody(page, lang, origin)));
     }
     for (const doc of ctx.legal) {
       if (!availableLangs(doc, ctx.langs).includes(lang)) continue;

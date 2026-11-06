@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LANG_META, useI18n, type Lang } from "../lib/i18n";
-import { localePath } from "../lib/seo";
+import { switchLanguagePath } from "../lib/seo";
 import { useTheme } from "../lib/theme";
 import { pick, isConcept } from "../lib/content-helpers";
 import { useContentList } from "../hooks/useContent";
@@ -258,7 +258,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
                 {available.map((code) => (
                   <a
                     key={code}
-                    href={localePath(code, location.pathname)}
+                    href={switchLanguagePath(code, location.pathname)}
                     hrefLang={code}
                     role="radio"
                     aria-checked={code === lang}

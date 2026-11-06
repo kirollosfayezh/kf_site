@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { scrollToTop } from "../lib/smooth-scroll";
 import { LANG_META, useI18n } from "../lib/i18n";
-import { localePath } from "../lib/seo";
+import { switchLanguagePath } from "../lib/seo";
 import { FlagIcon } from "./FlagIcon";
 import { MobileMenu } from "./MobileMenu";
 import { useTheme } from "../lib/theme";
@@ -171,7 +171,7 @@ export function Nav() {
                        read once at startup. Loading the new URL keeps the
                        address bar, the served HTML and the rendered language
                        in agreement. */
-                    href={localePath(code, location.pathname)}
+                    href={switchLanguagePath(code, location.pathname)}
                     hrefLang={code}
                     role="menuitemradio"
                     aria-checked={code === lang}

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { useOptionalLang } from "./i18n";
+import { MARKET_LANGS, isMarketSlug } from "./seo/market-page.ts";
 
 /**
  * A small Markdown subset, rendered to React elements.
@@ -49,6 +51,26 @@ export { extractFaq } from "./faq";
 
 const INLINE = /(\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|\[[^\]]+\]\([^)\s]+\))/g;
 
+/**
+ * A link to a page of this site. It goes through the router, so `/services/x`
+ * inside an Arabic article lands on `/ar/services/x` without a reload — except
+ * a country page (`/uae`) in a language it is not written in (German, French):
+ * that prefix has no page, so the link goes to the English one by a plain
+ * href, as the footer's do.
+ */
+function SiteLink({ href, children }: { href: string; children: ReactNode }) {
+  const lang = useOptionalLang();
+  const slug = /^\/([a-z-]+)\/?(?:[#?].*)?$/.exec(href)?.[1];
+  if (lang && isMarketSlug(slug) && !MARKET_LANGS.includes(lang)) {
+    return (
+      <a href={href} hrefLang="en">
+        {children}
+      </a>
+    );
+  }
+  return <Link to={href}>{children}</Link>;
+}
+
 function inline(text: string, keyPrefix: string): ReactNode[] {
   const out: ReactNode[] = [];
   let i = 0;
@@ -73,9 +95,9 @@ function inline(text: string, keyPrefix: string): ReactNode[] {
       // article lands on `/ar/services/x` without a full page reload.
       if (href.startsWith("/") && !href.startsWith("//")) {
         out.push(
-          <Link key={key} to={href}>
+          <SiteLink key={key} href={href}>
             {label}
-          </Link>,
+          </SiteLink>,
         );
         continue;
       }
@@ -98,6 +120,20 @@ function inline(text: string, keyPrefix: string): ReactNode[] {
 /* ------------------------------------------------------------------ blocks */
 
 const isTableRow = (l: string) => l.trim().startsWith("|") && l.trim().endsWith("|");
+
+/**
+ * A line that continues the list item above it: not blank, and not the start
+ * of another block (a new item of either kind, a heading, table, quote, fence
+ * or rule). Indented or not — Markdown's "lazy" continuation reads the same.
+ */
+function isContinuation(line: string): boolean {
+  const t = line.trim();
+  if (!t) return false;
+  if (/^(\d+[.)]|[-*])\s+/.test(t)) return false;
+  if (/^#{1,6}\s/.test(t) || t.startsWith(">") || t.startsWith("```") || isTableRow(line)) return false;
+  if (/^(---|\*\*\*|___)$/.test(t)) return false;
+  return true;
+}
 const cells = (l: string) =>
   l
     .trim()
@@ -234,14 +270,22 @@ export function renderRichText(source: string): { blocks: ReactNode[]; headings:
       const items: string[] = [];
       const matches = (l: string) =>
         ordered ? /^\d+[.)]\s+/.test(l.trim()) : /^[-*]\s+/.test(l.trim());
+      // A numbered list that a blank line split in two keeps counting from the
+      // number written in the source, instead of restarting at 1.
+      const start = ordered ? Number(/^(\d+)/.exec(trimmed)![1]) : 1;
       while (i < lines.length && matches(lines[i])) {
-        items.push(lines[i].trim().replace(/^(\d+[.)]|[-*])\s+/, ""));
+        let item = lines[i].trim().replace(/^(\d+[.)]|[-*])\s+/, "");
         i++;
+        // The articles hard-wrap long items onto indented lines. Those lines
+        // belong to the item: reading only the first one turned the rest into
+        // a stray paragraph and restarted every numbered list at 1.
+        while (i < lines.length && isContinuation(lines[i])) item += ` ${lines[i++].trim()}`;
+        items.push(item);
       }
       i--;
       const Tag = ordered ? "ol" : "ul";
       blocks.push(
-        <Tag key={`l-${k++}`}>
+        <Tag key={`l-${k++}`} {...(ordered && start !== 1 ? { start } : {})}>
           {items.map((it, ii) => (
             <li key={ii}>{inline(it, `li${k}-${ii}`)}</li>
           ))}

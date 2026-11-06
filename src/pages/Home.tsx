@@ -15,6 +15,7 @@ import { HomeProjects } from "./home/HomeProjects";
 import { HomeProcess } from "./home/HomeProcess";
 import { HomeIncluded } from "./home/HomeIncluded";
 import { HomeWhy } from "./home/HomeWhy";
+import { HomeGulf } from "./home/HomeGulf";
 import { HomeFaq } from "./home/HomeFaq";
 import { HomeFinalCta } from "./home/HomeFinalCta";
 
@@ -52,6 +53,7 @@ export function Home() {
       <HomeProcess />
       <HomeIncluded />
       <HomeWhy waLink={waLink} />
+      <HomeGulf />
       <HomeSolutions solutions={solutions.data} />
 
       {/* CLIENTS — from the dashboard's Testimonials collection; renders

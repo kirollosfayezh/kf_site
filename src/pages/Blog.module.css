@@ -1,0 +1,32 @@
+/* ---- Blog index: filter rows and paging ---------------------------------- */
+
+/* The region row above the topic row; both reuse `catRow`/`catBtn`. */
+.filters { display: grid; gap: 12px; }
+/* Names a row only when there are two. Wide enough for the longest of the
+   four languages' words, so both rows' chips start on one line. */
+.rowLabel {
+  align-self: center;
+  min-width: 78px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+@media (max-width: 640px) {
+  .rowLabel { flex-basis: 100%; min-width: 0; }
+}
+
+/*
+ * Cards past the current page. They stay in the prerendered HTML, so every
+ * article is linked from /blog for a crawler, and are only taken out of the
+ * layout until "Show more". `!important` because the element also carries the
+ * shared `card` class, whose `display` would otherwise win on source order.
+ * Without JavaScript there is no button to press, so they simply show.
+ */
+.later { display: none !important; }
+.moreRow { margin-top: 40px; display: flex; justify-content: center; }
+@media (scripting: none) {
+  .later { display: block !important; }
+  .moreRow { display: none; }
+}

@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useI18n } from "../lib/i18n";
 import { useFaqSchema, useSeo } from "../components/Seo";
 import { PAGES, SITE_ORIGIN, absolute, articlePageSeo, localePath, type PageSeo } from "../lib/seo";
-import { pick, pickPlain, metaString, metaPoints } from "../lib/content-helpers";
+import { articleExtras, listedIn, pick, pickPlain, metaString } from "../lib/content-helpers";
 import { renderRichText, readingMinutes, extractFaq } from "../lib/rich-text";
 import { useContentItem, useContentList } from "../hooks/useContent";
 import { Reveal } from "../components/Reveal";
@@ -27,19 +27,6 @@ function formatDate(iso: string | undefined, lang: string): string {
       timeZone: "UTC",
     })
     .toUpperCase();
-}
-
-/**
- * `meta.stats` — the design export's "THE ROUGH MATH" band. Stored as
- * `["40 min", "saved per night"]` pairs so an editor can add one without a
- * schema change; anything malformed is skipped rather than rendered half-empty.
- */
-function readStats(meta: Record<string, unknown> | undefined): { value: string; label: string }[] {
-  const raw = meta?.stats;
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((r): r is string[] => Array.isArray(r) && typeof r[0] === "string" && typeof r[1] === "string")
-    .map(([value, label]) => ({ value, label }));
 }
 
 export function Article() {
@@ -71,12 +58,13 @@ export function Article() {
 
   const tag = metaString(post?.meta, "tag");
 
-  /** Same category first, newest otherwise — and never this post. */
+  /** Same category first, newest otherwise — never this post, and never one
+   *  that is not written in this language (its link would serve English). */
   const related = useMemo(() => {
-    const items = (all.data ?? []).filter((x) => x.id !== post?.id && x.slug !== post?.slug);
+    const items = (all.data ?? []).filter((x) => x.id !== post?.id && x.slug !== post?.slug && listedIn(x.meta, lang));
     const sameTag = items.filter((x) => metaString(x.meta, "tag") === tag);
     return (sameTag.length ? sameTag : items).slice(0, 3);
-  }, [all.data, post?.id, post?.slug, tag]);
+  }, [all.data, post?.id, post?.slug, tag, lang]);
 
   if (loading) return <p className={s.state} style={{ paddingTop: 160 }}>{t("Loading…")}</p>;
   if (error || !post) {
@@ -91,9 +79,9 @@ export function Article() {
   }
 
   const title = pick(post.title, lang);
-  const stats = readStats(post.meta);
-  const tags = metaPoints(post.meta, "tags");
-  const caption = metaString(post.meta, "caption");
+  // Caption, alt text, stats and tags: the translation's own where it wrote
+  // them, otherwise the English through the dictionary.
+  const { caption, alt, stats, tags } = articleExtras(post.meta, lang);
   const date = formatDate(post.createdAt, lang);
 
   return (
@@ -139,13 +127,13 @@ export function Article() {
         <figure className={s.artFigure}>
           <Img
             src={post.media[0]}
-            alt={pickPlain(metaString(post.meta, "alt"), lang) || title}
+            alt={alt || title}
             width={1200}
             sizes="(max-width: 1280px) 100vw, 1200px"
             priority
             style={{ width: "100%", borderRadius: 16, border: "1px solid var(--border)" }}
           />
-          {caption && <figcaption className={s.artCaption}>{pickPlain(caption, lang)}</figcaption>}
+          {caption && <figcaption className={s.artCaption}>{caption}</figcaption>}
         </figure>
       )}
 
@@ -175,8 +163,8 @@ export function Article() {
             <div className={s.artStats}>
               {stats.map((m) => (
                 <div key={m.label}>
-                  <div className={s.artStatValue} dir="auto">{pickPlain(m.value, lang)}</div>
-                  <div className={s.artStatLabel}>{pickPlain(m.label, lang)}</div>
+                  <div className={s.artStatValue} dir="auto">{m.value}</div>
+                  <div className={s.artStatLabel}>{m.label}</div>
                 </div>
               ))}
             </div>
@@ -185,7 +173,7 @@ export function Article() {
           {tags.length > 0 && (
             <div className={s.artTags}>
               {tags.map((x) => (
-                <span key={x} className={s.artTag}>{pickPlain(x, lang)}</span>
+                <span key={x} className={s.artTag}>{x}</span>
               ))}
             </div>
           )}

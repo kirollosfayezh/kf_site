@@ -1,3 +1,4 @@
+import { articleExtras } from "../../content-helpers.ts";
 import { LANGS, type Lang } from "../../langs.ts";
 import { OG_IMAGE, SITE } from "../site.ts";
 import { resolveDesc, resolveTitle, tr } from "../text.ts";
@@ -68,9 +69,10 @@ export function articleSchema(
 ) {
   const available = page.langs ?? LANGS;
   const url = absolute(origin, available.includes(lang) ? localePath(lang, page.path) : page.path);
-  const tags = Array.isArray(page.item?.meta?.tags)
-    ? (page.item!.meta!.tags as unknown[]).filter((x): x is string => typeof x === "string")
-    : [];
+  // In the language of the body served (`inLanguage` below), as the tag chips
+  // under the article show them: a translation's own tags where it wrote
+  // them, else the English ones through the dictionary.
+  const tags = articleExtras(page.item?.meta, available.includes(lang) ? lang : "en").tags;
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",

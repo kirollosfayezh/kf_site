@@ -9,11 +9,14 @@ import {
   allAlternateNames,
   disambiguation,
   articlePageSeo,
+  marketLangs,
+  marketPageSeo,
   projectPageSeo,
   servicePath,
   resolveDesc,
   resolveTitle,
   markdownPath,
+  localePath,
   siteIdentity,
   type Lang,
   type PageSeo,
@@ -40,6 +43,7 @@ export const INDUSTRIES = [
   "Businesses issuing receipts in Egypt: POS integration with the ETA e-invoicing and e-receipt system",
   "Startups: mobile app MVPs for iOS and Android",
   "Companies abroad: nearshore software development from Egypt",
+  "Businesses in Saudi Arabia and the UAE, served remotely from Cairo: Arabic-first websites and mobile apps, POS and ERP systems, WhatsApp automation",
 ];
 
 /**
@@ -48,7 +52,7 @@ export const INDUSTRIES = [
  * in Arabic, German or French can tie those queries to this company.
  */
 export const SEARCH_TERMS: Partial<Record<Lang, string>> = {
-  ar: "شركة برمجيات في مصر، شركة تصميم وبرمجة مواقع في مصر، برنامج كاشير للمطاعم والمحلات، برنامج مخازن، برنامج إدارة عيادات، برنامج صيدلية، CRM عقاري، نظام ERP للشركات الصغيرة، تطبيقات موبايل، متجر إلكتروني، شات بوت واتساب، ربط الكاشير بمنظومة الفاتورة الإلكترونية",
+  ar: "شركة برمجيات في مصر، شركة تصميم وبرمجة مواقع في مصر، برنامج كاشير للمطاعم والمحلات، برنامج مخازن، برنامج إدارة عيادات، برنامج صيدلية، CRM عقاري، نظام ERP للشركات الصغيرة، تطبيقات موبايل، تطبيقات الجوال، متجر إلكتروني، شات بوت واتساب، ربط الكاشير بمنظومة الفاتورة الإلكترونية، شركة برمجة في السعودية، تصميم تطبيقات الجوال في السعودية، تصميم مواقع إلكترونية في السعودية والإمارات، الرد الآلي على واتساب للأعمال",
   de: "Softwareentwicklung in Ägypten, Individualsoftware, Kassensystem, Warenwirtschaft, Praxissoftware, Apothekensoftware, Immobilien-CRM, ERP für kleine Unternehmen, App-Entwicklung, Webentwicklung, KI-Automatisierung, Nearshoring nach Ägypten",
   fr: "développement logiciel en Égypte, logiciel sur mesure, logiciel de caisse, gestion de stock, logiciel de clinique, logiciel de pharmacie, CRM immobilier, ERP pour PME, développement d'applications mobiles, création de site web, automatisation IA, nearshoring en Égypte",
 };
@@ -150,7 +154,7 @@ ${others
 
 ${["home", "services", "solutions", "projects", "about", "blog", "contact", "book"].map((k) => line(page(k))).join("\n")}
 
-## Services
+${markets(origin, ctx)}## Services
 
 ${SERVICES.map((s) => `- [${s.name}](${absolute(origin, servicePath(s.slug))}): ${s.desc}`).join("\n")}
 
@@ -164,7 +168,7 @@ ${ctx.articles.length ? ctx.articles.map((a) => item(articlePageSeo(a, "en", ctx
 
 ## Machine-readable versions
 
-- [llms-full.txt](${absolute(origin, "/llms-full.txt")}): this file followed by the full English text of the main pages, every service page, case study, article and legal document
+- [llms-full.txt](${absolute(origin, "/llms-full.txt")}): this file followed by the full English text of the main pages, every service page, country page, case study, article and legal document
 - Markdown: every page is also published as plain Markdown at its URL plus \`.md\` (\`/index.md\` for a homepage), e.g. ${twinExamples}. Each page links its own with \`<link rel="alternate" type="text/markdown">\`.
 
 ## Contact
@@ -173,6 +177,23 @@ ${ctx.articles.length ? ctx.articles.map((a) => item(articlePageSeo(a, "en", ctx
 - Phone: ${phone}
 - Location: ${SITE.city}, Egypt — working worldwide
 `;
+}
+
+/**
+ * The country pages this build prerendered, each with its own description,
+ * and the languages it is in. Empty — no heading at all — until one exists.
+ */
+function markets(origin: string, ctx: BuildContext): string {
+  const lines = ctx.markets.flatMap((m) => {
+    const langs = marketLangs(m, ctx.langs);
+    if (!langs.includes("en")) return [];
+    const p = marketPageSeo(m, "en", ctx.langs);
+    const also = langs.includes("ar") ? ` (also in Arabic: ${absolute(origin, localePath("ar", p.path))})` : "";
+    return [`- [${p.title.split(" | ")[0]}](${absolute(origin, p.path)}): ${p.desc}${also}`];
+  });
+  return lines.length
+    ? `## Markets\n\n${SITE.name} works remotely from ${SITE.city} with businesses in these countries; it has no office there.\n\n${lines.join("\n")}\n\n`
+    : "";
 }
 
 export async function writeLlmsTxt(distDir: string, origin: string, ctx: BuildContext): Promise<void> {
@@ -184,7 +205,7 @@ export const LLMS_FULL_MAX_BYTES = 2 * 1024 * 1024;
 
 /** The static pages `llms-full.txt` carries, in this order, before every CMS page. */
 const FULL_STATIC = ["home", "about", "services", "contact"];
-const FULL_KINDS: Twin["kind"][] = ["service", "project", "article", "legal"];
+const FULL_KINDS: Twin["kind"][] = ["service", "market", "project", "article", "legal"];
 
 /**
  * `llms-full.txt` — llms.txt, then the English Markdown twins of the pages an

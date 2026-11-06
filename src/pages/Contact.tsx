@@ -1,5 +1,6 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import type { CountryCode } from "libphonenumber-js/max";
 import { useI18n } from "../lib/i18n";
 import { useFaqSchema } from "../components/Seo";
 import { pick } from "../lib/content-helpers";
@@ -10,12 +11,14 @@ import { useContactInfo } from "../lib/settings";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import { trackConversion } from "../lib/conversions";
 import { submitLead } from "../services/leads";
+import { defaultCountry, guessCountry, readPhone, rememberCountry } from "../lib/phone";
+import { PhoneField } from "../components/PhoneField";
+import { BUDGET_BANDS, budgetLabel } from "./home/gulf";
 import { ApiError } from "../services/http";
 import s from "../styles/sections.module.css";
 import c from "./Contact.module.css";
 
 const PROJECT_TYPES = ["Custom software", "Website / web app", "Mobile application", "Business system / POS", "Automation / AI", "Other"];
-const BUDGETS = ["Under $2k", "$2k – $5k", "$5k – $15k", "$15k+", "Not sure yet"];
 
 interface FormState {
   name: string;
@@ -39,6 +42,21 @@ export function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState(-1);
+  // The phone's country starts from the language, as the build knows it, and
+  // becomes the visitor's guess after mount (time zone, then browser
+  // language). The budget labels read the guess too, so the prerendered page
+  // shows dollars only and a visitor in Saudi Arabia or the UAE sees the
+  // riyal or dirham equivalent once hydrated.
+  const [country, setCountry] = useState<CountryCode>(() => defaultCountry(lang));
+  const [guessed, setGuessed] = useState<CountryCode | undefined>(undefined);
+  useEffect(() => {
+    const cc = guessCountry(lang);
+    setCountry(cc);
+    setGuessed(cc);
+  }, [lang]);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const phoneState = useMemo(() => readPhone(form.phone, country), [form.phone, country]);
 
   const faqs = useContentList("faqs");
   const faqItems = useMemo(
@@ -61,8 +79,11 @@ export function Contact() {
     if (!form.name.trim()) nextErrors.name = true;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = true;
     if (!form.message.trim()) nextErrors.message = true;
+    // The phone stays optional; one that is typed has to be a real number.
+    if (form.phone.trim() && !phoneState.valid) nextErrors.phone = true;
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
+      if (nextErrors.phone) setPhoneTouched(true);
       return;
     }
 
@@ -73,13 +94,15 @@ export function Contact() {
         source: "contact",
         name: form.name,
         email: form.email,
-        phone: form.phone || undefined,
+        // E.164, so the CRM files the number under its country.
+        phone: phoneState.e164 ?? (form.phone.trim() || undefined),
         company: form.company || undefined,
         projectType: form.ptype || undefined,
         budget: form.budget || undefined,
         message: form.message,
       });
       setSubmitted(true);
+      if (phoneState.valid && phoneState.country) rememberCountry(phoneState.country);
       // Reported here, after the API accepted it — not on the button.
       trackConversion("lead");
     } catch (err) {
@@ -100,7 +123,7 @@ export function Contact() {
               <Link to="/" style={{ color: "var(--text3)" }}>{t("Home")}</Link> / <span style={{ color: "var(--brand-text)" }}>{t("Contact")}</span>
             </nav>
             <h1 className={s.pageTitle}>{t("Tell us about your project.")}</h1>
-            <p className={s.pageLede}>{t("Share a few details and we'll get back to you with next steps — usually within one business day. Prefer to talk now? Reach us directly.")}</p>
+            <p className={s.pageLede}>{t("Share a few details and we'll get back to you with next steps — usually within one business day (Sunday–Thursday, Cairo time). Prefer to talk now? Reach us directly.")}</p>
 
             <div className={c.contactCards}>
               <a href={waLink} target="_blank" rel="noopener noreferrer" className={c.contactCard} data-track="contact.whatsapp">
@@ -147,7 +170,7 @@ export function Contact() {
                 </span>
                 <span>
                   <span className={c.contactLabel}>{t("Based in")}</span>
-                  <span className={c.contactValue}>{t("Cairo, Egypt · working worldwide")}</span>
+                  <span className={c.contactValue}>{t("Cairo, Egypt · remote delivery to the Gulf and worldwide")}</span>
                 </span>
               </div>
             </div>
@@ -204,17 +227,36 @@ export function Contact() {
                     />
                     {errors.email && <span className={c.errorText}>{t("Enter a valid email.")}</span>}
                   </label>
-                  <label className={c.field}>
-                    <span className={c.fieldLabel}>{t("Phone / WhatsApp")}</span>
-                    <input
-                      name="phone"
-                      type="tel"
+                  {/* The booking page's phone control: the country is guessed,
+                      and the number is checked against its numbering plan. */}
+                  <div className={c.phoneCell}>
+                    <PhoneField
+                      id="kf-contact-phone"
+                      size="lg"
                       value={form.phone}
-                      onChange={(e) => onField("phone", e.target.value)}
-                      placeholder="+20 ..."
-                      className={c.input}
+                      country={country}
+                      state={phoneState}
+                      showError={!!errors.phone || (phoneTouched && phoneState.complete)}
+                      lang={lang}
+                      t={t}
+                      inputRef={phoneRef}
+                      onChange={(v) => {
+                        onField("phone", v);
+                        const next = readPhone(v, country);
+                        if (next.country && next.country !== country && (v.trim().startsWith("+") || v.trim().startsWith("00") || next.valid)) {
+                          setCountry(next.country);
+                        }
+                      }}
+                      onCountryChange={(cc) => {
+                        setCountry(cc);
+                        phoneRef.current?.focus();
+                      }}
+                      onBlur={() => {
+                        if (form.phone.trim()) setPhoneTouched(true);
+                        if (phoneState.valid) onField("phone", phoneState.display);
+                      }}
                     />
-                  </label>
+                  </div>
                   <label className={c.field}>
                     <span className={c.fieldLabel}>{t("Project type")}</span>
                     <select name="ptype" value={form.ptype} onChange={(e) => onField("ptype", e.target.value)} className={c.input}>
@@ -228,8 +270,8 @@ export function Contact() {
                     <span className={c.fieldLabel}>{t("Budget range")}</span>
                     <select name="budget" value={form.budget} onChange={(e) => onField("budget", e.target.value)} className={c.input}>
                       <option value="">{t("Select...")}</option>
-                      {BUDGETS.map((b) => (
-                        <option key={b} value={b}>{t(b)}</option>
+                      {BUDGET_BANDS.map((b) => (
+                        <option key={b.value} value={b.value}>{budgetLabel(b.value, guessed, lang, t)}</option>
                       ))}
                     </select>
                   </label>
@@ -253,7 +295,7 @@ export function Contact() {
                   {submitting ? t("Sending…") : t("Send Project Request")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
                 </button>
                 {submitError && <p className={c.formError}>{t(submitError)}</p>}
-                <p className={c.formNote}>{t("We'll never share your details. Typical reply within one business day.")}</p>
+                <p className={c.formNote}>{t("We'll never share your details. Typical reply within one business day (Sunday–Thursday, Cairo time).")}</p>
               </>
             )}
           </Reveal>

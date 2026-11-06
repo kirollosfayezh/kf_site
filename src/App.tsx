@@ -9,6 +9,7 @@ import { AnalyticsProvider } from "./lib/analytics-provider";
 import { ConsentBanner } from "./components/ConsentBanner";
 import { PromoDialog } from "./components/PromoDialog";
 import { SeoProvider } from "./components/Seo";
+import { MARKETS, marketPath } from "./lib/seo";
 
 /**
  * Route-level code splitting. Every page is its own chunk, so a first visit to
@@ -26,6 +27,7 @@ const ProjectCaseStudy = lazy(() =>
 const ServiceDetail = lazy(() =>
   import("./pages/ServiceDetail").then((m) => ({ default: m.ServiceDetail })),
 );
+const MarketDetail = lazy(() => import("./pages/MarketDetail").then((m) => ({ default: m.MarketDetail })));
 const Legal = lazy(() => import("./pages/Legal").then((m) => ({ default: m.Legal })));
 const Blog = lazy(() => import("./pages/Blog").then((m) => ({ default: m.Blog })));
 const Article = lazy(() => import("./pages/Article").then((m) => ({ default: m.Article })));
@@ -122,6 +124,19 @@ export default function App({ initialLang }: { initialLang?: Lang } = {}) {
                 </Suspense>
               }
             />
+            {/* The country pages, each at the root (/saudi-arabia). Fixed paths
+                rather than a /:slug catch, which would shadow the 404. */}
+            {MARKETS.map((m) => (
+              <Route
+                key={m.slug}
+                path={marketPath(m.slug)}
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <MarketDetail slug={m.slug} />
+                  </Suspense>
+                }
+              />
+            ))}
             {/* Before /projects/:slug existed, every project card's "View" was
                 a dead span. */}
             <Route
