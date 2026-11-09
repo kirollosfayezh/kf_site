@@ -25,6 +25,7 @@ import { translate } from "../../src/lib/dict/index.ts";
 import { cardView } from "../../src/lib/reading-time.ts";
 import { FALLBACK_FAQS } from "../../src/lib/fallback-content.ts";
 import { extractFaq } from "../../src/lib/faq.ts";
+import { guidesFor, type GuideCard } from "../../src/lib/service-guides.ts";
 import { bootScript } from "../boot-script.ts";
 import {
   ITEM_MODULES,
@@ -35,6 +36,7 @@ import {
 } from "./assets.ts";
 import type { BuildContext } from "./context.ts";
 import { lastmodFor } from "./sitemap.ts";
+import { withShareCard } from "./share-cards.ts";
 import { ARABIC_FONT_PRELOAD, DISPLAY_FONT_PRELOAD, injectHead, stripStaticHead } from "./head.ts";
 
 /**
@@ -162,18 +164,30 @@ export async function renderBody(
   if (!html.includes("<h1")) throw new Error(`prerender of ${where} produced no <h1> — the page rendered a fallback instead of itself`);
   if (html.includes("kf-page-fallback")) throw new Error(`prerender of ${where} still contains the route's loading fallback`);
 
+  // A service page reads the whole blog card list only to pick its three
+  // related guides; shipping every card inline added ~65 kB to each service
+  // page. The snapshot keeps just the picked cards: hydration picks the same
+  // three from them, and the list is revalidated from the API on load anyway
+  // (`useContentList` always fetches), so no other page sees the short list.
+  const content = { ...hits };
+  const posts = content["list:blogPosts"];
+  if (moduleKey === ITEM_MODULES.service && Array.isArray(posts)) {
+    const slug = page.path.split("/").pop() ?? "";
+    content["list:blogPosts"] = guidesFor(posts as GuideCard[], slug, lang);
+  }
+
   const overrides = ctx.translations[lang];
   const snapshot = {
     v: 1,
     lang,
-    content: hits,
+    content,
     i18n: overrides && Object.keys(overrides).length ? { [lang]: overrides } : {},
   };
   // `<` would end the script element early; the line separators are invalid
   // in JavaScript source but legal in JSON.
   const json = JSON.stringify(snapshot).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
   if (json.length > 200_000) {
-    const sizes = Object.entries(hits).map(([k, v]) => `${k} ${Math.round(JSON.stringify(v).length / 1024)} kB`).join(", ");
+    const sizes = Object.entries(content).map(([k, v]) => `${k} ${Math.round(JSON.stringify(v).length / 1024)} kB`).join(", ");
     warnings.push(`${where}: the content snapshot is ${Math.round(json.length / 1024)} kB (${sizes})`);
   }
   const assets = [hoisted, assetsFor(manifest, moduleKey, lang)].filter(Boolean).join("\n  ");
@@ -288,6 +302,9 @@ export async function prerenderPages(
   // shell itself, so the shell-served pages carry it too.
   const shell = injectHead(stripStaticHead(await readFile(join(distDir, "index.html"), "utf8")), bootScript(ctx.langs));
   const opts = tagOptions(ctx);
+  // Project screenshots and dashboard uploads get a 1200×630 share card (the
+  // public/ files are already copied into dist/ by Vite).
+  const card = <T extends PageSeo>(p: T) => withShareCard(p, distDir, distDir, warnings);
   // `/q` is the client quote page: private links, served by the SPA shell.
   const prerenderable = Object.entries(ctx.pages).filter(([, p]) => p.path !== "/404" && p.path !== "/q");
 
@@ -319,7 +336,7 @@ export async function prerenderPages(
       if (!moduleKey) throw new Error(`no page module is registered for ${page.path} (build/seo-build.ts ROUTE_MODULES)`);
       const full = pageFor(ctx, page, lang, key);
       const body = await bodyFor(full, lang, moduleKey);
-      await writePage(distDir, shell, full, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      await writePage(distDir, shell, await card(full), origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       pageCount++;
     }
 
@@ -336,7 +353,7 @@ export async function prerenderPages(
       const faq = extractFaq(localized(post.body, lang));
       const page = { ...articlePageSeo(post, lang, ctx.langs), ...(faq.length ? { faq } : {}) };
       const body = await bodyFor(page, lang, ITEM_MODULES.article);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      await writePage(distDir, shell, await card(page), origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       articleCount++;
     }
 
@@ -345,7 +362,7 @@ export async function prerenderPages(
       if (!availableLangs(item, ctx.langs).includes(lang)) continue;
       const page = projectPageSeo(item, lang, ctx.langs);
       const body = await bodyFor(page, lang, ITEM_MODULES.project);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      await writePage(distDir, shell, await card(page), origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       projectCount++;
     }
 
@@ -356,7 +373,7 @@ export async function prerenderPages(
       const faq = extractFaq(localized(item.body, lang));
       const page = servicePageSeo(item, lang, ctx.langs, faq);
       const body = await bodyFor(page, lang, ITEM_MODULES.service);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      await writePage(distDir, shell, await card(page), origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       serviceCount++;
     }
 
@@ -367,7 +384,7 @@ export async function prerenderPages(
       const faq = extractFaq(localized(item.body, lang));
       const page = marketPageSeo(item, lang, ctx.langs, faq);
       const body = await bodyFor(page, lang, ITEM_MODULES.market);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      await writePage(distDir, shell, await card(page), origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       marketCount++;
     }
 
@@ -376,7 +393,7 @@ export async function prerenderPages(
       if (!availableLangs(doc, ctx.langs).includes(lang)) continue;
       const page = legalPageSeo(doc, lang, ctx.langs);
       const body = await bodyFor(page, lang, ITEM_MODULES.legal);
-      await writePage(distDir, shell, page, origin, fileFor(localePath(lang, page.path)), lang, opts, body);
+      await writePage(distDir, shell, await card(page), origin, fileFor(localePath(lang, page.path)), lang, opts, body);
       legalCount++;
     }
   }

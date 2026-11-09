@@ -158,7 +158,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
       >
         <div className={styles.top}>
           <Link to="/" className={styles.brand} onClick={onClose}>
-            <img src="/logo-icon.png" alt="" width={32} height={32} className={styles.logo} decoding="async" />
+            <img src="/logo-mark-120.png" alt="" width={32} height={32} className={styles.logo} decoding="async" />
             <span className={styles.brandTitle}>KF Tech Solutions</span>
           </Link>
           <button ref={closeRef} type="button" aria-label={t("Close menu")} className={styles.close} onClick={onClose}>

@@ -12,6 +12,7 @@ import { Img } from "../components/Img";
 import { ServiceIcon } from "../components/ServiceIcon";
 import { ProjectGallery, galleryImages } from "../components/ProjectGallery";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
+import { guidesFor } from "../lib/service-guides";
 import s from "../styles/sections.module.css";
 
 /** Project slugs a body links to, in order — the write-up already names the
@@ -36,6 +37,7 @@ export function ServiceDetail() {
   const { data: item, loading, error } = useContentItem("services", slug);
   const services = useContentList("services");
   const projects = useContentList("projects");
+  const posts = useContentList("blogPosts");
   const waLink = useWhatsAppLink(item ? pick(item.title, lang) : undefined);
 
   const body = item ? pick(item.body, lang) : "";
@@ -57,6 +59,11 @@ export function ServiceDetail() {
       .filter((p): p is NonNullable<typeof p> => !!p);
     return named.slice(0, 3);
   }, [projects.data, body]);
+
+  // Articles on this service's topic, so the page links to the guides that
+  // answer a buyer's next questions (cost, choosing, contracts) and each
+  // guide gets a link from the page it supports.
+  const guides = useMemo(() => guidesFor(posts.data ?? [], item?.slug ?? "", lang), [posts.data, item?.slug, lang]);
 
   const others = useMemo(
     () => (services.data ?? []).filter((x) => x.slug !== item?.slug && x.id !== item?.id),
@@ -209,6 +216,33 @@ export function ServiceDetail() {
                 </Link>
               );
             })}
+          </BalancedGrid>
+        </section>
+      )}
+
+      {guides.length > 0 && (
+        <section className={s.section} style={{ paddingTop: 20 }}>
+          <Reveal className={s.head}>
+            <div style={{ maxWidth: 640 }}>
+              <span className={s.eyebrow}>{t("// INSIGHTS")}</span>
+              <h2 className={s.h2}>{t("Guides on this topic")}</h2>
+            </div>
+            <Link to="/blog" className={s.viewAll}>
+              {t("All articles")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
+            </Link>
+          </Reveal>
+          <BalancedGrid preset="cards">
+            {guides.map((g) => (
+              <Link key={g.id} to={`/blog/${g.slug || g.id}`} className={s.card} data-track="service.guide">
+                <div className={s.cardBody} style={{ padding: 22 }}>
+                  <h3 className={s.cardTitle}>{pick(g.title, lang)}</h3>
+                  <p className={s.cardDesc}>{pick(g.summary, lang)}</p>
+                  <span className={s.cardRead}>
+                    {t("Read article")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
+                  </span>
+                </div>
+              </Link>
+            ))}
           </BalancedGrid>
         </section>
       )}

@@ -38,18 +38,33 @@ export function resolveDesc(page: PageSeo, lang: Lang): string {
 
 /** Roughly where Google cuts a title or a description in the results. */
 const TITLE_MAX = 60;
+/** Shorter than this, a cut title says too little to be worth it. */
+const TITLE_MIN = 25;
 const DESC_MAX = 160;
 
 /**
- * A title that fits the results page. Past the limit the trailing brand goes
- * first: Google shows the site name above the result anyway, and a cut-off
- * headline ("…how a restaurant owner should actually decide | KF Tec…") reads
- * worse than a whole one without the suffix. The headline itself is never cut.
+ * A title that fits the results page (~60 characters; Google cuts the rest).
+ * Shortened in the order that loses least meaning:
+ *   1. the trailing brand ("| KF Tech Solutions") — Google shows the site
+ *      name above the result anyway;
+ *   2. a trailing " — label" (case studies: "Lumina Dental: … — Dental site");
+ *   3. everything after the headline's colon ("Nearshoring to Egypt: what
+ *      buyers should check first" keeps "Nearshoring to Egypt");
+ * A headline with no such break is never cut mid-sentence: Google truncates
+ * it at a word on its own, which reads better than our guess. Only the
+ * <title> and og:title change; the page's own <h1> is untouched.
  */
 export function fitTitle(title: string): string {
   if (title.length <= TITLE_MAX) return title;
-  const m = title.match(/^(.*\S)\s+[|—–-]\s+KF Tech[^|—–]*$/);
-  return m ? m[1] : title;
+  const fits = (t: string) => t.length >= TITLE_MIN && t.length <= TITLE_MAX;
+  let t = title.match(/^(.*\S)\s+[|—–-]\s+KF Tech[^|—–]*$/)?.[1] ?? title;
+  if (t.length <= TITLE_MAX) return t;
+  const dash = t.match(/^(.*\S)\s+[—–]\s+[^—–]+$/)?.[1];
+  if (dash && dash.length <= TITLE_MAX) return dash;
+  if (dash) t = dash;
+  // ":" in English/German/Arabic, " :" with a space before it in French.
+  const colon = t.match(/^(.+?)\s?[:：]\s/)?.[1];
+  return colon && fits(colon) ? colon : t;
 }
 
 /**

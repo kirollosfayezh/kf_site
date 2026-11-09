@@ -111,7 +111,7 @@ export function Nav() {
           >
             {/* The original export's mark: a gradient code-window glyph, not
                 the letters "KF". Eager + fixed size — it is above the fold. */}
-            <img src="/logo-icon.png" alt="" width={40} height={40} className={styles.logo} decoding="async" />
+            <img src="/logo-mark-120.png" alt="" width={40} height={40} className={styles.logo} decoding="async" />
             <span className={styles.brandText}>
               <span className={styles.brandTitle}>KF Tech Solutions</span>
               <span className={styles.brandSub}>{t("Ideas into real, working products")}</span>

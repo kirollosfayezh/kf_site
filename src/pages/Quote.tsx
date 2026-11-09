@@ -102,7 +102,7 @@ export function Quote() {
       <article className={q.doc}>
         <header className={q.head}>
           <div className={q.brand}>
-            <img src="/logo-icon.png" alt="" width={44} height={44} />
+            <img src="/logo-mark-120.png" alt="" width={44} height={44} />
             <div>
               <div className={q.company}>{co.companyName || "KF Tech Solutions"}</div>
               {co.address && <div className={q.muted} dir="auto">{co.address}</div>}

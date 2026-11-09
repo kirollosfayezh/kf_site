@@ -78,7 +78,9 @@ export function About() {
             <div className={s.portraitGlow} aria-hidden="true" />
             <img
               className={s.portrait}
-              src="/founder.jpg"
+              src="/founder-800.jpg"
+              srcSet="/founder-480.jpg 480w, /founder-800.jpg 800w, /founder.jpg 1402w"
+              sizes="(max-width: 900px) calc(100vw - 32px), 560px"
               alt={t("Kirollos Fayez, founder of KF Tech Solutions")}
               width={1402}
               height={1122}

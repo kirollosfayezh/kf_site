@@ -112,7 +112,7 @@ export function Article() {
                 `#founder` is the Person node's @id, so the byline and the
                 structured data point at the same visible portrait. */}
             <Link to="/about#founder" className={s.artAuthor} data-track="article.author">
-              <img src="/founder.jpg" alt="" width={56} height={56} loading="lazy" decoding="async" className={s.artAvatarImg} />
+              <img src="/founder-avatar-112.jpg" srcSet="/founder-avatar-112.jpg 2x, /founder-avatar-168.jpg 3x" alt="" width={56} height={56} loading="lazy" decoding="async" className={s.artAvatarImg} />
               <div>
                 <div className={s.artAuthorName}>{t("Kirollos Fayez")}</div>
                 <div className={s.artAuthorRole}>{t("Founder, KF Tech Solutions")}</div>

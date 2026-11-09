@@ -26,6 +26,40 @@
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EEFF;
 }
 
+/*
+ * Size-matched stand-in for Space Grotesk. The Google Fonts stylesheet is
+ * non-blocking, so text first paints in a fallback and reflows when the web
+ * font arrives; Arial is ~8% narrower, so paragraphs re-wrapped and long
+ * articles shifted (CLS 0.10–0.11, measured). These faces scale Arial to
+ * Space Grotesk's width and vertical metrics, so the swap keeps line breaks.
+ * Numbers measured in Chrome on the same 150-character sentence:
+ *   Space Grotesk 400: 8125 px, 700: 8159 px; Arial 7480 px, Arial Bold 8100 px
+ *   (at 100 px), ascent 98 / descent 29 vs Arial 91 / 21. Overrides are
+ *   divided by size-adjust because they apply to the scaled font.
+ * The unicode-range is Latin only: Arial carries Arabic glyphs, and without
+ * it Arabic would render in Arial instead of falling through to Alexandria.
+ */
+@font-face {
+  font-family: 'KF Grotesk Fallback';
+  font-weight: 100 549;
+  src: local('Arial'), local('ArialMT');
+  size-adjust: 108.6%;
+  ascent-override: 90.2%;
+  descent-override: 26.7%;
+  line-gap-override: 0%;
+  unicode-range: U+0000-024F, U+0259, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2113, U+2122, U+2190-2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'KF Grotesk Fallback';
+  font-weight: 550 900;
+  src: local('Arial Bold'), local('Arial-BoldMT');
+  size-adjust: 100.7%;
+  ascent-override: 97.3%;
+  descent-override: 28.8%;
+  line-gap-override: 0%;
+  unicode-range: U+0000-024F, U+0259, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2113, U+2122, U+2190-2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* The root paints the page colour itself, so nothing (an overscroll, a frame
@@ -90,8 +124,8 @@ html.lenis-smooth { scroll-behavior: auto; }
 
   /* Space Grotesk carries everything Latin (the brand's only text face);
      Alexandria takes over for Arabic glyphs, which Space Grotesk lacks. */
-  --font-display: 'Space Grotesk', 'Alexandria', system-ui, sans-serif;
-  --font-body: 'Space Grotesk', 'Alexandria', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', 'KF Grotesk Fallback', 'Alexandria', system-ui, sans-serif;
+  --font-body: 'Space Grotesk', 'KF Grotesk Fallback', 'Alexandria', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Alexandria', ui-monospace, monospace;
 
   /* ---------------------------------------------------------------- type --

@@ -67,7 +67,7 @@ export function Footer() {
         <div className={`${styles.grid} ${markets.length ? styles.gridMarkets : ""}`}>
           <div className={styles.brandCol}>
             <Link to="/" className={styles.brand}>
-              <img src="/logo-icon.png" alt="" width={38} height={38} className={styles.logo} loading="lazy" decoding="async" />
+              <img src="/logo-mark-120.png" alt="" width={38} height={38} className={styles.logo} loading="lazy" decoding="async" />
               <span className={styles.brandTitle}>KF Tech Solutions</span>
             </Link>
             <p className={styles.desc}>
