@@ -16,16 +16,17 @@ export const DEFAULT_CONTACT = {
   whatsapp: "201500099671",
 } as const;
 
-export type SocialKey = "facebook" | "instagram" | "linkedin" | "x" | "github" | "youtube" | "tiktok";
+export type SocialKey = "facebook" | "instagram" | "linkedin" | "x" | "github" | "youtube" | "tiktok" | "snapchat";
 
 /** The footer's order; also the order profiles appear in `sameAs`. */
-export const SOCIAL_ORDER: SocialKey[] = ["facebook", "instagram", "linkedin", "x", "github", "youtube", "tiktok"];
+export const SOCIAL_ORDER: SocialKey[] = ["facebook", "instagram", "linkedin", "x", "github", "youtube", "tiktok", "snapchat"];
 
 export const DEFAULT_SOCIAL: Partial<Record<SocialKey, string>> = {
   facebook: "https://www.facebook.com/KFTechSolutionsEG/",
   instagram: "https://www.instagram.com/kf__techsolutions/",
   linkedin: "https://www.linkedin.com/company/kf-tech-solutions/",
   tiktok: "https://www.tiktok.com/@kftechsolutions",
+  snapchat: "https://www.snapchat.com/add/kftechsolutions",
 };
 
 export interface ContactInfo {
@@ -51,6 +52,7 @@ function socialUrl(key: SocialKey, value: string): string | null {
   const handle = value.replace(/^@/, "");
   if (!handle) return null;
   if (key === "x") return `https://x.com/${handle}`;
+  if (key === "snapchat") return `https://www.snapchat.com/add/${handle}`;
   return null;
 }
 

@@ -10,6 +10,7 @@ import { useContentList } from "../hooks/useContent";
 import { marketLinks } from "../lib/seo";
 import { SocialIcon, type SocialName } from "./SocialIcon";
 import { NewsletterForm } from "./NewsletterForm";
+import { isOwnerDevice, setOwnerDevice } from "../lib/owner-device";
 import styles from "./Footer.module.css";
 
 /** Settings keys → the icon set's names, which are also the networks' own
@@ -22,6 +23,7 @@ export const SOCIAL_NAME: Record<SocialKey, SocialName> = {
   github: "GitHub",
   youtube: "YouTube",
   tiktok: "TikTok",
+  snapchat: "Snapchat",
 };
 
 /**
@@ -47,6 +49,9 @@ export function Footer() {
   const { email } = useContactInfo();
   const waLink = useWhatsAppLink();
   const social = resolveSocial(settings?.social);
+  // Read after mount: the prerendered HTML is the same for everyone.
+  const [owner, setOwner] = useState(false);
+  useEffect(() => setOwner(isOwnerDevice()), []);
   // The country pages that are published. A link whose page is not written in
   // this language goes to the English page by a plain href: the router would
   // otherwise put it under this language's prefix, a URL with no file.
@@ -164,6 +169,21 @@ export function Footer() {
         <div className={styles.bottom}>
           <span className={styles.bottomText}>{copyright(t, year)}</span>
           <span className={styles.bottomMono}>{t("Ideas into real, working products")}</span>
+          {owner && (
+            // Only the owner ever sees this, so it is not translated.
+            <span className={styles.owner} dir="ltr">
+              <i aria-hidden="true" /> Owner device · not counted in analytics ·{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setOwnerDevice(false);
+                  setOwner(false);
+                }}
+              >
+                Turn off
+              </button>
+            </span>
+          )}
         </div>
       </div>
 

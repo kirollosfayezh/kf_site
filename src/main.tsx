@@ -8,8 +8,11 @@ import { primeContent } from "./services/content-cache";
 import "./index.css";
 import App, { preloadRoute } from "./App.tsx";
 import { installChunkReload } from "./lib/chunk-reload";
+import { applyOwnerParam } from "./lib/owner-device";
 
 installChunkReload();
+// Before anything renders or tracks: `?kf_owner=on` must stop the very first page view.
+applyOwnerParam();
 
 /**
  * Non-English pages live under a language prefix — `/de/services`, `/ar/blog`.

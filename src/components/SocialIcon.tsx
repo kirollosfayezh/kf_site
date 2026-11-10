@@ -6,13 +6,13 @@
  * outlived its placeholder-ness.
  *
  * Inline rather than from an icon package, matching `FlagIcon` and the rest of
- * the site: five paths cost a few hundred bytes against ~40 kB for a brand-icon
- * dependency, and these are the only five that will ever be needed.
+ * the site: a handful of paths cost a few hundred bytes against ~40 kB for a brand-icon
+ * dependency.
  *
  * Single-colour paths on `currentColor`, so they inherit the link's hover state
  * and work in both themes without a second set.
  */
-export type SocialName = "Facebook" | "Instagram" | "TikTok" | "LinkedIn" | "GitHub" | "WhatsApp" | "X" | "YouTube";
+export type SocialName = "Facebook" | "Instagram" | "TikTok" | "LinkedIn" | "GitHub" | "WhatsApp" | "X" | "YouTube" | "Snapchat";
 
 const PATHS: Record<SocialName, React.ReactNode> = {
   X: (
@@ -33,6 +33,9 @@ const PATHS: Record<SocialName, React.ReactNode> = {
   ),
   TikTok: (
     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
+  ),
+  Snapchat: (
+    <path d="M12.21.79c.99 0 4.35.28 5.93 3.82.53 1.2.4 3.22.3 4.85l-.03.57c.07.04.2.09.4.09.3-.02.66-.12 1.03-.3.17-.09.35-.1.47-.1.18 0 .36.03.5.09.46.15.74.48.74.84.01.45-.39.84-1.22 1.17l-.34.12c-.45.13-1.14.36-1.33.81-.09.22-.06.52.12.87l.01.01c.06.14 1.53 3.48 4.8 4.02.25.04.43.27.42.51 0 .07-.02.15-.05.22-.24.57-1.27.99-3.14 1.27-.06.09-.12.38-.17.57-.03.18-.07.36-.13.55-.08.27-.27.4-.56.4h-.03c-.13 0-.31-.03-.54-.07-.36-.08-.76-.14-1.27-.14-.3 0-.6.02-.91.08-.6.1-1.13.46-1.73.88-.85.6-1.82 1.29-3.29 1.29h-.33c-1.47 0-2.43-.68-3.28-1.29-.6-.42-1.11-.78-1.71-.88a5.8 5.8 0 0 0-.93-.08c-.54 0-.96.09-1.27.15-.21.04-.39.08-.54.08-.37 0-.52-.23-.58-.42-.06-.2-.09-.39-.14-.57-.04-.18-.1-.5-.16-.57-1.92-.22-2.95-.64-3.19-1.23a.6.6 0 0 1-.06-.22c-.01-.25.17-.47.42-.51 3.27-.54 4.73-3.88 4.8-4.02l.01-.03c.18-.35.23-.65.12-.87-.2-.43-.88-.66-1.33-.81l-.35-.12c-1.1-.44-1.25-.93-1.19-1.27.09-.48.67-.8 1.16-.8.15 0 .27.03.39.08.42.19.79.3 1.1.3.24 0 .39-.06.47-.1l-.05-.57c-.1-1.63-.23-3.65.31-4.84C7.39 1.08 10.74.81 11.73.81l.42-.02h.06z" />
   ),
   LinkedIn: (
     <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z" />

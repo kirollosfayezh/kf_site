@@ -132,3 +132,19 @@
   margin-top: 44px;
   max-width: 520px;
 }
+
+/* Owner-device notice (lib/owner-device): only on the owner's own browsers. */
+.owner {
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  color: var(--text2);
+}
+.owner i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.owner button { padding: 0; border: 0; background: none; font: inherit; color: var(--brand-text); text-decoration: underline; cursor: pointer; }
+/* Clear the floating chat / WhatsApp buttons on phones. */
+@media (max-width: 640px) { .owner { padding-inline-end: 64px; } }

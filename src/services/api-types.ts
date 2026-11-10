@@ -106,6 +106,7 @@ export interface SiteSettings {
     github?: string;
     youtube?: string;
     tiktok?: string;
+    snapchat?: string;
   };
   /** The brand facts the Organization schema and llms.txt state (Site settings → Brand identity). */
   brand?: BrandIdentity;

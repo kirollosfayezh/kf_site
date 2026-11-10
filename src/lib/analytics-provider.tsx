@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { trackClick, trackPageview } from "../services/analytics";
 import { initPixels, pixelEvent, pixelPageview } from "./pixels";
+import { isOwnerDevice } from "./owner-device";
 import type { SiteSettings } from "../services/api-types";
 
 /**
@@ -18,6 +19,9 @@ export function AnalyticsProvider({ settings }: { settings: SiteSettings | null 
 
   useEffect(() => {
     if (!settings) return;
+    // Owner devices load no ad pixels: the owner browsing the site must not
+    // land in remarketing audiences or count as a conversion.
+    if (isOwnerDevice()) return;
     // `?? {}` matters: a settings document written before the Marketing screen
     // existed has no `pixels` at all, and passing `undefined` would skip
     // initialisation entirely — taking the data layer with it, so a Tag Manager

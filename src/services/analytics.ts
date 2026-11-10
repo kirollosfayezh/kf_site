@@ -1,4 +1,5 @@
 import { API_BASE } from "./http";
+import { isOwnerDevice } from "../lib/owner-device";
 
 /**
  * First-party analytics: page views and clicks on the controls that matter,
@@ -195,6 +196,8 @@ function flush(): void {
 }
 
 function enqueue(event: Omit<QueuedEvent, "ts" | "visitorId" | "device" | "lang" | "referrer" | "sessionId">): void {
+  // The owner's own devices are not visitors (see lib/owner-device).
+  if (isOwnerDevice()) return;
   const s = session();
   if (s.fresh) {
     queue.push({

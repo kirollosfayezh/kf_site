@@ -26,6 +26,13 @@ describe("resolveSocial", () => {
       { key: "instagram", href: DEFAULT_SOCIAL.instagram },
       { key: "linkedin", href: DEFAULT_SOCIAL.linkedin },
       { key: "tiktok", href: DEFAULT_SOCIAL.tiktok },
+      { key: "snapchat", href: DEFAULT_SOCIAL.snapchat },
+    ]);
+  });
+
+  it("turns a Snapchat username into its add link", () => {
+    expect(resolveSocial({ snapchat: "@kftechsolutions" })).toEqual([
+      { key: "snapchat", href: "https://www.snapchat.com/add/kftechsolutions" },
     ]);
   });
 
