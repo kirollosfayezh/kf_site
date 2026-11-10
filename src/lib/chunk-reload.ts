@@ -1,4 +1,4 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from "react";
+import { createElement, lazy, useState, type ComponentProps, type ComponentType } from "react";
 
 /**
  * Recovery from a deploy that happened while the page was open.
@@ -41,17 +41,49 @@ export function reloadForNewDeploy(now: number = Date.now()): boolean {
   return true;
 }
 
-/** `React.lazy` that reloads the page once when its file is from an older deploy. */
+/** A route page that can be loaded ahead of its first render. */
+export type PreloadablePage<T extends ComponentType<any>> = ComponentType<ComponentProps<T>> & { // eslint-disable-line @typescript-eslint/no-explicit-any
+  preload: () => Promise<void>;
+};
+
+/**
+ * `React.lazy` that reloads the page once when its file is from an older
+ * deploy, and that can be loaded ahead of time with `.preload()`.
+ *
+ * Once the module is in, the page renders it directly instead of through
+ * `lazy`. That matters for hydration: `main.tsx` preloads the current
+ * route's page before hydrating, so the page hydrates in the same pass as
+ * the layout. Through `lazy` it suspended instead, and any state update in
+ * that gap (the settings or content revalidating, the theme) made React
+ * throw the prerendered page away and draw it again — measured on the live
+ * article at 2.6 s on a throttled phone, with the cover photo as the
+ * largest paint arriving 2 s after it had downloaded.
+ */
 export function lazyWithReload<T extends ComponentType<any>>( // eslint-disable-line @typescript-eslint/no-explicit-any
   factory: () => Promise<{ default: T }>,
-): LazyExoticComponent<T> {
-  return lazy(() =>
-    factory().catch((err: unknown) => {
-      // Never settles: the page is about to be replaced, so no error screen flashes.
-      if (isChunkLoadError(err) && reloadForNewDeploy()) return new Promise<{ default: T }>(() => {});
-      throw err;
-    }),
-  );
+): PreloadablePage<T> {
+  let loaded: T | undefined;
+  const load = () =>
+    factory().then(
+      (m) => {
+        loaded = m.default;
+        return m;
+      },
+      (err: unknown) => {
+        // Never settles: the page is about to be replaced, so no error screen flashes.
+        if (isChunkLoadError(err) && reloadForNewDeploy()) return new Promise<{ default: T }>(() => {});
+        throw err;
+      },
+    );
+  const Lazy = lazy(load);
+  // Chosen once per mount: switching from `Lazy` to the module on a later
+  // render would remount the page and lose its state (a half-filled form).
+  const Page = ((props: ComponentProps<T>) => {
+    const [Component] = useState<ComponentType<any>>(() => loaded ?? Lazy); // eslint-disable-line @typescript-eslint/no-explicit-any
+    return createElement(Component, props);
+  }) as PreloadablePage<T>;
+  Page.preload = () => (loaded ? Promise.resolve() : load().then(() => undefined));
+  return Page;
 }
 
 /** Covers the other dynamic imports (dictionaries, preloads) Vite reports. */

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, matchPath } from "react-router-dom";
 import { Suspense, useMemo } from "react";
 import { I18nProvider, isLang, type Lang } from "./lib/i18n";
 import { ThemeProvider } from "./lib/theme";
@@ -37,6 +37,35 @@ const Campaign = lazyWithReload(() => import("./pages/Campaign").then((m) => ({ 
 const Book = lazyWithReload(() => import("./pages/Book").then((m) => ({ default: m.Book })));
 const Quote = lazyWithReload(() => import("./pages/Quote").then((m) => ({ default: m.Quote })));
 const NotFound = lazyWithReload(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
+
+/** The page each route renders, in the same order as `<Routes>` below. */
+const ROUTE_PAGES: ReadonlyArray<readonly [string, { preload: () => Promise<void> }]> = [
+  ["/", Home],
+  ["/about", About],
+  ["/services", Services],
+  ["/solutions", Solutions],
+  ["/projects", Projects],
+  ["/services/:slug", ServiceDetail],
+  ...MARKETS.map((m) => [marketPath(m.slug), MarketDetail] as const),
+  ["/projects/:slug", ProjectCaseStudy],
+  ["/blog", Blog],
+  ["/blog/:id", Article],
+  ["/legal/:slug", Legal],
+  ["/contact", Contact],
+  ["/campaign", Campaign],
+  ["/book", Book],
+  ["/q/:token", Quote],
+];
+
+/**
+ * Loads the page code for a path (without its language prefix) ahead of the
+ * first render, so a prerendered page hydrates in one pass instead of
+ * suspending — see `lazyWithReload`. Unknown paths load the 404 page.
+ */
+export function preloadRoute(pathname: string): Promise<void> {
+  const hit = ROUTE_PAGES.find(([path]) => matchPath({ path, end: true }, pathname));
+  return (hit ? hit[1] : NotFound).preload();
+}
 
 /**
  * Held while a page chunk loads. It reserves a full viewport of the page

@@ -6,7 +6,7 @@ import { applyAutoLanguage } from "./lib/auto-language";
 import { loadDict, setOverrides } from "./lib/dict";
 import { primeContent } from "./services/content-cache";
 import "./index.css";
-import App from "./App.tsx";
+import App, { preloadRoute } from "./App.tsx";
 import { installChunkReload } from "./lib/chunk-reload";
 
 installChunkReload();
@@ -83,12 +83,20 @@ if (snapshot) {
   }
 }
 // The dictionary must be in place before the first render: hydrating Arabic
-// markup with English strings would throw the whole page away.
-await loadDict(lang);
+// markup with English strings would throw the whole page away. The page's
+// own code too: hydrating through a lazy boundary let any early state update
+// discard the prerendered page and redraw it (see lazyWithReload). The page
+// chunk is small and not preloaded on purpose (build/seo/assets.ts): the
+// page is readable before hydration, so hydration can wait one request.
+const basename = detectBasename();
+await Promise.all([
+  loadDict(lang),
+  hydrating ? preloadRoute(window.location.pathname.slice(basename?.length ?? 0) || "/").catch(() => {}) : null,
+]);
 
 const app = (
   <StrictMode>
-    <BrowserRouter basename={detectBasename()}>
+    <BrowserRouter basename={basename}>
       <App initialLang={lang} />
     </BrowserRouter>
   </StrictMode>
