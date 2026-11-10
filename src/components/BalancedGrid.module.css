@@ -25,4 +25,33 @@
 
 @media (max-width: 1179px) { .grid { --c: var(--c-lg); } }
 @media (max-width: 959px)  { .grid { --c: var(--c-md); } }
-@media (max-width: 639px)  { .grid { --c: 1; } }
+@media (max-width: 639px) {
+  .grid { --c: 1; margin-top: 32px; }
+
+  /* Two compact tiles across. The card styles shrink their own padding and
+     type under the global .kf-m-two hook (sections.module.css). */
+  .two { --c: 2; --gap: 10px; }
+  /* An odd one out takes the whole last row instead of sitting alone. */
+  .two > :last-child:nth-child(odd) { --w: 100%; }
+
+  /* A sideways row: the next card peeks in to say "swipe". Bleeds to the
+     screen edges so cards don't look clipped by the page gutter. */
+  .swipe {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    margin-inline: -16px;
+    padding: 4px 16px 14px;
+    scrollbar-width: none;
+    --gap: 12px;
+  }
+  .swipe::-webkit-scrollbar { display: none; }
+  .swipe > * { flex: 0 0 84%; max-width: 84%; scroll-snap-align: start; }
+  /* Nothing to swipe to: take the full row. */
+  .swipe > :only-child { flex-basis: 100%; max-width: 100%; }
+  /* Hover lifts would be clipped by the scroller; touch has no hover anyway. */
+  .swipe > *:hover { transform: none; }
+}

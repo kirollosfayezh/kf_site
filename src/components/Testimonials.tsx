@@ -34,7 +34,7 @@ export function Testimonials({ limit }: { limit?: number }) {
         <span className={s.eyebrow}>{t("// CLIENTS")}</span>
         <h2 className={s.h2sm}>{t("What clients say")}</h2>
       </Reveal>
-      <BalancedGrid preset="cards">
+      <BalancedGrid preset="cards" mobile="swipe">
         {items.map((item) => {
           const name = pick(item.title, lang);
           const quote = pick(item.body, lang) || pick(item.summary, lang);

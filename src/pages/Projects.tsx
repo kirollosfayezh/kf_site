@@ -167,7 +167,7 @@ export function Projects() {
             </Link>
           </Reveal>
         )}
-        <BalancedGrid preset="wide" style={concepts.length > 0 ? undefined : { marginTop: 0 }}>
+        <BalancedGrid preset="wide" mobile="two" style={concepts.length > 0 ? undefined : { marginTop: 0 }}>
           {work.map((item, i) => (
             <ProjectCard key={item.key} item={item} i={i} Heading={concepts.length > 0 ? "h3" : "h2"} />
           ))}
@@ -183,7 +183,7 @@ export function Projects() {
               {t("Websites we designed for made-up businesses, to show what we can build for yours. Open one and click around: book, order, pay.")}
             </p>
           </Reveal>
-          <BalancedGrid preset="wide">
+          <BalancedGrid preset="wide" mobile="two">
             {concepts.map((item, i) => (
               <ProjectCard key={item.key} item={item} i={i} Heading="h3" />
             ))}

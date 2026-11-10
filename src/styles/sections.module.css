@@ -601,7 +601,7 @@
 }
 
 @media (max-width: 700px) {
-  .caseFacts { gap: 14px 24px; }
+  .caseFacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
   .caseActions > * { flex: 1 1 100%; text-align: center; }
 }
 
@@ -739,3 +739,57 @@
 .artAuthor { color: inherit; text-decoration: none; }
 .artAvatarImg { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .artAuthorBio { font-size: var(--fs-label); color: var(--text2); margin-top: 2px; max-width: 46ch; }
+
+/* ---- Phones: two-across tiles --------------------------------------------
+   BalancedGrid's mobile="two" puts cards two across under 640px and marks the
+   grid with the global hook .kf-m-two. At ~165px a card needs tighter padding,
+   smaller type and a clamped description; the full text is one tap away. The
+   !important lines beat the inline paddings/sizes set for desktop. */
+@media (max-width: 639px) {
+  :global(.kf-m-two) .cardBody { padding: 14px !important; }
+  :global(.kf-m-two) .cardTitle { font-size: 15.5px !important; line-height: 1.3; }
+  :global(.kf-m-two) .cardDesc {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  /* The category label would cover half a 160px picture; the title says it. */
+  :global(.kf-m-two) .cardTag { display: none; }
+  :global(.kf-m-two) .cardMedia { aspect-ratio: 4 / 3 !important; }
+  :global(.kf-m-two) .cardRead,
+  :global(.kf-m-two) .cardFrom { margin-top: 10px; font-size: 12.5px; }
+  :global(.kf-m-two) .svcIconBadge { width: 40px; height: 40px; margin-bottom: 10px !important; }
+  :global(.kf-m-two) .svcIconBadge svg { width: 22px; height: 22px; }
+  /* Project cards: title, two-line summary and the link; the tech chips and
+     the result line are on the case study. */
+  :global(.kf-m-two) .projChips,
+  :global(.kf-m-two) .projResult { display: none; }
+  :global(.kf-m-two) .projFooter { margin-top: 10px; padding-top: 10px; gap: 6px 10px; flex-wrap: wrap; }
+  :global(.kf-m-two) .projView,
+  :global(.kf-m-two) .textLink { font-size: 12.5px; }
+  :global(.kf-m-two) > :not(:last-child:nth-child(odd)) .cardDesc { -webkit-line-clamp: 2; line-clamp: 2; }
+
+  :global(.kf-m-two) .whyCard { flex-direction: column; gap: 10px; padding: 14px; }
+  :global(.kf-m-two) .whyIcon { width: 30px; height: 30px; }
+  :global(.kf-m-two) .whyTitle { font-size: 15px; line-height: 1.3; }
+  :global(.kf-m-two) .whyDesc { font-size: 13px; }
+
+  :global(.kf-m-two) .stepNum { margin-top: 12px; }
+  :global(.kf-m-two) .stepTitle { font-size: 16px; line-height: 1.3; }
+  :global(.kf-m-two) .stepDesc { margin-top: 6px; font-size: 13px; line-height: 1.5; }
+
+  /* Swipe rows: a little less padding so the peeking card reads as a card. */
+  :global(.kf-m-swipe) .cardBody { padding: 18px !important; }
+  :global(.kf-m-swipe) .cardDesc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+}

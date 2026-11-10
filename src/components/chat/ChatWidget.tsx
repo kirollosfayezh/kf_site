@@ -22,7 +22,7 @@ import { ChatComposer } from "./ChatComposer";
 import { ChatHeader } from "./ChatHeader";
 import { ChatLog } from "./ChatLog";
 import { mergeMessage } from "./messages";
-import { AUTO_OPEN_DELAY, GREETED_KEY, SEEN_KEY, readNum, readPhoneKey, writeNum, writePhoneKey } from "./storage";
+import { AUTO_OPEN_DELAY, GREETED_KEY, GREETING_TYPING_MS, SEEN_KEY, readNum, readPhoneKey, writeNum, writePhoneKey } from "./storage";
 import styles from "./ChatWidget.module.css";
 import { lazyWithReload } from "../../lib/chunk-reload";
 
@@ -76,6 +76,12 @@ export function ChatWidget() {
     };
   }, [open, phoneLib, lang]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  /**
+   * The greeting arrives after a short "typing…" moment the first time the
+   * panel opens on a fresh chat, so it reads as someone answering rather than
+   * a static block. Once shown it stays for the rest of the page view.
+   */
+  const [greeted, setGreeted] = useState(false);
   const [agentTyping, setAgentTyping] = useState(false);
   const [unread, setUnread] = useState(0);
   const [name, setName] = useState("");
@@ -202,6 +208,17 @@ export function ChatWidget() {
     writeNum(SEEN_KEY, agentCount);
     setUnread(0);
   }, [open, messages]);
+
+  useEffect(() => {
+    if (!open || greeted) return;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (messages.length > 0 || reduced) {
+      setGreeted(true);
+      return;
+    }
+    const id = window.setTimeout(() => setGreeted(true), GREETING_TYPING_MS);
+    return () => window.clearTimeout(id);
+  }, [open, greeted, messages.length]);
 
   // Escape closes the panel — the widget must always be dismissible.
   useEffect(() => {
@@ -366,12 +383,13 @@ export function ChatWidget() {
             resumed={resumed}
             agentJoined={agentJoined}
             agentTyping={agentTyping}
+            greetingReady={greeted}
           />
 
           {!hasPhone ? (
             <>
-              {messages.length === 0 && (
-                <div className={styles.quick}>
+              {messages.length === 0 && greeted && (
+                <div className={`${styles.quick} ${styles.pop}`}>
                   {QUICK.map((q) => (
                     <button key={q} type="button" onClick={() => handleQuick(t(q))} disabled={starting}>
                       {t(q)}

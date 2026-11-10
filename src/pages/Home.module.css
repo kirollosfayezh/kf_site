@@ -550,26 +550,130 @@
   .ribbonService { padding-block: 15px; }
   .ribbonClient { font-size: 16px; margin-block: 6px; }
   .workGrid, .values { grid-template-columns: minmax(0, 1fr); }
+  /* (≤639px overrides both: see the phones block below.) */
   .industry { grid-template-columns: minmax(0, 1fr) auto; }
   .industry span:not(:global(.kf-arrow)) { grid-column: 1; }
   .industry :global(.kf-arrow) { grid-row: 1 / span 2; grid-column: 2; }
   .aiFlow { padding: 20px 18px; }
 }
-@media (max-width: 520px) {
-  .svcGrid, .steps, .included { grid-template-columns: minmax(0, 1fr); }
-  .svcGrid { gap: 10px; }
-  .includedItem { padding: 22px 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; }
-  .includedIcon { grid-row: span 2; }
-  .includedTitle { margin-top: 0; font-size: 17px; }
-  .includedDesc { margin-top: 4px; }
-  /* Phones: a compact row per service — icon beside the words. */
-  .svcCard { min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; padding: 18px; }
-  .svcTop { grid-row: span 3; align-self: start; }
-  .svcNo { display: none; }
-  .svcTitle { margin-top: 0; font-size: 18px; }
-  .svcDesc { margin-top: 4px; }
-  .svcMore { margin-top: 10px; }
+/* Phones. One card per row made the home page ~15,500px long, so short cards
+   go two across as compact tiles, the projects become a swipe row, and the
+   process becomes a numbered timeline. Every card stays a full link. */
+@media (max-width: 639px) {
+  /* Services: 2 × 4 tiles — icon, name, two lines of summary. */
+  .svcGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .svcCard { min-height: 0; padding: 14px; }
+  .svcIcon { width: 38px; height: 38px; border-radius: 11px; }
+  .svcIcon svg { width: 21px; height: 21px; }
+  .svcNo, .svcMore { display: none; }
+  .svcTitle { margin-top: 14px; font-size: 15.5px; line-height: 1.3; }
+  .svcDesc, .includedDesc, .valueDesc, .industry span:not(:global(.kf-arrow)) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  /* flex: none — the desktop flex: 1 stretches the box past the clamp and a
+     third line shows through under the ellipsis. */
+  .svcDesc { flex: none; margin-top: 5px; font-size: 13px; line-height: 1.5; -webkit-line-clamp: 2; line-clamp: 2; }
+  .svcCard:hover { transform: none; }
+
+  /* Selected work: a sideways row, the next project peeking in. Bleeds to
+     the screen edges past the 16px page gutter. */
+  .workGrid {
+    display: grid;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 84%;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    margin-inline: -16px;
+    padding: 4px 16px 14px;
+    scrollbar-width: none;
+  }
+  .workGrid::-webkit-scrollbar { display: none; }
+  .workCard { scroll-snap-align: start; border-radius: 20px; }
+  .workCard:hover { transform: none; }
   .browser { margin: 12px 12px 0; }
+  .browserBar { padding: 8px 10px; }
+  .workMeta { padding: 16px 16px 18px; gap: 6px; }
+  .workTitle { font-size: 18px; }
+  .workDesc { flex: none; font-size: 13px; line-height: 1.5; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+
+  /* Process: a numbered timeline, number beside the words. */
+  .steps { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+  .step { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 14px; padding-bottom: 18px; }
+  .step::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 19.5px;
+    top: 44px;
+    bottom: 4px;
+    width: 1px;
+    background: var(--border);
+  }
+  .step:last-child::before { display: none; }
+  .stepNo { width: 40px; height: 40px; grid-row: span 2; font-size: 13px; }
+  .stepTitle { margin-top: 2px; font-size: 16.5px; }
+  .stepDesc { margin-top: 4px; font-size: 13.5px; line-height: 1.5; }
+
+  /* Included: 2 × 4 tiles. */
+  .included { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 32px; border-radius: 20px; }
+  .includedItem { padding: 16px 14px; }
+  .includedIcon { width: 36px; height: 36px; border-radius: 10px; }
+  .includedIcon svg { width: 18px; height: 18px; }
+  .includedTitle { margin-top: 12px; font-size: 15px; }
+  .includedDesc { margin-top: 5px; font-size: 13px; line-height: 1.5; }
+
+  /* Values: 2 × 2, number above the words. */
+  .values { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
+  .value { flex-direction: column; gap: 6px; padding: 14px; }
+  .valueNo { padding-top: 0; }
+  .valueTitle { font-size: 15px; line-height: 1.3; }
+  .valueDesc { font-size: 13px; }
+
+  /* Industries: tiles instead of tall rows; an odd last one spans both. */
+  .industryList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; border-top: 0; }
+  .industry {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--panel);
+  }
+  .industryList > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .industryList > li { display: flex; }
+  .industryList > li > .industry { flex: 1; }
+  .industry b { font-size: 15.5px; line-height: 1.3; }
+  .industry span:not(:global(.kf-arrow)) { font-size: 13px; }
+  .industry :global(.kf-arrow) { display: none; }
+  .industry:hover { padding-inline: 14px; }
+
+  /* AI demo: the recipes become a row of chips, so the flow they drive sits
+     right under them instead of four tall buttons further up. */
+  .aiBody { margin-top: 28px; gap: 14px; }
+  .aiList {
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    margin-inline: -16px;
+    padding: 2px 16px 6px;
+    scrollbar-width: none;
+  }
+  .aiList::-webkit-scrollbar { display: none; }
+  .aiRecipe { width: auto; flex: 0 0 auto; padding: 9px 14px 9px 9px; gap: 10px; border-radius: 999px; scroll-snap-align: start; }
+  .aiRecipeOn, :global(html[dir="rtl"]) .aiRecipeOn { transform: none; }
+  .aiRecipeIcon { width: 30px; height: 30px; border-radius: 50%; }
+  .aiRecipeIcon svg { width: 16px; height: 16px; }
+  .aiRecipeTitle { font-size: 14px; white-space: nowrap; }
+  .aiRecipeTag { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

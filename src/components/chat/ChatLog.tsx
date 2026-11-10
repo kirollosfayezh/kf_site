@@ -14,12 +14,15 @@ export function ChatLog({
   resumed,
   agentJoined,
   agentTyping,
+  greetingReady,
 }: {
   logRef: RefObject<HTMLDivElement | null>;
   messages: ChatMessage[];
   resumed: boolean;
   agentJoined: boolean;
   agentTyping: boolean;
+  /** False for the first moment of a fresh chat: the bot shows typing dots, then the greeting. */
+  greetingReady: boolean;
 }) {
   const { t } = useI18n();
   return (
@@ -27,7 +30,15 @@ export function ChatLog({
       {/* The greeting is presentational only — it is never written to the thread. */}
       <div className={`${styles.row} ${styles.rowThem}`}>
         <ChatAvatar kind="bot" size={26} className={styles.rowAvatar} />
-        <div className={styles.bub}>{t(GREETING)}</div>
+        {greetingReady ? (
+          <div className={`${styles.bub} ${styles.pop}`}>{t(GREETING)}</div>
+        ) : (
+          <div className={styles.typing} role="status" aria-label={t("Typing…")}>
+            <i />
+            <i />
+            <i />
+          </div>
+        )}
       </div>
       {resumed && <div className={styles.resumed}>{t("Welcome back — here's your previous conversation.")}</div>}
       {messages.map((m) => (

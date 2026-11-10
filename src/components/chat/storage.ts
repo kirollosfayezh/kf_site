@@ -5,6 +5,8 @@ export const GREETED_KEY = "kf-chat-greeted";
 /** How many agent messages this visitor has already read. */
 export const SEEN_KEY = "kf-chat-seen";
 export const AUTO_OPEN_DELAY = 4200;
+/** How long the bot shows typing dots before its greeting appears. */
+export const GREETING_TYPING_MS = 1400;
 /** The E.164 number this browser last chatted with — prefills the field, and
  *  lets a returning visitor skip the phone step before the server confirms it. */
 export const PHONE_KEY = "kf-chat-phone";

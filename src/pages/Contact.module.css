@@ -42,6 +42,11 @@
   .formCard { padding: 20px 16px; border-radius: var(--r-card); }
   .input { font-size: var(--fs-body); padding: 12px; }
   .contactCard { padding: 14px; gap: 12px; }
+  /* WhatsApp and Book a call side by side as tiles; the long email and
+     location keep a full row each. */
+  .contactCards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
+  .contactCards > :nth-child(-n + 2) { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .contactCards > :nth-child(n + 3) { grid-column: 1 / -1; }
   .contactValue { font-size: var(--fs-ui); }
   .successDesc { max-width: none; }
 }

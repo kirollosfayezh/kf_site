@@ -167,7 +167,7 @@ export function Campaign() {
         <Reveal className={s.headCenter}>
           <h2 className={s.h2sm}>{t("What we build most")}</h2>
         </Reveal>
-        <BalancedGrid preset="cards">
+        <BalancedGrid preset="cards" mobile="swipe">
           {(offers.data && offers.data.length > 0
             ? offers.data.slice(0, 4).map((o, i) => ({
                 key: o.id,

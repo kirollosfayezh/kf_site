@@ -231,7 +231,7 @@ export function ServiceDetail() {
               {t("All articles")} <span className="kf-arrow" aria-hidden="true">&rarr;</span>
             </Link>
           </Reveal>
-          <BalancedGrid preset="cards">
+          <BalancedGrid preset="cards" mobile="swipe">
             {guides.map((g) => (
               <Link key={g.id} to={`/blog/${g.slug || g.id}`} className={s.card} data-track="service.guide">
                 <div className={s.cardBody} style={{ padding: 22 }}>

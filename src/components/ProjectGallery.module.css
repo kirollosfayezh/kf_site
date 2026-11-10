@@ -149,3 +149,11 @@
   object-fit: cover;
   object-position: top center;
 }
+
+/* Two-across project tiles on phones (BalancedGrid mobile="two"): the card's
+   category label is hidden there, so the frame only needs room for the dots,
+   or a 160px-wide card leaves a 38px screenshot. */
+@media (max-width: 639px) {
+  :global(.kf-m-two) .frame { --mt: 10px; --mb: 24px; }
+  :global(.kf-m-two) .dots { bottom: 0; }
+}
