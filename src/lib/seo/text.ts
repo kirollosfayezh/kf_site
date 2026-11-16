@@ -87,3 +87,16 @@ export function localized(text: ArticleLike["title"], lang: Lang): string {
   if (!text) return "";
   return text[lang] || text.en || text.ar || "";
 }
+
+/**
+ * One language of a LocalizedText stored in `meta` — `seoTitle` and
+ * `seoDescription` on services, markets, articles and projects — with no
+ * cross-language fallback: an empty string means absent, and the caller falls
+ * back to the text it derives from the page itself.
+ */
+export function metaText(item: ArticleLike, key: string, lang: Lang): string {
+  const v = item.meta?.[key];
+  if (!v || typeof v !== "object") return "";
+  const s = (v as Partial<Record<Lang, unknown>>)[lang];
+  return typeof s === "string" ? s.trim() : "";
+}

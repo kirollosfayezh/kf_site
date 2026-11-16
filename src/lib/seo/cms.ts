@@ -4,7 +4,7 @@ import { ogImageUrl } from "../images.ts";
 import { PAGES } from "./pages.ts";
 import { imageObject } from "./schema/page.ts";
 import { SITE } from "./site.ts";
-import { localized, tr } from "./text.ts";
+import { localized, metaText, tr } from "./text.ts";
 import type { ArticleLike, PageSeo } from "./types.ts";
 
 /**
@@ -55,8 +55,16 @@ export function articlePageSeo(post: ArticleLike, lang: Lang, siteLangs: readonl
 
   return {
     path: `/blog/${post.slug || post.id}`,
-    title: `${title} | ${brand}`,
-    desc: summary || localized(post.body, lang).replace(/\s+/g, " ").slice(0, 155),
+    // `meta.seoTitle` / `meta.seoDescription`: a search-only title and
+    // description for this language. A headline written to be read on the page
+    // often runs past the 60 characters a results page shows, and `fitTitle`
+    // refuses to cut one mid-sentence — so the shorter wording is stored beside
+    // it and the <h1> stays as written.
+    title: metaText(post, "seoTitle", lang) || `${title} | ${brand}`,
+    desc:
+      metaText(post, "seoDescription", lang) ||
+      summary ||
+      localized(post.body, lang).replace(/\s+/g, " ").slice(0, 155),
     type: "article",
     kind: "article",
     item: post,
@@ -85,8 +93,9 @@ export function projectPageSeo(item: ArticleLike, lang: Lang, siteLangs: readonl
     path: `/projects/${item.slug || item.id}`,
     // The tag is English in the CMS; untranslated it made every language's
     // title identical, which Google reads as duplicates.
-    title: `${title}${tag ? ` — ${tr(tag, lang)}` : ""} | ${brand}`,
+    title: metaText(item, "seoTitle", lang) || `${title}${tag ? ` — ${tr(tag, lang)}` : ""} | ${brand}`,
     desc:
+      metaText(item, "seoDescription", lang) ||
       summary ||
       localized(item.body, lang).replace(/\s+/g, " ").slice(0, 155) ||
       PAGES.projects.desc,

@@ -86,6 +86,22 @@ describe("projects, services and legal pages", () => {
     expect(serviceLangs(item)).toEqual(["en", "ar"]);
   });
 
+  it("uses an article's or project's search-only title and description, per language, when set", () => {
+    const meta = {
+      tag: "Web Platform",
+      seoTitle: { fr: "Titre court", en: "  " },
+      seoDescription: { fr: "Description pour la page de résultats." },
+    };
+    const post = { slug: "p", title: { en: "A long headline", fr: "Un long titre" }, summary: { en: "S", fr: "R" }, body: { en: "B", fr: "C" }, meta };
+    // French has both overrides; English has a blank one, which means "inherit".
+    expect(articlePageSeo(post, "fr")).toMatchObject({ title: "Titre court", desc: "Description pour la page de résultats." });
+    expect(articlePageSeo(post, "en")).toMatchObject({ title: "A long headline | KF Tech Solutions", desc: "S" });
+    expect(projectPageSeo(post, "fr")).toMatchObject({ title: "Titre court", desc: "Description pour la page de résultats." });
+    expect(projectPageSeo(post, "en").title).toBe("A long headline — Web Platform | KF Tech Solutions");
+    // The visible headline is not the override's business: the item is passed through untouched.
+    expect(articlePageSeo(post, "fr").item).toBe(post);
+  });
+
   it("keeps legal pages indexable", () => {
     const seo = legalPageSeo({ slug: "privacy", title: { en: "Privacy Policy" }, body: { en: "We collect little." } }, "en");
     expect(seo.path).toBe("/legal/privacy");

@@ -1,7 +1,7 @@
 import { articleExtras } from "../../content-helpers.ts";
 import { LANGS, type Lang } from "../../langs.ts";
 import { OG_IMAGE, SITE } from "../site.ts";
-import { resolveDesc, resolveTitle, tr } from "../text.ts";
+import { localized, resolveDesc, resolveTitle, tr } from "../text.ts";
 import type { PageSeo } from "../types.ts";
 import { absolute, localePath } from "../urls.ts";
 
@@ -76,7 +76,9 @@ export function articleSchema(
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    headline: resolveTitle(page, lang).split(" | ")[0],
+    // The headline a reader sees on the page (the <h1>), not the <title>: an
+    // article can carry a shorter search-only title in `meta.seoTitle`.
+    headline: (page.item ? localized(page.item.title, lang) : "") || resolveTitle(page, lang).split(" | ")[0],
     description: resolveDesc(page, lang),
     url,
     image: imageObject(origin, page),

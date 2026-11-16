@@ -175,6 +175,16 @@ describe("seoTags", () => {
     expect((article!.mainEntityOfPage as { "@id": string })["@id"]).toBe(page["@id"]);
   });
 
+  it("keeps the BlogPosting headline as the visible one when the article has a search-only title", () => {
+    const post = articlePageSeo(
+      { slug: "pos-guide", title: { en: "Choosing a POS for a restaurant, step by step" }, body: { en: "Body." }, meta: { seoTitle: { en: "Choosing a restaurant POS" } } },
+      "en",
+    );
+    const tags = seoTags(post, "en", ORIGIN);
+    expect(node(tags, "BlogPosting").headline).toBe("Choosing a POS for a restaurant, step by step");
+    expect(tags[0]).toEqual({ kind: "title", text: "Choosing a restaurant POS" });
+  });
+
   it("claims the language an untranslated article is actually served in", () => {
     const post = articlePageSeo({ slug: "pos-guide", title: { en: "Choosing a POS" }, body: { en: "Body." } }, "de");
     const tags = seoTags(post, "de", ORIGIN);

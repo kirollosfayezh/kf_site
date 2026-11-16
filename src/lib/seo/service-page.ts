@@ -5,18 +5,11 @@ import { AREA_SERVED } from "./schema/organisation.ts";
 import { imageObject } from "./schema/page.ts";
 import { SERVICES, serviceId, servicePath } from "./schema/services.ts";
 import { SITE } from "./site.ts";
-import { localized, tr } from "./text.ts";
+import { localized, metaText, tr } from "./text.ts";
 import type { ArticleLike, PageSeo } from "./types.ts";
 import { absolute, localePath } from "./urls.ts";
 
-/** One language of a LocalizedText stored in `meta` (the service landing-page
- *  fields), with no cross-language fallback — an empty string means absent. */
-export function metaText(item: ArticleLike, key: string, lang: Lang): string {
-  const v = item.meta?.[key];
-  if (!v || typeof v !== "object") return "";
-  const s = (v as Partial<Record<Lang, unknown>>)[lang];
-  return typeof s === "string" ? s.trim() : "";
-}
+export { metaText };
 
 /**
  * The languages a service landing page exists in: English always, others
