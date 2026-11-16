@@ -96,3 +96,43 @@ export function identityFromSettings(settings: SiteSettings | null | undefined):
     notAffiliatedWith: brand?.notAffiliatedWith,
   };
 }
+
+/**
+ * Directory listings (Clutch, The Manifest…) among the company's extra
+ * profiles. They sit in the Organization schema's `sameAs` but have no footer
+ * icon, so /about names them as plain links. Only hosts listed here count: a
+ * profile the page cannot name (Snapchat, an unknown site) is left to the
+ * schema, and a malformed URL is skipped rather than breaking the page.
+ */
+export const DIRECTORY_NAME: Readonly<Record<string, string>> = {
+  "clutch.co": "Clutch",
+  "themanifest.com": "The Manifest",
+  "goodfirms.co": "GoodFirms",
+  "techbehemoths.com": "TechBehemoths",
+  "designrush.com": "DesignRush",
+};
+
+/**
+ * `profiles` is `settings.brand.profiles`; when it is empty the compiled
+ * `fallback` applies, the same rule `setSiteIdentity` uses for the schema, so
+ * the visible list and the JSON-LD never disagree.
+ */
+export function resolveDirectories(
+  profiles: readonly string[] | null | undefined,
+  fallback: readonly string[],
+): { href: string; name: string }[] {
+  const given = (profiles ?? []).map((u) => u.trim()).filter(Boolean);
+  const seen = new Set<string>();
+  return (given.length ? given : [...fallback]).flatMap((href) => {
+    if (seen.has(href)) return [];
+    seen.add(href);
+    try {
+      const url = new URL(href);
+      if (url.protocol !== "https:") return [];
+      const name = DIRECTORY_NAME[url.hostname.replace(/^www\./, "")];
+      return name ? [{ href, name }] : [];
+    } catch {
+      return [];
+    }
+  });
+}

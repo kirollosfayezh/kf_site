@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SiteSettings } from "../services/api-types";
-import { DEFAULT_CONTACT, DEFAULT_SOCIAL, identityFromSettings, resolveContact, resolveSocial, whatsappDigits } from "./contact";
+import { DEFAULT_CONTACT, DEFAULT_SOCIAL, identityFromSettings, resolveContact, resolveDirectories, resolveSocial, whatsappDigits } from "./contact";
 
 describe("resolveContact", () => {
   it("uses the dashboard value per field and the default for blanks", () => {
@@ -74,5 +74,35 @@ describe("identityFromSettings", () => {
     for (const key of ["alternateNames", "foundingDate", "founderSameAs", "profiles", "notAffiliatedWith"] as const) {
       expect(id[key]).toBeUndefined();
     }
+  });
+});
+
+describe("resolveDirectories", () => {
+  const FALLBACK = ["https://www.snapchat.com/add/kf", "https://clutch.co/profile/kf", "https://themanifest.com/company/kf"];
+
+  it("names the directories in the compiled fallback when settings list none", () => {
+    for (const empty of [undefined, null, [], ["  "]]) {
+      expect(resolveDirectories(empty, FALLBACK)).toEqual([
+        { href: "https://clutch.co/profile/kf", name: "Clutch" },
+        { href: "https://themanifest.com/company/kf", name: "The Manifest" },
+      ]);
+    }
+  });
+
+  it("uses the settings list instead of the fallback once it has an entry, as the schema does", () => {
+    expect(resolveDirectories(["https://www.snapchat.com/add/kf"], FALLBACK)).toEqual([]);
+    expect(resolveDirectories([" https://www.goodfirms.co/company/kf ", "https://techbehemoths.com/company/kf"], FALLBACK)).toEqual([
+      { href: "https://www.goodfirms.co/company/kf", name: "GoodFirms" },
+      { href: "https://techbehemoths.com/company/kf", name: "TechBehemoths" },
+    ]);
+  });
+
+  it("skips what it cannot name or trust: unknown hosts, malformed and non-https URLs, repeats", () => {
+    expect(
+      resolveDirectories(
+        ["not a url", "http://clutch.co/profile/kf", "https://example.com/kf", "https://clutch.co/profile/kf", "https://clutch.co/profile/kf"],
+        FALLBACK,
+      ),
+    ).toEqual([{ href: "https://clutch.co/profile/kf", name: "Clutch" }]);
   });
 });

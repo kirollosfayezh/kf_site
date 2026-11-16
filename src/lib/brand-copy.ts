@@ -28,6 +28,8 @@ export const ABOUT_IDENTITY = {
   city: "Cairo, Egypt",
   website: "Official website",
   profiles: "Official profiles",
+  logo: "Logo",
+  logoAlt: "KF Tech Solutions logo",
 } as const;
 
 /** The home hero's one line under the headline. */

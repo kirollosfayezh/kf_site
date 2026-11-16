@@ -8,7 +8,7 @@ import { Testimonials } from "../components/Testimonials";
 import { useWhatsAppLink } from "../hooks/useWhatsAppLink";
 import { FALLBACK_STEPS as STEPS, FALLBACK_WHY as WHY } from "../lib/fallback-content";
 import { useSettings } from "../lib/settings";
-import { resolveSocial } from "../lib/contact";
+import { resolveDirectories, resolveSocial } from "../lib/contact";
 import { ABOUT_IDENTITY as ID } from "../lib/brand-copy";
 import { SITE } from "../lib/seo";
 import { SOCIAL_NAME } from "../components/Footer";
@@ -39,7 +39,11 @@ export function About() {
   const sections = useContentList("aboutSections");
   // Settings are primed into the prerender, so the build and the browser list
   // the same profiles.
-  const social = resolveSocial(useSettings()?.social);
+  const settings = useSettings();
+  const social = resolveSocial(settings?.social);
+  // Directory profiles (Clutch, The Manifest…): the one place a visitor and a
+  // crawler see them as links from our own site.
+  const directories = resolveDirectories(settings?.brand?.profiles, SITE.extraSameAs);
   const markets = useMarketLinks();
 
   // `aboutSections` is the source for both blocks below, grouped by `meta.tag`.
@@ -136,6 +140,12 @@ export function About() {
                 </dd>
               </div>
               <div className={s.caseFact}>
+                <dt className={s.caseFactLabel}>{t(ID.logo)}</dt>
+                <dd className={s.caseFactValue}>
+                  <img src={SITE.logo} alt={t(ID.logoAlt)} width={64} height={64} loading="lazy" decoding="async" />
+                </dd>
+              </div>
+              <div className={s.caseFact}>
                 <dt className={s.caseFactLabel}>{t(ID.profiles)}</dt>
                 <dd className={s.caseFactValue}>
                   {social.map((p, i) => (
@@ -143,6 +153,14 @@ export function About() {
                       {i > 0 && " · "}
                       <a href={p.href} target="_blank" rel="noopener noreferrer" data-track={`about.identity.${p.key}`}>
                         {SOCIAL_NAME[p.key]}
+                      </a>
+                    </span>
+                  ))}
+                  {directories.map((d) => (
+                    <span key={d.href}>
+                      {" · "}
+                      <a href={d.href} target="_blank" rel="noopener noreferrer" data-track={`about.identity.${d.name.toLowerCase().replace(/\s+/g, "-")}`}>
+                        {d.name}
                       </a>
                     </span>
                   ))}

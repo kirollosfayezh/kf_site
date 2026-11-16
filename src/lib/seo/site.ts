@@ -17,7 +17,11 @@ export const SITE = {
   name: "KF Tech Solutions",
   // The square 512 icon, not logo-icon.png (160x144). Google wants a square
   // logo for the Organization rich result and crops or drops anything else.
-  logo: "/icon-512.png",
+  // Same pixels as icon-512.png under a name that says what it is: image
+  // search (and the assistants that read it) label a picture by its file name
+  // and alt text, and "icon-512" tied the logo to nothing — ChatGPT was showing
+  // another company's "KF TECH" logo beside our facts.
+  logo: "/kf-tech-solutions-logo.png",
   phone: "+20-150-009-9671",
   email: "info@kftechsolutions.dev",
   city: "Cairo",
@@ -35,7 +39,12 @@ export const SITE = {
     "https://www.tiktok.com/@kftechsolutions",
   ],
   // Profiles that have no footer icon (so no SocialKey) but are the company's own.
-  extraSameAs: ["https://www.snapchat.com/add/kftechsolutions"],
+  extraSameAs: [
+    "https://www.snapchat.com/add/kftechsolutions",
+    // Directory profiles: where assistants look for "software company in Egypt".
+    "https://clutch.co/profile/kf-tech-solutions",
+    "https://themanifest.com/company/kf-tech-solutions",
+  ],
   // How people actually type the brand. Searches for "kf tech" were landing on
   // other companies; alternateName ties the short forms to this entity. The
   // space gets dropped too, so "KFTech Solutions" must resolve here as well.
