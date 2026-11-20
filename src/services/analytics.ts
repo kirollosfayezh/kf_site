@@ -28,7 +28,14 @@ interface Touch {
   utmTerm?: string;
   utmContent?: string;
   gclid?: string;
+  /** Google's click ids on iOS, where a `gclid` is often withheld. */
+  gbraid?: string;
+  wbraid?: string;
   fbclid?: string;
+  /** From the Google Ads Final URL suffix: `kf_mt={matchtype}`, `kf_net={network}`, `kf_ad={creative}`. */
+  matchType?: string;
+  network?: string;
+  adId?: string;
 }
 
 interface QueuedEvent {
@@ -127,7 +134,12 @@ function touch(): Touch {
     utmTerm: q.get("utm_term") ?? undefined,
     utmContent: q.get("utm_content") ?? undefined,
     gclid: q.get("gclid") ?? undefined,
+    gbraid: q.get("gbraid") ?? undefined,
+    wbraid: q.get("wbraid") ?? undefined,
     fbclid: q.get("fbclid") ?? undefined,
+    matchType: q.get("kf_mt") ?? undefined,
+    network: q.get("kf_net") ?? undefined,
+    adId: q.get("kf_ad") ?? undefined,
   };
   for (const k of Object.keys(t) as (keyof Touch)[]) if (!t[k]) delete t[k];
   return t;
