@@ -57,7 +57,7 @@ export default defineConfig(({ command, mode }) => {
       throw new Error(
         'VITE_API_BASE_URL is not set.\n' +
           'The site needs the kf_backend origin baked in at build time, e.g.\n' +
-          '  VITE_API_BASE_URL=https://kf-backend.onrender.com\n' +
+          '  VITE_API_BASE_URL=https://api.kftechsolutions.dev\n' +
           'On Vercel: Settings -> Environment Variables, then redeploy (changing it\n' +
           'without a redeploy has no effect, because the value is compiled in).',
       )

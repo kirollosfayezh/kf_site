@@ -15,7 +15,7 @@
     },
     {
       "source": "/demos/:slug",
-      "destination": "https://kf-backend-tv5l.onrender.com/demos/:slug"
+      "destination": "https://api.kftechsolutions.dev/demos/:slug"
     }
   ],
   "redirects": [

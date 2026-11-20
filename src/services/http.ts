@@ -1,12 +1,13 @@
 import type { ApiEnvelope, ApiErrorItem } from "./api-types";
 
 /**
- * `VITE_API_BASE_URL` is the *origin* of the kf_backend Express server on Render
- * (e.g. https://kf-api.onrender.com). Everything REST lives under `/api`; the
- * bare origin is also what Socket.io connects to, so the two are kept separate:
+ * `VITE_API_BASE_URL` is the *origin* of the kf_backend Express server
+ * (https://api.kftechsolutions.dev, a custom domain on the Render service).
+ * Everything REST lives under `/api`; the bare origin is also what Socket.io
+ * connects to, so the two are kept separate:
  *
- *   API_ORIGIN -> https://kf-api.onrender.com          (socket.io)
- *   API_BASE   -> https://kf-api.onrender.com/api      (fetch)
+ *   API_ORIGIN -> https://api.kftechsolutions.dev       (socket.io)
+ *   API_BASE   -> https://api.kftechsolutions.dev/api   (fetch)
  */
 export const API_ORIGIN =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/+$/, "") || "";

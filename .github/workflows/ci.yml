@@ -40,5 +40,5 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_BASE_URL: https://kf-backend-tv5l.onrender.com
+          VITE_API_BASE_URL: https://api.kftechsolutions.dev
           VITE_SITE_URL: https://kftechsolutions.dev

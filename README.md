@@ -34,7 +34,7 @@ Then point this app at that origin:
 VITE_API_BASE_URL=http://localhost:4000
 ```
 
-In production that is the Render service URL, e.g. `https://kf-api.onrender.com`. Add the
+In production that is `https://api.kftechsolutions.dev` (a custom domain on the Render service). Add the
 site's own origin to the backend's `CORS_ORIGINS` so both fetch and the Socket.io
 handshake are allowed.
 
