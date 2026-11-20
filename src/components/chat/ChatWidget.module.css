@@ -1,7 +1,7 @@
 .fab {
   position: fixed;
   inset-inline-end: var(--fab-edge);
-  /* Sits one launcher-and-gap above the WhatsApp button (tokens in index.css),
+  /* Sits one launcher-and-gap above the contact button (tokens in index.css),
      and lifts clear of the cookie bar while it is on screen — the variable is
      unset the rest of the time. */
   bottom: calc(var(--fab-edge) + var(--fab) + var(--fab-gap) + var(--kf-consent-h, 0px));

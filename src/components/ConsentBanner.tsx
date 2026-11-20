@@ -42,7 +42,7 @@ export function ConsentBanner({ settings }: { settings: SiteSettings | null }) {
   }, []);
 
   /**
-   * Publishes the bar's height so the floating chat and WhatsApp buttons can
+   * Publishes the bar's height so the floating chat and contact buttons can
    * lift above it. Measured rather than hardcoded: the bar is one line on a
    * desktop and four on a phone, and it changes again between languages.
    */

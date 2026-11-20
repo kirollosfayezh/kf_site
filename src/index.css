@@ -181,7 +181,7 @@ html.lenis-smooth { scroll-behavior: auto; }
   --control-sm: 36px;
 
   /* ------------------------------------------------- floating launchers --
-   * WhatsApp (bottom) and chat (above it) are one stack, and the chat panel
+   * Contact (bottom: call / WhatsApp) and chat (above it) are one stack, and the chat panel
    * opens above both. All three positions derive from these, so the stack
    * can't drift apart or open its panel behind the nav. */
   --fab: 58px;
