@@ -1,11 +1,19 @@
-import { Suspense, useEffect, useState } from "react";
+import { useEffect } from "react";
+// import { Suspense, useState } from "react"; // live chat (hidden, see below)
 import { Outlet } from "react-router-dom";
 import { Nav } from "./Nav";
 import { Footer } from "./Footer";
 import { useSmoothScroll } from "../lib/smooth-scroll";
 import { RouteSeo } from "./Seo";
 import { useI18n } from "../lib/i18n";
-import { lazyWithReload } from "../lib/chunk-reload";
+// import { lazyWithReload } from "../lib/chunk-reload"; // live chat (hidden, see below)
+
+/*
+ * LIVE CHAT IS HIDDEN (21 Nov 2026, owner's request). Nothing was deleted:
+ * the widget in ./chat, the backend and the dashboard inbox are untouched.
+ * To bring it back, uncomment the four marked places in this file: the two
+ * imports above, the block below, `chatReady` in Layout, and <ChatWidget />.
+ */
 
 /**
  * The chat widget pulls in socket.io-client, which is the single largest
@@ -13,44 +21,44 @@ import { lazyWithReload } from "../lib/chunk-reload";
  * visit. It is split out and only mounted once the browser is idle (or the
  * visitor interacts), so it never competes with the hero for bandwidth.
  */
-const ChatWidget = lazyWithReload(() => import("./chat/ChatWidget").then((m) => ({ default: m.ChatWidget })));
-
-function useDeferredMount(): boolean {
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (ready) return;
-    let done = false;
-    const go = () => {
-      if (done) return;
-      done = true;
-      setReady(true);
-    };
-
-    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number })
-      .requestIdleCallback;
-    const idle = ric ? ric(go, { timeout: 3000 }) : window.setTimeout(go, 2000);
-
-    // Any real interaction brings it forward — a visitor reaching for the
-    // launcher should not wait on an idle callback that never fires.
-    const events: (keyof WindowEventMap)[] = ["pointerdown", "keydown", "scroll"];
-    events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));
-
-    return () => {
-      done = true;
-      const cic = (window as unknown as { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback;
-      if (ric && cic) cic(idle);
-      else clearTimeout(idle);
-      events.forEach((e) => window.removeEventListener(e, go));
-    };
-  }, [ready]);
-
-  return ready;
-}
+// const ChatWidget = lazyWithReload(() => import("./chat/ChatWidget").then((m) => ({ default: m.ChatWidget })));
+//
+// function useDeferredMount(): boolean {
+//   const [ready, setReady] = useState(false);
+//
+//   useEffect(() => {
+//     if (ready) return;
+//     let done = false;
+//     const go = () => {
+//       if (done) return;
+//       done = true;
+//       setReady(true);
+//     };
+//
+//     const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number })
+//       .requestIdleCallback;
+//     const idle = ric ? ric(go, { timeout: 3000 }) : window.setTimeout(go, 2000);
+//
+//     // Any real interaction brings it forward — a visitor reaching for the
+//     // launcher should not wait on an idle callback that never fires.
+//     const events: (keyof WindowEventMap)[] = ["pointerdown", "keydown", "scroll"];
+//     events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));
+//
+//     return () => {
+//       done = true;
+//       const cic = (window as unknown as { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback;
+//       if (ric && cic) cic(idle);
+//       else clearTimeout(idle);
+//       events.forEach((e) => window.removeEventListener(e, go));
+//     };
+//   }, [ready]);
+//
+//   return ready;
+// }
 
 export function Layout() {
   useSmoothScroll();
-  const chatReady = useDeferredMount();
+  // const chatReady = useDeferredMount(); // live chat (hidden)
   const { t } = useI18n();
 
   // A marker for the prerender's verification script: set once React has
@@ -80,11 +88,13 @@ export function Layout() {
         <Outlet />
       </main>
       <Footer />
+      {/* Live chat (hidden):
       {chatReady && (
         <Suspense fallback={null}>
           <ChatWidget />
         </Suspense>
       )}
+      */}
     </div>
   );
 }
