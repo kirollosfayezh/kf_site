@@ -9,6 +9,7 @@ import {
   localePath,
   marketPageSeo,
   projectPageSeo,
+  searchLangs,
   servicePageSeo,
   type ArticleLike,
   type Lang,
@@ -106,7 +107,9 @@ export async function writeSitemap(distDir: string, origin: string, ctx: BuildCo
       ...ctx.articles.map((item) => ({ item, seo: articlePageSeo(item, "en", ctx.langs), priority: "0.6" })),
       ...ctx.legal.map((item) => ({ item, seo: legalPageSeo(item, "en", ctx.langs), priority: "0.3" })),
     ].flatMap(({ item, seo, priority }) => {
-      const langs = seo.langs ?? (["en"] as Lang[]);
+      // Minus the languages this kind of page is kept out of search in: a
+      // URL that says `noindex` has no business in a sitemap.
+      const langs = searchLangs(seo.kind, seo.langs ?? (["en"] as Lang[]));
       return langs.map((lang) => ({
         loc: absolute(origin, localePath(lang, seo.path)),
         // Never "now": a date that changes every deploy is a date Google

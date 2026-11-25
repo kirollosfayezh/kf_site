@@ -2,8 +2,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { SiteSettings } from "../../services/api-types.ts";
 import { identityFromSettings } from "../contact.ts";
 import { primeDict } from "../dict/index.ts";
-import { articlePageSeo } from "./cms.ts";
+import { articlePageSeo, projectPageSeo } from "./cms.ts";
 import { PAGES } from "./pages.ts";
+import { hiddenFromSearch, searchLangs } from "./search-langs.ts";
+import { servicePageSeo } from "./service-page.ts";
 import { SITE, resetSiteIdentity, setSiteIdentity } from "./site.ts";
 import { seoTags, tagsToHtml, type SeoTag } from "./tags.ts";
 import { fitTitle } from "./text.ts";
@@ -183,6 +185,41 @@ describe("seoTags", () => {
     const tags = seoTags(post, "en", ORIGIN);
     expect(node(tags, "BlogPosting").headline).toBe("Choosing a POS for a restaurant, step by step");
     expect(tags[0]).toEqual({ kind: "title", text: "Choosing a restaurant POS" });
+  });
+
+  it("keeps German and French articles and case studies out of search, and nothing else", () => {
+    const text = { en: "A", ar: "ب", de: "C", fr: "D" };
+    const item = { slug: "x", title: text, summary: text, body: text };
+    const hreflangs = (tags: SeoTag[]) => links(tags, "alternate").flatMap((l) => (l.hreflang ? [l.hreflang] : []));
+    const markdown = (tags: SeoTag[]) => links(tags, "alternate").filter((l) => l.type === "text/markdown");
+
+    for (const seo of [articlePageSeo, projectPageSeo]) {
+      // The German and French pages say noindex themselves, keep their own
+      // canonical, and advertise no alternates.
+      for (const lang of ["de", "fr"] as const) {
+        const tags = seoTags(seo(item, lang), lang, ORIGIN);
+        expect(meta(tags, "robots")).toBe("noindex,follow");
+        expect(links(tags, "canonical")[0].href).toContain(`/${lang}/`);
+        expect(hreflangs(tags)).toEqual([]);
+        expect(markdown(tags)).toEqual([]);
+      }
+      // English and Arabic stay indexed and name only each other.
+      for (const lang of ["en", "ar"] as const) {
+        const tags = seoTags(seo(item, lang), lang, ORIGIN);
+        expect(meta(tags, "robots")).toContain("index,follow");
+        expect(meta(tags, "robots")).not.toContain("noindex");
+        expect(hreflangs(tags)).toEqual(["en", "ar", "x-default"]);
+        expect(markdown(tags)).toHaveLength(1);
+      }
+    }
+
+    // A service page is offered in all four languages, as before.
+    const service = seoTags(servicePageSeo(item, "de"), "de", ORIGIN);
+    expect(meta(service, "robots")).not.toContain("noindex");
+    expect(hreflangs(service)).toEqual(["en", "ar", "de", "fr", "x-default"]);
+    expect(hiddenFromSearch("page", "de")).toBe(false);
+    expect(searchLangs("article", ["en", "ar", "de", "fr"])).toEqual(["en", "ar"]);
+    expect(searchLangs("market", ["en", "ar"])).toEqual(["en", "ar"]);
   });
 
   it("claims the language an untranslated article is actually served in", () => {

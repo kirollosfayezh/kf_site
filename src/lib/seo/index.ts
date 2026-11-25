@@ -55,6 +55,7 @@ export { articleSchema, breadcrumbSchema, faqSchema } from "./schema/page.ts";
 export { webPageSchema } from "./schema/webpage.ts";
 export { articlePageSeo, availableLangs, legalPageSeo, projectPageSeo, projectSchema } from "./cms.ts";
 export { serviceHeadline, serviceLangs, serviceLede, servicePageSeo } from "./service-page.ts";
+export { hiddenFromSearch, searchLangs } from "./search-langs.ts";
 export {
   MARKETS,
   MARKET_LANGS,

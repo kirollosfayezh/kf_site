@@ -2,7 +2,9 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ARABIC_ALIAS, auditDist, type AuditResult, type VercelConfig } from "./audit.mjs";
+import { ARABIC_ALIAS, auditDist, HIDDEN_FROM_SEARCH, type AuditResult, type VercelConfig } from "./audit.mjs";
+import { hiddenFromSearch } from "../../src/lib/seo/search-langs.ts";
+import { LANGS } from "../../src/lib/langs.ts";
 
 const ORIGIN = "https://kf.test";
 const TODAY = "2026-11-06";
@@ -297,6 +299,55 @@ describe("auditDist", () => {
     });
     expect(checks(market.failures)).not.toContain("links");
     expect(checks(market.warnings)).toContain("links");
+  });
+
+  describe("pages kept out of search", () => {
+    const SITEMAP = sitemap(["/", "/about", "/ar", "/ar/about", "/blog/post"]);
+    // A German article as the site builds it: noindex, its own canonical, no hreflang.
+    const hidden: PageOpts = { htmlLang: "de", robots: "noindex,follow", og: { "og:locale": "de_DE" } };
+
+    it("keeps the same table as the site's own head tags", () => {
+      // Section in the URL → the page kind `seoTags` hides by.
+      const kinds = { blog: "article", projects: "project", services: "service" } as const;
+      for (const [section, kind] of Object.entries(kinds)) {
+        const fromSite = LANGS.filter((l) => hiddenFromSearch(kind, l));
+        expect(HIDDEN_FROM_SEARCH[section] ?? [], section).toEqual(fromSite);
+      }
+      expect(Object.keys(HIDDEN_FROM_SEARCH).every((s) => s in kinds)).toBe(true);
+    });
+
+    it("passes a German article that is noindex, out of the sitemap and out of the English cluster", async () => {
+      const r = await dist({ pages: { "/blog/post": {}, "/de/blog/post": hidden }, files: { "sitemap.xml": SITEMAP } });
+      expect(r.failures).toEqual([]);
+    });
+
+    it("fails a German article that is indexable again", async () => {
+      const r = await dist({
+        pages: { "/blog/post": {}, "/de/blog/post": { ...hidden, robots: "index,follow" } },
+        files: { "sitemap.xml": sitemap(["/", "/about", "/ar", "/ar/about", "/blog/post", "/de/blog/post"]) },
+      });
+      expect(checks(r.failures)).toContain("robots-meta");
+    });
+
+    it("fails a hidden article that still carries hreflang, or is still in the sitemap", async () => {
+      const alternates = [
+        { hreflang: "en", href: url("/blog/post") },
+        { hreflang: "de", href: url("/de/blog/post") },
+        { hreflang: "x-default", href: url("/blog/post") },
+      ];
+      const linked = await dist({ pages: { "/blog/post": {}, "/de/blog/post": { ...hidden, alternates } }, files: { "sitemap.xml": SITEMAP } });
+      expect(checks(linked.failures)).toEqual(["hreflang"]);
+      const listed = await dist({
+        pages: { "/blog/post": {}, "/de/blog/post": hidden },
+        files: { "sitemap.xml": sitemap(["/", "/about", "/ar", "/ar/about", "/blog/post", "/de/blog/post"]) },
+      });
+      expect(checks(listed.failures)).toEqual(["sitemap"]);
+    });
+
+    it("still fails noindex on a German page of any other kind", async () => {
+      const r = await dist({ pages: { "/de/services/web": hidden }, files: { "sitemap.xml": SITEMAP } });
+      expect(checks(r.failures)).toContain("robots-meta");
+    });
   });
 
   it("only warns about editor-typed CMS text", async () => {

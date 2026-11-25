@@ -1,6 +1,7 @@
 import { LANGS, type Lang } from "../langs.ts";
 import { projectSchema } from "./cms.ts";
 import { PAGES } from "./pages.ts";
+import { hiddenFromSearch, searchLangs } from "./search-langs.ts";
 import { organisationSchema, websiteSchema } from "./schema/organisation.ts";
 import { articleSchema, breadcrumbSchema, faqSchema } from "./schema/page.ts";
 import { serviceCatalogSchema, serviceSchemas } from "./schema/services.ts";
@@ -63,6 +64,11 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   const imageSized = !page.image || page.imageSized === true;
   const title = fitTitle(resolveTitle(page, lang));
   const desc = fitDesc(resolveDesc(page, lang));
+  // A page can be out of search as a whole (`page.noindex`) or only in this
+  // language (see search-langs.ts); either way this URL says so itself.
+  const noindex = page.noindex === true || (available.includes(lang) && hiddenFromSearch(page.kind, lang));
+  // The hreflang set names only the versions a search engine may index.
+  const indexed = searchLangs(page.kind, available);
   const tags: SeoTag[] = [{ kind: "title", text: title }];
 
   const m = (attr: "name" | "property", key: string, content?: string) => {
@@ -78,7 +84,7 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   m(
     "name",
     "robots",
-    page.noindex ? "noindex,follow" : "index,follow,max-image-preview:large,max-snippet:-1",
+    noindex ? "noindex,follow" : "index,follow,max-image-preview:large,max-snippet:-1",
   );
   m("name", "theme-color", "#0A0A0D");
   m("name", "geo.region", "EG-C");
@@ -88,8 +94,8 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   if (origin && page.path !== PAGES.notFound.path) tags.push({ kind: "link", rel: "canonical", href: url });
   // A single-language page advertises nothing: a cluster of one is noise, and
   // `x-default` on its own says less than the canonical already does.
-  if (origin && !page.noindex && available.length > 1) {
-    languageAlternates(origin, page.path, available).forEach((a) =>
+  if (origin && !noindex && indexed.length > 1) {
+    languageAlternates(origin, page.path, indexed).forEach((a) =>
       tags.push({ kind: "link", rel: "alternate", href: a.href, hreflang: a.hreflang }),
     );
   }
@@ -97,7 +103,7 @@ export function seoTags(page: PageSeo, lang: Lang, origin: string, opts: SeoOpti
   // The same page as plain Markdown (build/seo/markdown.ts writes one for
   // every indexable page), for assistants that fetch a page on a user's
   // behalf and read text far better than a React bundle.
-  if (origin && !page.noindex && page.path !== PAGES.notFound.path && page.path !== PAGES.quote.path) {
+  if (origin && !noindex && page.path !== PAGES.notFound.path && page.path !== PAGES.quote.path) {
     tags.push({
       kind: "link",
       rel: "alternate",

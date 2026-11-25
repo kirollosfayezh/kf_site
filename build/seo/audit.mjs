@@ -29,6 +29,19 @@ const PREFIXED = ["ar", "de", "fr"];
 const LANG_ORDER = ["en", ...PREFIXED];
 /** The only pages allowed to say noindex (base paths, any language). */
 const NOINDEX_PAGES = new Set(["/campaign"]);
+/**
+ * Languages kept out of search for one kind of CMS page, by the section its
+ * path starts with (`/de/blog/<slug>`). Those pages must say noindex, carry no
+ * hreflang and stay out of the sitemap; everything else must stay indexable.
+ *
+ * A copy of the table in `src/lib/seo/search-langs.ts`, because this file is
+ * plain JavaScript and cannot import it — `audit.test.ts` compares the two.
+ */
+export const HIDDEN_FROM_SEARCH = { blog: ["de", "fr"], projects: ["de", "fr"] };
+const hiddenFromSearch = (p) => {
+  const section = /^\/([^/]+)\/[^/]+$/.exec(p.base)?.[1];
+  return Boolean(section && HIDDEN_FROM_SEARCH[section]?.includes(p.lang));
+};
 const CMS_RE = /^\/(blog|projects|legal|services)\/[^/]+$/;
 // The country pages (/saudi-arabia, /uae, /gulf): one path segment, so they
 // keep the static pages' title and brand checks, but their body is typed in
@@ -378,7 +391,7 @@ export async function auditDist(distDir, { origin = null, vercelConfig = null, t
     }
 
     // Robots meta: noindex exactly where it belongs.
-    const mustNoindex = isNotFound(p) || NOINDEX_PAGES.has(p.base);
+    const mustNoindex = isNotFound(p) || NOINDEX_PAGES.has(p.base) || hiddenFromSearch(p);
     if (p.robots.length !== 1) fail("robots-meta", p.path, `${p.robots.length} robots meta tags`);
     else if (p.noindex !== mustNoindex) fail("robots-meta", p.path, `robots "${p.robots[0]}"`);
 
@@ -391,7 +404,11 @@ export async function auditDist(distDir, { origin = null, vercelConfig = null, t
     }
 
     // hreflang
-    if (p.alternates.length) {
+    if (p.alternates.length && hiddenFromSearch(p)) {
+      // A page kept out of search names no alternates, or Google is told
+      // about a language cluster that half exists.
+      fail("hreflang", p.path, "hidden from search but has hreflang links");
+    } else if (p.alternates.length) {
       const problems = [];
       const xd = p.alternates.find((a) => a.hreflang === "x-default");
       const en = p.alternates.find((a) => a.hreflang === "en");
@@ -419,7 +436,8 @@ export async function auditDist(distDir, { origin = null, vercelConfig = null, t
       if (!self) problems.push("the page is not in its own cluster");
       if (problems.length) fail("hreflang", p.path, problems.join("; "));
     } else if (indexable) {
-      const siblings = langs.filter((l) => l !== p.lang && pages.has(localePath(l, p.base)));
+      // Only a sibling that search may index belongs in the cluster.
+      const siblings = langs.filter((l) => l !== p.lang && pages.has(localePath(l, p.base)) && !pages.get(localePath(l, p.base)).noindex);
       if (siblings.length) fail("hreflang", p.path, `no hreflang although ${siblings.join("/")} versions exist`);
     }
 
