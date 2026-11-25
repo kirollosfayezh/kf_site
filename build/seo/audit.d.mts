@@ -9,6 +9,8 @@ export const OFFICIAL_HOST: string;
 export const ARABIC_ALIAS: string;
 export const OG_LOCALE: Record<"en" | "ar" | "de" | "fr", string>;
 export const ENTITY_PAGES: string[];
+/** The country page slugs (`/kuwait`), as in `src/lib/seo/markets.ts`. */
+export const MARKET_SLUGS: string[];
 /** Section (`blog`, `projects`) → the languages whose pages must be noindex. */
 export const HIDDEN_FROM_SEARCH: Record<string, string[]>;
 

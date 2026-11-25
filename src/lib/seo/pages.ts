@@ -1,3 +1,4 @@
+import { MARKETS } from "./markets.ts";
 import type { PageSeo } from "./types.ts";
 
 /**
@@ -126,7 +127,7 @@ export const PRERENDER_PAGES = Object.values(PAGES).filter((p) => p.path !== "/4
  * That is exactly what happened to every case study and legal page on a
  * client-side navigation.
  */
-export const SELF_DESCRIBED = ["/blog/", "/projects/", "/legal/", "/services/", "/saudi-arabia", "/uae", "/gulf"];
+export const SELF_DESCRIBED = ["/blog/", "/projects/", "/legal/", "/services/", ...MARKETS.map((m) => `/${m.slug}`)];
 
 /** Whether a (language-free, slash-trimmed) path is one of `SELF_DESCRIBED`. */
 export function isSelfDescribed(clean: string): boolean {

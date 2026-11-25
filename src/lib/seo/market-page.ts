@@ -3,12 +3,13 @@ import { itemImage } from "./cms.ts";
 import { metaText } from "./service-page.ts";
 import { SITE } from "./site.ts";
 import { localized, tr } from "./text.ts";
+import { MARKETS } from "./markets.ts";
 import { localePath } from "./urls.ts";
 import type { ArticleLike, PageSeo } from "./types.ts";
 
 /**
- * The country landing pages: `/saudi-arabia`, `/uae`, and `/gulf` for Kuwait,
- * Qatar, Bahrain and Oman.
+ * The country landing pages: `/saudi-arabia`, `/uae`, `/kuwait`, `/qatar`, and
+ * `/gulf` for the other Gulf countries (the list is `markets.ts`).
  *
  * Each is an item in the "markets" CMS collection, written from Markdown
  * (kf_backend `scripts/markets/`) the way the service pages are: the title is
@@ -22,11 +23,7 @@ import type { ArticleLike, PageSeo } from "./types.ts";
  * content" Google demotes — so a German or French text typed into the
  * dashboard is never published, and no hreflang ever names one.
  */
-export const MARKETS = [
-  { slug: "saudi-arabia", name: "Saudi Arabia" },
-  { slug: "uae", name: "UAE" },
-  { slug: "gulf", name: "Other Gulf countries" },
-] as const;
+export { MARKETS } from "./markets.ts";
 
 /** The only languages a market page is ever published in. */
 export const MARKET_LANGS: readonly Lang[] = ["en", "ar"];

@@ -43,10 +43,12 @@ const hiddenFromSearch = (p) => {
   return Boolean(section && HIDDEN_FROM_SEARCH[section]?.includes(p.lang));
 };
 const CMS_RE = /^\/(blog|projects|legal|services)\/[^/]+$/;
-// The country pages (/saudi-arabia, /uae, /gulf): one path segment, so they
-// keep the static pages' title and brand checks, but their body is typed in
-// the dashboard — a link in it is the editor's, and only warns.
-const MARKET_RE = /^\/(saudi-arabia|uae|gulf)$/;
+// The country pages (/saudi-arabia, /uae, /kuwait, /qatar, /gulf): one path
+// segment, so they keep the static pages' title and brand checks, but their
+// body is typed in the dashboard — a link in it is the editor's, and only
+// warns. A copy of `src/lib/seo/markets.ts`; `audit.test.ts` compares the two.
+export const MARKET_SLUGS = ["saudi-arabia", "uae", "kuwait", "qatar", "gulf"];
+const MARKET_RE = new RegExp(`^/(${MARKET_SLUGS.join("|")})$`);
 const WEBPAGE_TYPES = new Set([
   "WebPage",
   "AboutPage",

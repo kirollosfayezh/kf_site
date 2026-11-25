@@ -2,9 +2,10 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ARABIC_ALIAS, auditDist, HIDDEN_FROM_SEARCH, type AuditResult, type VercelConfig } from "./audit.mjs";
+import { ARABIC_ALIAS, auditDist, HIDDEN_FROM_SEARCH, MARKET_SLUGS, type AuditResult, type VercelConfig } from "./audit.mjs";
 import { hiddenFromSearch } from "../../src/lib/seo/search-langs.ts";
 import { LANGS } from "../../src/lib/langs.ts";
+import { MARKETS } from "../../src/lib/seo/markets.ts";
 
 const ORIGIN = "https://kf.test";
 const TODAY = "2026-11-06";
@@ -299,6 +300,10 @@ describe("auditDist", () => {
     });
     expect(checks(market.failures)).not.toContain("links");
     expect(checks(market.warnings)).toContain("links");
+  });
+
+  it("knows the same country pages as the site", () => {
+    expect(MARKET_SLUGS).toEqual(MARKETS.map((m) => m.slug));
   });
 
   describe("pages kept out of search", () => {
