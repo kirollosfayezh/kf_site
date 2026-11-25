@@ -12,5 +12,7 @@ export const MARKETS = [
   { slug: "uae", name: "UAE" },
   { slug: "kuwait", name: "Kuwait" },
   { slug: "qatar", name: "Qatar" },
+  { slug: "oman", name: "Oman" },
   { slug: "gulf", name: "Other Gulf countries" },
+  { slug: "jordan", name: "Jordan" },
 ] as const;
